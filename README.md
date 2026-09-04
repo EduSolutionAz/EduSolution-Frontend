@@ -1,16 +1,38 @@
-# React + Vite
+# EduSoliton.az
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+EduSolution Academy — tələbələrin xaricdə təhsil, viza və universitet axtarışının yardımı-olunan platforma.
 
-Currently, two official plugins are available:
+## Əlavə fikir
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Bu repo React 19 + Vite 8 + Tailwind CSS 4 və Oxlint istifadə edərək qurulub. Layihə şu addımlarla inkişaf edir:
 
-## React Compiler
+1. AuthPanel (Login/Register) UI
+2. Navigation & routing
+3. Real backend integraciyası
+4. Responsive dizayn
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Texnologiya yığını
 
-## Expanding the Oxlint configuration
+- **React 19** — cutting-edge React versiyası
+- **Vite 8** — optimized development və build
+- **Tailwind CSS 4** - utility-first CSS framework
+- **Oxlint** - lightning fast linting
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Proqram təhlüqi
+
+```bash
+npm install
+npm run dev  # development server
+npm run build  # production build
+npm run lint  # oxlint check
+```
+
+## Səhifələr
+
+- `/` - Ana səhifa (ərschelcəklənəcək)
+- `/login` - Login səhifəsi
+- `/register` - Register səhifəsi
+
+## Brend
+
+Projekt adı `EduSoliton.az`dir. `"EduSolution"` brend adı platformun rasmidır.
