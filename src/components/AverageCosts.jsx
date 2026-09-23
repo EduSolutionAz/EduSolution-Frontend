@@ -1,9 +1,9 @@
-export default function AverageCosts({ costs }) {
+export default function AverageCosts({ costs, countryName = 'Germany' }) {
   return (
     <section className="w-full">
-      <h2 className="text-center text-[#2f3f80] text-[18px] sm:text-[22px] font-normal tracking-wide mb-4 sm:mb-5">
-        Average Costs for Germany
-      </h2>
+         <h2 className="text-center text-[#2f3f80] font-normal text-[18px] sm:text-[22px] tracking-wide mb-4 sm:mb-5">
+           Average Costs for {countryName}
+         </h2>
 
       {/* Pill bar — dizayndakı açıq mavi kapsul */}
       <div className="bg-[#d6eef2] rounded-full px-4 sm:px-8 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 shadow-sm">

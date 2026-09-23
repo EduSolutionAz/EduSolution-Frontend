@@ -1,14 +1,18 @@
 import { useParams, Link } from 'react-router-dom';
+import { useSyncExternalStore } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import UniversitiesList from '../components/UniversitiesList';
 import AverageCosts from '../components/AverageCosts';
-import { getCountryBySlug } from '../data/countries';
+import { getCountryBySlug, subscribe } from '../store/adminStore';
 
 export default function CountryPage() {
   const { slug } = useParams();
-  // slug yoxdursa (məs: /country) — default germany göstər (dizayn nümunəsinə görə)
-  const country = getCountryBySlug(slug ?? 'germany');
+  const country = useSyncExternalStore(
+    subscribe,
+    () => getCountryBySlug(slug ?? 'germany'),
+    () => getCountryBySlug(slug ?? 'germany'),
+  );
 
   if (!country) {
     return (
@@ -61,12 +65,12 @@ export default function CountryPage() {
 
           {/* Universities */}
           <div className="mb-8 sm:mb-10">
-            <UniversitiesList universities={country.universities} />
+            <UniversitiesList universities={country.universities} countryName={country.name} />
           </div>
 
           {/* Costs */}
           <div className="mb-8 sm:mb-10">
-            <AverageCosts costs={country.costs} />
+            <AverageCosts costs={country.costs} countryName={country.name} />
           </div>
 
           {/* Areas */}

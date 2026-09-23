@@ -1,4 +1,4 @@
-export default function FaqAccordion({ faq, isOpen, onToggle, index }) {
+export default function FaqAccordion({ faq, isOpen, onToggle, _index }) {
   const panelId = `faq-panel-${faq.id}`;
   const buttonId = `faq-button-${faq.id}`;
 

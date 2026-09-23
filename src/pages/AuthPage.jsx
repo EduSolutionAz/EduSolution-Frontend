@@ -1,28 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function AuthPage({ initialMode = 'login' }) {
   const [mode, setMode] = useState(initialMode);
-
-  useEffect(() => {
-    setMode(initialMode);
-  }, [initialMode]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const isLogin = mode === 'login';
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [formData, setFormData] = useState({
     email: '',
     phone: '',
     password: '',
   });
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Form məlumatları:', formData);
-  };
+  const isLogin = mode === 'login';
 
   const navLinks = [
     { href: '#visa', label: 'Visa Help' },
@@ -30,6 +23,53 @@ export default function AuthPage({ initialMode = 'login' }) {
     { href: '#about', label: 'About Us' },
     { href: '#contact', label: 'Contact us' },
   ];
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email tələb olunur';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Yanlış email formatı';
+    }
+    if (!isLogin && !formData.phone.trim()) {
+      newErrors.phone = 'Telefon tələb olunur';
+    }
+    if (!formData.password.trim()) {
+      newErrors.password = 'Şifrə tələb olunur';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Şifrə minimum 6 simvol olmalı';
+    }
+    return newErrors;
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) {
+      setErrors((prev) => ({ ...prev, [e.target.name]: null }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await new Promise((r) => setTimeout(r, 500));
+      const redirect = location.state?.from || '/';
+      if (isLogin) {
+        navigate(redirect);
+      } else {
+        setMode('login');
+        navigate('/login', { replace: true });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f6eeee] text-white font-sans overflow-x-hidden">
@@ -119,7 +159,6 @@ export default function AuthPage({ initialMode = 'login' }) {
           style={{ borderRadius: '6px', backgroundColor: '#080d4a' }}
         >
           {/* ================= WORLD MAP ================= */}
-          {/* Mobil: üst banner (190px). Desktop: sola/sağa sürüşən panel */}
           <div
             className={`order-1 relative h-[190px] w-full sm:absolute sm:top-0 sm:bottom-0 sm:h-full sm:w-[48%] sm:order-none z-0 transition-all duration-[800ms] ease-[cubic-bezier(0.77,0,0.175,1)] ${
               isLogin ? 'sm:left-0' : 'sm:left-[52%]'
@@ -131,7 +170,6 @@ export default function AuthPage({ initialMode = 'login' }) {
               backgroundRepeat: 'no-repeat',
             }}
           >
-            {/* mobil alt keçid gradienti */}
             <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#080d4a] to-transparent sm:hidden" />
           </div>
 
@@ -172,8 +210,11 @@ export default function AuthPage({ initialMode = 'login' }) {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full h-[44px] sm:h-[32px] bg-transparent border border-white rounded-[4px] sm:rounded-[2px] text-white text-[13px] sm:text-[11px] pl-[45px] pr-3 outline-none placeholder-white placeholder-opacity-90 focus:border-cyan-300"
+                      className={`w-full h-[44px] sm:h-[32px] bg-transparent border rounded-[4px] sm:rounded-[2px] text-white text-[13px] sm:text-[11px] pl-[45px] pr-3 outline-none placeholder-white placeholder-opacity-90 ${
+                        errors.email ? 'border-red-400' : 'border-white focus:border-cyan-300'
+                      }`}
                     />
+                    {errors.email && <p className="text-red-300 text-[10px] mt-1 pl-[45px]">{errors.email}</p>}
                   </div>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
@@ -189,15 +230,19 @@ export default function AuthPage({ initialMode = 'login' }) {
                       value={formData.password}
                       onChange={handleChange}
                       required
-                      className="w-full h-[44px] sm:h-[32px] bg-transparent border border-white rounded-[4px] sm:rounded-[2px] text-white text-[13px] sm:text-[11px] pl-[45px] pr-3 outline-none placeholder-white placeholder-opacity-90 focus:border-cyan-300"
+                      className={`w-full h-[44px] sm:h-[32px] bg-transparent border rounded-[4px] sm:rounded-[2px] text-white text-[13px] sm:text-[11px] pl-[45px] pr-3 outline-none placeholder-white placeholder-opacity-90 ${
+                        errors.password ? 'border-red-400' : 'border-white focus:border-cyan-300'
+                      }`}
                     />
+                    {errors.password && <p className="text-red-300 text-[10px] mt-1 pl-[45px]">{errors.password}</p>}
                   </div>
                   <div className="flex justify-center pt-2 sm:pt-1">
                     <button
                       type="submit"
-                      className="w-[130px] h-[38px] sm:w-[88px] sm:h-[25px] bg-white text-[#080d4a] rounded-full text-[13px] sm:text-[10px] font-accent font-semibold hover:bg-gray-200 transition-all hover:scale-105 sm:hover:scale-110 hover:shadow-[0_0_12px_rgba(255,255,255,0.5)] cursor-pointer active:scale-95"
+                      disabled={isSubmitting}
+                      className="w-[130px] h-[38px] sm:w-[88px] sm:h-[25px] bg-white text-[#080d4a] rounded-full text-[13px] sm:text-[10px] font-accent font-semibold hover:bg-gray-200 transition-all hover:scale-105 sm:hover:scale-110 hover:shadow-[0_0_12px_rgba(255,255,255,0.5)] cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Login
+                      {isSubmitting ? 'Göndəlir...' : 'Login'}
                     </button>
                   </div>
                   <p className="text-[12px] sm:text-[10px] text-center mt-1">
@@ -234,8 +279,11 @@ export default function AuthPage({ initialMode = 'login' }) {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full h-[44px] sm:h-[32px] bg-transparent border border-white rounded-[4px] sm:rounded-[2px] text-white text-[13px] sm:text-[11px] pl-[45px] pr-3 outline-none placeholder-white placeholder-opacity-90 focus:border-cyan-300"
+                      className={`w-full h-[44px] sm:h-[32px] bg-transparent border rounded-[4px] sm:rounded-[2px] text-white text-[13px] sm:text-[11px] pl-[45px] pr-3 outline-none placeholder-white placeholder-opacity-90 ${
+                        errors.email ? 'border-red-400' : 'border-white focus:border-cyan-300'
+                      }`}
                     />
+                    {errors.email && <p className="text-red-300 text-[10px] mt-1 pl-[45px]">{errors.email}</p>}
                   </div>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
@@ -250,8 +298,11 @@ export default function AuthPage({ initialMode = 'login' }) {
                       value={formData.phone}
                       onChange={handleChange}
                       required
-                      className="w-full h-[44px] sm:h-[32px] bg-transparent border border-white rounded-[4px] sm:rounded-[2px] text-white text-[13px] sm:text-[11px] pl-[45px] pr-3 outline-none placeholder-white placeholder-opacity-90 focus:border-cyan-300"
+                      className={`w-full h-[44px] sm:h-[32px] bg-transparent border rounded-[4px] sm:rounded-[2px] text-white text-[13px] sm:text-[11px] pl-[45px] pr-3 outline-none placeholder-white placeholder-opacity-90 ${
+                        errors.phone ? 'border-red-400' : 'border-white focus:border-cyan-300'
+                      }`}
                     />
+                    {errors.phone && <p className="text-red-300 text-[10px] mt-1 pl-[45px]">{errors.phone}</p>}
                   </div>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
@@ -267,15 +318,19 @@ export default function AuthPage({ initialMode = 'login' }) {
                       value={formData.password}
                       onChange={handleChange}
                       required
-                      className="w-full h-[44px] sm:h-[32px] bg-transparent border border-white rounded-[4px] sm:rounded-[2px] text-white text-[13px] sm:text-[11px] pl-[45px] pr-3 outline-none placeholder-white placeholder-opacity-90 focus:border-cyan-300"
+                      className={`w-full h-[44px] sm:h-[32px] bg-transparent border rounded-[4px] sm:rounded-[2px] text-white text-[13px] sm:text-[11px] pl-[45px] pr-3 outline-none placeholder-white placeholder-opacity-90 ${
+                        errors.password ? 'border-red-400' : 'border-white focus:border-cyan-300'
+                      }`}
                     />
+                    {errors.password && <p className="text-red-300 text-[10px] mt-1 pl-[45px]">{errors.password}</p>}
                   </div>
                   <div className="flex justify-center pt-2 sm:pt-1">
                     <button
                       type="submit"
-                      className="w-[130px] h-[38px] sm:w-[88px] sm:h-[25px] bg-white text-[#080d4a] rounded-full text-[13px] sm:text-[10px] font-accent font-semibold hover:bg-gray-200 transition-all hover:scale-105 sm:hover:scale-110 hover:shadow-[0_0_12px_rgba(255,255,255,0.5)] cursor-pointer active:scale-95"
+                      disabled={isSubmitting}
+                      className="w-[130px] h-[38px] sm:w-[88px] sm:h-[25px] bg-white text-[#080d4a] rounded-full text-[13px] sm:text-[10px] font-accent font-semibold hover:bg-gray-200 transition-all hover:scale-105 sm:hover:scale-110 hover:shadow-[0_0_12px_rgba(255,255,255,0.5)] cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Register
+                      {isSubmitting ? 'Göndəlir...' : 'Register'}
                     </button>
                   </div>
                   <p className="text-[11px] sm:text-[8px] text-center leading-4 sm:leading-3 mt-1 px-2 sm:px-0">
@@ -304,7 +359,6 @@ export default function AuthPage({ initialMode = 'login' }) {
       {/* ================= FOOTER ================= */}
       <footer className="bg-[#080d4a]">
         <div className="max-w-[1100px] mx-auto px-4 sm:px-8 pt-7 pb-7 sm:pt-7 sm:pb-6 grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6 text-center sm:text-left">
-          {/* Logo / info — mobil-də birinci */}
           <div className="flex flex-col items-center text-center order-[-1] sm:order-none sm:col-start-2">
             <div className="flex items-center gap-2">
               <img src="/assets/logo.png" alt="ES" className="w-[25px] h-[25px] object-contain" />
@@ -318,29 +372,18 @@ export default function AuthPage({ initialMode = 'login' }) {
           <div className="flex flex-col items-center sm:items-start sm:col-start-1 sm:row-start-1">
             <h3 className="text-[14px] italic mb-2">Site Map</h3>
             <div className="flex flex-row sm:flex-col flex-wrap justify-center gap-x-5 gap-y-1.5 sm:gap-1 text-[13px] sm:text-[12px]">
-              <a href="#about" className="hover:text-cyan-300 transition">
-                About Us
-              </a>
-              <a href="#study" className="hover:text-cyan-300 transition">
-                Study Abroad
-              </a>
-              <a href="#visa" className="hover:text-cyan-300 transition">
-                Visa Help
-              </a>
+              <a href="#about" className="hover:text-cyan-300 transition">About Us</a>
+              <a href="#study" className="hover:text-cyan-300 transition">Study Abroad</a>
+              <a href="#visa" className="hover:text-cyan-300 transition">Visa Help</a>
             </div>
           </div>
 
-          <div className="flex flex-col items-center sm:items-end sm:text-right">
+          <div className="flex flex-col items-center sm:items-end">
             <h3 className="text-[14px] italic mb-3 sm:mb-4">Our Social Media Accounts</h3>
-            <div className="flex gap-4 justify-center sm:justify-end">
+            <div className="flex gap-3 justify-center sm:justify-end">
               <a href="#linkedin" aria-label="LinkedIn" className="hover:text-cyan-300 transition p-1">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zm-9.5 15.5H6.8v-7h2.7v7zM8.15 10.5A1.6 1.6 0 1 1 8.15 7.3a1.6 1.6 0 0 1 0 3.2zM19 18.5h-2.7v-3.8c0-.9 0-2.1-1.3-2.1s-1.5 1-1.5 2v3.9h-2.7v-7h2.6v1c.4-.7 1.1-1.2 2.4-1.2 2.6 0 3.2 1.7 3.2 3.9v3.3z" />
-                </svg>
-              </a>
-              <a href="#youtube" aria-label="YouTube" className="hover:text-cyan-300 transition p-1">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.9V8.1l6.5 3.9-6.5 3.9z" />
+                  <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.55V9h3.57v11.45z" />
                 </svg>
               </a>
               <a href="#instagram" aria-label="Instagram" className="hover:text-cyan-300 transition p-1">
@@ -348,6 +391,11 @@ export default function AuthPage({ initialMode = 'login' }) {
                   <rect x="3" y="3" width="18" height="18" rx="5" />
                   <circle cx="12" cy="12" r="4" />
                   <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+                </svg>
+              </a>
+              <a href="#youtube" aria-label="YouTube" className="hover:text-cyan-300 transition p-1">
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.9V8.1l6.5 3.9-6.5 3.9z" />
                 </svg>
               </a>
             </div>
