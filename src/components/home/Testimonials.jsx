@@ -13,9 +13,16 @@ export default function Testimonials() {
   const item = testimonials[active];
 
   return (
-    <section className="bg-[#080d4a] py-10 sm:py-14">
+    <section
+      className="py-10 sm:py-14"
+      style={{
+        backgroundImage: `linear-gradient(rgba(246,238,238,0.95), rgba(246,238,238,0.95)), url('/assets/topographic.png')`,
+        backgroundRepeat: 'repeat',
+        backgroundSize: '650px auto',
+      }}
+    >
       <div className="max-w-[780px] mx-auto px-4">
-        <h2 className="text-center text-[#e2eeff] font-heading font-bold text-[22px] sm:text-[28px] tracking-wide mb-9">
+        <h2 className="text-center text-[#1a2e5a] font-heading font-bold text-[22px] sm:text-[28px] tracking-wide mb-9">
           What are people saying about us
         </h2>
 
@@ -24,23 +31,23 @@ export default function Testimonials() {
             type="button"
             onClick={() => goTo(active - 1)}
             aria-label="Previous comment"
-            className="shrink-0 text-[#f7f7f7] text-[34px] font-bold leading-none hover:text-[#26aec4] transition-colors cursor-pointer px-1"
+            className="shrink-0 text-[#1a2e5a] text-[34px] font-bold leading-none hover:text-[#1a2e5a]/70 transition-colors cursor-pointer px-1"
           >
             &lt;
           </button>
 
           <figure
             key={active}
-            className="flex-1 bg-[#0a1145] rounded-md px-6 sm:px-10 py-7 text-center"
+            className="flex-1 bg-white rounded-md shadow-[0_4px_14px_rgba(26,46,90,0.08)] px-6 sm:px-10 py-7 text-center border border-[#1a2e5a]/5"
             style={{ animation: 'fadeSlide 500ms ease both' }}
           >
-            <svg className="w-8 h-8 mx-auto mb-3 text-[#26aec4]" viewBox="0 0 24 24" fill="currentColor">
+            <svg className="w-8 h-8 mx-auto mb-3 text-[#1a2e5a]" viewBox="0 0 24 24" fill="currentColor">
               <path d="M4 4v8c0 4 2.5 7.5 6 8v-3c-2-.8-3-2.4-3-4h4V4H4zm11 0v8c0 4 2.5 7.5 6 8v-3c-2-.8-3-2.4-3-4h4V4h-7z" />
             </svg>
-            <blockquote className="text-[#f7f7f7] text-[14px] sm:text-[15px] leading-6">
+            <blockquote className="text-[#1a2e5a] text-[14px] sm:text-[15px] leading-6">
               “{item.text}”
             </blockquote>
-            <figcaption className="text-[#e2eeff] text-[12.5px] font-accent font-medium mt-4">
+            <figcaption className="text-[#1a2e5a]/70 text-[12.5px] font-accent font-medium mt-4">
               — {item.author}
             </figcaption>
           </figure>
@@ -49,7 +56,7 @@ export default function Testimonials() {
             type="button"
             onClick={() => goTo(active + 1)}
             aria-label="Next comment"
-            className="shrink-0 text-[#f7f7f7] text-[34px] font-bold leading-none hover:text-[#26aec4] transition-colors cursor-pointer px-1"
+            className="shrink-0 text-[#1a2e5a] text-[34px] font-bold leading-none hover:text-[#1a2e5a]/70 transition-colors cursor-pointer px-1"
           >
             &gt;
           </button>
@@ -64,7 +71,7 @@ export default function Testimonials() {
               aria-label={`Show comment ${i + 1}`}
               aria-current={i === active}
               className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
-                i === active ? 'bg-[#26aec4] w-5' : 'bg-[#f7f7f7]/30 hover:bg-[#f7f7f7]/60'
+                i === active ? 'bg-[#1a2e5a] w-5' : 'bg-[#1a2e5a]/20 hover:bg-[#1a2e5a]/40'
               }`}
             />
           ))}

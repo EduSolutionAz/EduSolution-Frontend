@@ -2,69 +2,114 @@ import { Link } from 'react-router-dom';
 import { useSyncExternalStore } from 'react';
 import { getCountries, subscribe } from '../../store/adminStore';
 
+const FLAG_MAP = {
+  germany: 'de',
+  turkiye: 'tr',
+  poland: 'pl',
+  latvia: 'lv',
+  italy: 'it',
+  spain: 'es',
+  'united-kingdom': 'gb',
+  america: 'us',
+};
+
 export default function WorkingWith() {
-  const countries = useSyncExternalStore(
-    subscribe,
-    getCountries,
-    getCountries,
-  );
+  const countries = useSyncExternalStore(subscribe, getCountries, getCountries);
 
   return (
-    <section className="bg-[#080d4a] py-10 sm:py-14">
-      <div className="max-w-[1100px] mx-auto px-4">
-        <h2 className="text-center text-[#e2eeff] font-heading font-bold text-[24px] sm:text-[30px] tracking-wide mb-8 sm:mb-10">
-          Working With
-        </h2>
-
-        <div
-          className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-3.5"
-          role="list"
-        >
+    <section
+      className="py-6 sm:py-8 pb-10"
+      style={{
+        backgroundColor: '#fdf6f3',
+        backgroundImage: `linear-gradient(rgba(253,246,243,0.92), rgba(253,246,243,0.92)), url('/assets/topographic.png')`,
+        backgroundRepeat: 'repeat',
+        backgroundSize: '700px auto',
+      }}
+    >
+      <div className="max-w-[960px] mx-auto px-4 sm:px-6">
+        {/* Cards grid - 4 per row like screenshot */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" role="list">
           {countries.map((c) => (
-            <div
+            <Link
               key={c.slug}
+              to={`/country/${c.slug}`}
               role="listitem"
-              className="bg-[#0a1145] border border-white/5 rounded-md px-5 py-4 flex flex-col hover:bg-[#121b63] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+              className="group relative overflow-hidden rounded-[22px] h-[148px] sm:h-[160px] flex flex-col justify-between p-3 sm:p-3.5 shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.18)] hover:scale-[1.02] transition-all duration-300"
             >
-              <div className="flex items-center gap-2 mb-2.5">
-                <span className="text-[22px] leading-none">{c.flag || ''}</span>
-                <h3 className="text-[#f7f7f7] font-accent font-semibold text-[15px]">
-                  {c.name}
-                </h3>
+              {/* background image */}
+              <div className="absolute inset-0">
+                <img
+                  src={c.heroImage}
+                  alt={c.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  onError={(e) => (e.currentTarget.style.display = 'none')}
+                />
+                <div className="absolute inset-0 bg-[#0b1140]/65 group-hover:bg-[#0b1140]/70 transition" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               </div>
 
-              <ul className="space-y-1 mb-3.5 text-[#f7f7f7] text-[12.5px] font-light">
-                <li className="text-[#e2eeff] font-accent font-medium">
-                  {c.card?.universityCount || ''}
-                </li>
-                <li>{c.card?.tuitionTag || ''}</li>
-                {(c.card?.features || []).map((f) => (
-                  <li key={f}>{f}</li>
-                ))}
-              </ul>
+              {/* content */}
+              <div className="relative z-10 flex flex-col h-full">
+                <h3 className="text-white font-accent font-semibold text-[12px] sm:text-[13px] text-center tracking-wide drop-shadow">
+                  {c.name}
+                </h3>
 
-              <Link
-                to={`/country/${c.slug}`}
-                className="mt-auto inline-flex items-center gap-1 text-[#e2eeff] text-[12.5px] font-accent font-medium hover:text-white hover:gap-1.5 transition-all"
-              >
-                learn more
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 6l6 6-6 6"
-                  />
-                </svg>
-              </Link>
-            </div>
+                <ul className="mt-1.5 space-y-0.5 text-white/95 text-[10px] leading-[1.35] font-light">
+                  <li className="flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-white/90 shrink-0" />
+                    {c.card?.universityCount || ''}
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-white/90 shrink-0" />
+                    {c.card?.tuitionTag || ''}
+                  </li>
+                  {(c.card?.features || []).map((f) => (
+                    <li key={f} className="flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-white/90 shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <span className="mt-auto pt-2 text-white/90 text-[10px] font-accent font-medium underline underline-offset-2 decoration-white/40 group-hover:decoration-white text-center block">
+                  learn more
+                </span>
+              </div>
+            </Link>
           ))}
+        </div>
+
+        {/* Working With title + flags */}
+        <div className="mt-8 sm:mt-10 text-center">
+          <h2 className="text-[#1a2e5a] font-heading font-bold text-[18px] sm:text-[20px] tracking-wide">Working With</h2>
+          <div className="mt-3 flex items-center justify-center gap-2 sm:gap-2.5 flex-wrap">
+            {countries.map((c) => {
+              const code = FLAG_MAP[c.slug] || 'un';
+              return (
+                <div
+                  key={`flag-${c.slug}`}
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.15)] shrink-0 bg-white"
+                  title={c.name}
+                >
+                  <img
+                    src={`https://flagcdn.com/w80/${code}.png`}
+                    alt={c.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement.textContent = c.flag;
+                      e.currentTarget.parentElement.style.display = 'flex';
+                      e.currentTarget.parentElement.style.alignItems = 'center';
+                      e.currentTarget.parentElement.style.justifyContent = 'center';
+                      e.currentTarget.parentElement.style.fontSize = '16px';
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

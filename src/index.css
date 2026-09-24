@@ -22,6 +22,20 @@
   50% { box-shadow: 0 0 0 6px rgba(38, 174, 196, 0); }
 }
 
+@keyframes marquee {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.marquee-track {
+  animation: marquee 22s linear infinite;
+  will-change: transform;
+}
+
+.marquee-group:hover .marquee-track {
+  animation-play-state: paused;
+}
+
 @layer base {
   body {
     margin: 0;
