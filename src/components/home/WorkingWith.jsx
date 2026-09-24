@@ -55,7 +55,7 @@ export default function WorkingWith() {
                   {c.name}
                 </h3>
 
-                <ul className="mt-1.5 space-y-0.5 text-white/95 text-[10px] leading-[1.35] font-light">
+                <ul className="mt-1.5 space-y-0.5 text-white/95 text-[10px] leading-[1.35] font-light w-fit mx-auto text-left">
                   <li className="flex items-center gap-1.5">
                     <span className="w-1 h-1 rounded-full bg-white/90 shrink-0" />
                     {c.card?.universityCount || ''}
