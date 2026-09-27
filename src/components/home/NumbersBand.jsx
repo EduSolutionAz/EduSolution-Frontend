@@ -2,7 +2,14 @@ import { funNumbers } from '../../data/home';
 
 export default function NumbersBand() {
   return (
-    <section className="bg-white py-6 sm:py-8">
+    <section
+      className="py-6 sm:py-8"
+      style={{
+        backgroundImage: `linear-gradient(rgba(246,238,238,0.95), rgba(246,238,238,0.95)), url('/assets/topographic.png')`,
+        backgroundRepeat: 'repeat',
+        backgroundSize: '650px auto',
+      }}
+    >
       <div className="max-w-[900px] mx-auto px-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center" role="list">
         {funNumbers.map((n) => (
           <div key={n.label} role="listitem">

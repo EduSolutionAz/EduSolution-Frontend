@@ -11,6 +11,7 @@ import NumbersBand from '../components/home/NumbersBand';
 import Steps from '../components/home/Steps';
 import Testimonials from '../components/home/Testimonials';
 import ContactSection from '../components/home/ContactSection';
+import HomeFaq from '../components/home/HomeFaq';
 
 export default function HomePage() {
   return (
@@ -28,6 +29,7 @@ export default function HomePage() {
         <NumbersBand />
         <Testimonials />
         <ContactSection />
+        <HomeFaq />
       </main>
       <Footer />
     </div>

@@ -2,27 +2,27 @@ import { services } from '../../data/home';
 
 const ICONS = {
   legal: (
-    <svg className="w-11 h-11" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.6">
-      <path d="M24 6 L27 15 H21 Z" />
-      <path d="M24 6 V3" />
-      <circle cx="24" cy="27" r="9" />
-      <path d="M24 21 L24 33 M18 27 H30" />
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#1a2e5a" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 3 L15.5 10 H12.5 Z" />
+      <circle cx="14" cy="17.5" r="5.5" />
+      <path d="M14 14.5 V20.5 M11 17.5 H17" />
     </svg>
   ),
   admission: (
-    <svg className="w-11 h-11" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.6">
-      <circle cx="22" cy="16" r="8" />
-      <path d="M22 11 L22 16 L26 18.5" />
-      <path d="M8 42 C8 31 36 31 36 42 Z" />
-      <path d="M40 8 L42 14 L48 15 L44 20 L45 27 L40 24 L35 27 L36 20 L32 15 L38 14 Z" />
+    <svg width="32" height="28" viewBox="0 0 32 28" fill="none" stroke="#1a2e5a" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="10" r="5.5" />
+      <path d="M10 7.5 V10 L12.2 11.8" />
+      <path d="M2 24.5 C2 19.5 18 19.5 18 24.5" />
+      <path d="M24 6.5 L25.2 9.2 L28 9.6 L26 11.8 L26.5 14.6 L24 13.2 L21.5 14.6 L22 11.8 L20 9.6 L22.8 9.2 Z" />
     </svg>
   ),
   visa: (
-    <svg className="w-11 h-11" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.6">
-      <rect x="4" y="12" width="30" height="24" rx="2" />
-      <path d="M34 18 H44 V30 H34" strokeLinecap="round" />
-      <circle cx="13" cy="24" r="4" />
-      <path d="M10 24 H30 M10 24 L7 20 M10 24 L7 28" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="32" height="24" viewBox="0 0 32 24" fill="none" stroke="#1a2e5a" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="7" width="18" height="12" rx="1.2" />
+      <path d="M20 10 H28 V16 H20" />
+      <rect x="6" y="10.5" width="8" height="5" rx="0.8" fill="#1a2e5a" opacity="0.12" stroke="none" />
+      <path d="M8.5 13 H13.5 M10 13 L8 11.5 M10 13 L8 14.5" strokeWidth="1.1" />
+      <circle cx="14.5" cy="13" r="1" fill="#1a2e5a" stroke="none" />
     </svg>
   ),
 };
@@ -31,30 +31,28 @@ export default function Services() {
   return (
     <section
       id="services"
-      className="py-10 sm:py-14"
+      className="py-10 sm:py-12 bg-[#080d4a]"
       style={{
-        backgroundImage: `linear-gradient(rgba(246,238,238,0.95), rgba(246,238,238,0.95)), url('/assets/topographic.png')`,
+        backgroundImage: `linear-gradient(rgba(8,13,74,0.94), rgba(8,13,74,0.94)), url('/assets/topographic.png')`,
         backgroundRepeat: 'repeat',
         backgroundSize: '650px auto',
       }}
     >
-      <div className="max-w-[1050px] mx-auto px-4">
-        <h2 className="text-center text-[#30427d] font-heading font-bold text-[24px] sm:text-[30px] tracking-wide mb-8 sm:mb-10">
+      <div className="max-w-[860px] mx-auto px-4 sm:px-6">
+        <h2 className="text-center text-white font-heading font-bold text-[20px] sm:text-[22px] tracking-wide mb-7 sm:mb-8">
           Our Services
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5" role="list">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5" role="list">
           {services.map((s) => (
             <div
               key={s.title}
               role="listitem"
-              className="bg-white rounded-md shadow-[0_4px_14px_rgba(8,13,74,0.08)] px-6 py-7 text-center flex flex-col items-center hover:shadow-[0_10px_24px_rgba(8,13,74,0.16)] hover:-translate-y-1 transition-all duration-300"
+              className="bg-[#fdf6f3] rounded-[6px] shadow-[0_4px_14px_rgba(0,0,0,0.18)] border border-[#1a2e5a]/5 px-5 sm:px-6 py-6 sm:py-7 text-center flex flex-col items-center"
             >
-              <div className="text-[#30427d] mb-4">{ICONS[s.icon]}</div>
-              <h3 className="text-[#30427d] font-heading font-bold text-[17px] leading-snug mb-2.5">
-                {s.title}
-              </h3>
-              <p className="text-[#30427d]/80 text-[13px] leading-5">{s.text}</p>
+              <div className="mb-3.5 text-[#1a2e5a]">{ICONS[s.icon]}</div>
+              <h3 className="text-[#1a2e5a] font-heading font-bold text-[12px] sm:text-[13px] leading-tight">{s.title}</h3>
+              <p className="text-[#1a2e5a]/60 text-[10px] sm:text-[11px] leading-[1.6] mt-2 max-w-[210px]">{s.text}</p>
             </div>
           ))}
         </div>
