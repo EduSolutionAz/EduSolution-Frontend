@@ -1,13 +1,14 @@
-export default function AverageCosts({ costs, countryName = 'Germany' }) {
+import { formatUsd } from '../utils/format';
+
+export default function AverageCosts({ tuitionFee, costs, countryName = 'Germany' }) {
   return (
     <section className="w-full">
-         <h2 className="text-center text-[#2f3f80] font-normal text-[18px] sm:text-[22px] tracking-wide mb-4 sm:mb-5">
-           Average Costs for {countryName}
-         </h2>
+      <h2 className="text-center text-[#2f3f80] font-normal text-[18px] sm:text-[22px] tracking-wide mb-4 sm:mb-5">
+        Average Costs for {countryName}
+      </h2>
 
-      {/* Pill bar — dizayndakı açıq mavi kapsul */}
       <div className="bg-[#d6eef2] rounded-full px-4 sm:px-8 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 shadow-sm">
-        {/* 1 — University Cost */}
+        {/* 1 — University Cost (təlim ücreti — card.tuitionFee ilə eyni məlumat) */}
         <div className="flex items-center gap-3 sm:gap-4 flex-1 justify-center sm:justify-start">
           <span className="shrink-0 text-[#1f2a5a]">
             {/* person + book icon */}
@@ -19,8 +20,10 @@ export default function AverageCosts({ costs, countryName = 'Germany' }) {
             </svg>
           </span>
           <div className="text-left">
-            <div className="text-[#1f2a5a] font-bold text-[16px] leading-none">{costs.university.value}</div>
-            <div className="text-[#1f2a5a]/80 text-[10px] leading-tight">{costs.university.label}</div>
+            <div className="text-[#1f2a5a] font-bold text-[16px] leading-none">
+              {formatUsd(tuitionFee)}
+            </div>
+            <div className="text-[#1f2a5a]/80 text-[10px] leading-tight">University Cost</div>
           </div>
         </div>
 

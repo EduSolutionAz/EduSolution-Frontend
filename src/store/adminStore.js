@@ -1,11 +1,26 @@
 import { createId } from '../utils/id';
 import { countries as seedCountries } from '../data/countries';
+import { faqs as seedFaqs } from '../data/faqs';
+import {
+  FEATURE_OPTIONS,
+  slugify,
+  toNumber,
+} from '../utils/format';
 
 const STORAGE_KEY = 'eduSoliton_admin_v1';
+const SCHEMA_VERSION = 2;
+
+const DEFAULT_COSTS = {
+  rental: { value: '', label: 'Rental Fee', note: '' },
+  monthly: { value: '', label: 'Monthly Spending', note: '' },
+};
 
 const DEFAULT_STATE = {
+  schemaVersion: SCHEMA_VERSION,
   ads: [],
   prizes: [],
+  comments: [],
+  faqs: [],
   countries: [],
 };
 
@@ -22,49 +37,123 @@ function loadFromStorage() {
 function saveToStorage(state) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return true;
   } catch {
-    // quota exceeded etc.
+    return false;
   }
+}
+
+function normalizeFeatures(features) {
+  if (!Array.isArray(features)) return [];
+  return FEATURE_OPTIONS.filter((option) => features.includes(option));
+}
+
+function normalizeCost(cost, fallback) {
+  return {
+    value: (cost && cost.value) || '',
+    label: (cost && cost.label) || fallback.label,
+    note: (cost && cost.note) || '',
+  };
+}
+
+function normalizeCosts(costs) {
+  return {
+    rental: normalizeCost(costs && costs.rental, DEFAULT_COSTS.rental),
+    monthly: normalizeCost(costs && costs.monthly, DEFAULT_COSTS.monthly),
+  };
+}
+
+function normalizeUniversity(university, country) {
+  const source = typeof university === 'string' ? { universityName: university } : university || {};
+
+  return {
+    id: source.id || createId('univ'),
+    universityName: source.universityName || source.name || '',
+    countryName: source.countryName || (country && country.name) || '',
+    countrySlug: source.countrySlug || (country && country.slug) || '',
+    universityType: source.universityType === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC',
+    shortDescription: source.shortDescription || '',
+    universityLogo: source.universityLogo || '',
+    city: source.city || '',
+    content: source.content || '',
+    area: source.area || '',
+    isPartner: Boolean(source.isPartner),
+    universityFee: toNumber(source.universityFee),
+    semesterCount: toNumber(source.semesterCount) || 6,
+    faculties: Array.isArray(source.faculties) ? source.faculties : [],
+  };
+}
+
+function normalizeCountry(country) {
+  const card = country.card || {};
+
+  return {
+    id: country.id || createId('ctry'),
+    slug: country.slug || slugify(country.name),
+    name: country.name,
+    flag: country.flag || '',
+    card: {
+      universityCount: toNumber(
+        card.universityCount !== undefined ? card.universityCount : country.universityCount,
+      ),
+      tuitionFee: toNumber(
+        card.tuitionFee !== undefined ? card.tuitionFee : country.tuitionFee,
+      ),
+      features: normalizeFeatures(
+        card.features !== undefined ? card.features : country.features,
+      ),
+    },
+    heroImage: country.heroImage || '',
+    heroAlt: country.heroAlt || country.name || '',
+    description: country.description || '',
+    universities: (country.universities || []).map((u) => normalizeUniversity(u, country)),
+    costs: normalizeCosts(country.costs),
+    areasText: country.areasText || '',
+  };
+}
+
+function normalizeFaq(faq) {
+  return {
+    id: faq.id || createId('faq'),
+    question: faq.question || '',
+    answer: faq.answer || '',
+  };
+}
+
+function migrateSeed() {
+  return {
+    ...DEFAULT_STATE,
+    faqs: seedFaqs.map(normalizeFaq),
+    countries: seedCountries.map((country) => {
+      const normalized = normalizeCountry(country);
+      normalized.universities = normalized.universities.map((university, index) => ({
+        ...university,
+        isPartner: index === 0,
+      }));
+      return normalized;
+    }),
+  };
+}
+
+function migrateStored(stored) {
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    ads: stored.ads || [],
+    prizes: stored.prizes || [],
+    comments: stored.comments || [],
+    faqs: Array.isArray(stored.faqs) ? stored.faqs.map(normalizeFaq) : seedFaqs.map(normalizeFaq),
+    countries: (stored.countries || []).map(normalizeCountry),
+  };
 }
 
 let state = null;
 const listeners = new Set();
 
-function migrateSeed() {
-  const countries = seedCountries.map((c) => ({
-    id: createId('ctry'),
-    slug: c.slug || c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-    name: c.name,
-    flag: c.flag || '',
-    card: c.card || {
-      universityCount: '0',
-      tuitionTag: '',
-      features: [],
-    },
-    heroImage: c.heroImage || '',
-    heroAlt: c.heroAlt || c.name,
-    description: c.description || '',
-    universities: (c.universities || []).map((u) =>
-      typeof u === 'string'
-        ? { id: createId('univ'), name: u, faculties: [] }
-        : { ...u, faculties: u.faculties || [] }
-    ),
-    costs: c.costs || {
-      university: { value: '', label: 'University Cost', note: '' },
-      rental: { value: '', label: 'Rental Fee', note: '' },
-      monthly: { value: '', label: 'Monthly Spending', note: '' },
-    },
-    areasText: c.areasText || '',
-  }));
-  return { ...DEFAULT_STATE, countries };
-}
-
 function ensureState() {
   if (!state) {
-    state = loadFromStorage() || migrateSeed();
-    if (!loadFromStorage()) {
-      saveToStorage(state);
-    }
+    const stored = loadFromStorage();
+    state =
+      stored && Array.isArray(stored.countries) ? migrateStored(stored) : migrateSeed();
   }
   return state;
 }
@@ -74,23 +163,19 @@ function emit() {
 }
 
 function cloneState() {
-  const s = ensureState();
-  return JSON.parse(JSON.stringify(s));
+  return JSON.parse(JSON.stringify(ensureState()));
 }
 
 function commit(next) {
   state = next;
-  saveToStorage(state);
+  const saved = saveToStorage(state);
   emit();
+  return saved;
 }
 
 export function subscribe(fn) {
   listeners.add(fn);
   return () => listeners.delete(fn);
-}
-
-export function getSnapshot() {
-  return cloneState();
 }
 
 export function getCountries() {
@@ -103,96 +188,91 @@ export function getCountryBySlug(slug) {
 
 export function addCountry(country) {
   const s = cloneState();
-  s.countries.push({
-    id: createId('ctry'),
-    slug: country.slug || country.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-    name: country.name,
-    flag: country.flag || '',
-    card: country.card || {
-      universityCount: country.universityCount || '',
-      tuitionTag: country.tuitionTag || '',
-      features: country.features || [],
-    },
-    heroImage: country.heroImage || '',
-    heroAlt: country.heroAlt || country.name,
-    description: country.description || '',
-    universities: [],
-    costs: country.costs || {
-      university: { value: '', label: 'University Cost', note: '' },
-      rental: { value: '', label: 'Rental Fee', note: '' },
-      monthly: { value: '', label: 'Monthly Spending', note: '' },
-    },
-    areasText: country.areasText || '',
-  });
-  commit(s);
+  s.countries.push(normalizeCountry({ ...country, id: createId('ctry') }));
+  return commit(s);
 }
 
 export function removeCountry(slug) {
   const s = cloneState();
   s.countries = s.countries.filter((c) => c.slug !== slug);
-  commit(s);
+  return commit(s);
 }
 
 export function updateCountry(slug, patch) {
   const s = cloneState();
   const idx = s.countries.findIndex((c) => c.slug === slug);
-  if (idx >= 0) {
-    s.countries[idx] = { ...s.countries[idx], ...patch };
-    commit(s);
-  }
+  if (idx < 0) return false;
+  s.countries[idx] = normalizeCountry({ ...s.countries[idx], ...patch, slug, id: s.countries[idx].id });
+  return commit(s);
 }
 
 export function getUniversities(countrySlug) {
-  const c = getCountryBySlug(countrySlug);
-  return c ? c.universities : [];
+  const country = getCountryBySlug(countrySlug);
+  return country ? country.universities : [];
 }
 
-export function addUniversity(countrySlug, name) {
+export function getUniversityById(countrySlug, universityId) {
+  return getUniversities(countrySlug).find((u) => u.id === universityId);
+}
+
+export function addUniversity(countrySlug, data) {
   const s = cloneState();
-  const c = s.countries.find((country) => country.slug === countrySlug);
-  if (c) {
-    c.universities.push({ id: createId('univ'), name, faculties: [] });
-    commit(s);
-  }
+  const country = s.countries.find((c) => c.slug === countrySlug);
+  if (!country) return false;
+
+  country.universities.push(
+    normalizeUniversity({ ...data, id: createId('univ'), countrySlug }, country),
+  );
+  return commit(s);
+}
+
+export function updateUniversity(countrySlug, universityId, patch) {
+  const s = cloneState();
+  const country = s.countries.find((c) => c.slug === countrySlug);
+  if (!country) return false;
+
+  const idx = country.universities.findIndex((u) => u.id === universityId);
+  if (idx < 0) return false;
+
+  country.universities[idx] = normalizeUniversity(
+    { ...country.universities[idx], ...patch, id: universityId, countrySlug },
+    country,
+  );
+  return commit(s);
 }
 
 export function removeUniversity(countrySlug, universityId) {
   const s = cloneState();
-  const c = s.countries.find((country) => country.slug === countrySlug);
-  if (c) {
-    c.universities = c.universities.filter((u) => u.id !== universityId);
-    commit(s);
-  }
+  const country = s.countries.find((c) => c.slug === countrySlug);
+  if (!country) return false;
+
+  country.universities = country.universities.filter((u) => u.id !== universityId);
+  return commit(s);
 }
 
 export function getFaculties(countrySlug, universityId) {
-  const c = getCountryBySlug(countrySlug);
-  const u = c?.universities.find((uni) => uni.id === universityId);
-  return u ? u.faculties : [];
+  const university = getUniversityById(countrySlug, universityId);
+  return university ? university.faculties : [];
 }
 
 export function addFaculty(countrySlug, universityId, name) {
   const s = cloneState();
-  const c = s.countries.find((country) => country.slug === countrySlug);
-  if (c) {
-    const u = c.universities.find((uni) => uni.id === universityId);
-    if (u) {
-      u.faculties.push({ id: createId('fac'), name });
-      commit(s);
-    }
-  }
+  const country = s.countries.find((c) => c.slug === countrySlug);
+  const university = country && country.universities.find((u) => u.id === universityId);
+  if (!university) return false;
+
+  university.faculties.push({ id: createId('fac'), name });
+  return commit(s);
 }
 
 export function removeFaculty(countrySlug, universityId, facultyId) {
   const s = cloneState();
-  const c = s.countries.find((country) => country.slug === countrySlug);
-  if (c) {
-    const u = c.universities.find((uni) => uni.id === universityId);
-    if (u) {
-      u.faculties = u.faculties.filter((f) => f.id !== facultyId);
-      commit(s);
-    }
-  }
+  const country = s.countries.find((c) => c.slug === countrySlug);
+  const university = country && country.universities.find((u) => u.id === universityId);
+  if (!university) return false;
+
+  university.faculties = university.faculties.filter((f) => f.id !== facultyId);
+  return commit(s);
 }
 
 export function getAds() {
@@ -204,17 +284,18 @@ export function addAd(ad) {
   s.ads.push({
     id: createId('ad'),
     imageUrl: '',
+    imageFile: '',
     linkUrl: '',
     alt: '',
     ...ad,
   });
-  commit(s);
+  return commit(s);
 }
 
 export function removeAd(id) {
   const s = cloneState();
   s.ads = s.ads.filter((a) => a.id !== id);
-  commit(s);
+  return commit(s);
 }
 
 export function getPrizes() {
@@ -224,46 +305,79 @@ export function getPrizes() {
 export function addPrize(name, probability = 0) {
   const s = cloneState();
   s.prizes.push({ id: createId('prize'), name, probability });
-  commit(s);
+  return commit(s);
 }
 
 export function removePrize(id) {
   const s = cloneState();
   s.prizes = s.prizes.filter((p) => p.id !== id);
-  commit(s);
+  return commit(s);
 }
 
 export function getComments() {
   return ensureState().comments;
 }
 
+export function getFaqs() {
+  return ensureState().faqs;
+}
+
+export function addFaq(question, answer) {
+  const s = cloneState();
+  s.faqs.push(normalizeFaq({ id: createId('faq'), question, answer }));
+  return commit(s);
+}
+
+export function updateFaq(id, patch) {
+  const s = cloneState();
+  const idx = s.faqs.findIndex((f) => f.id === id);
+  if (idx < 0) return false;
+
+  s.faqs[idx] = normalizeFaq({ ...s.faqs[idx], ...patch, id });
+  return commit(s);
+}
+
+export function moveFaq(id, direction) {
+  const s = cloneState();
+  const idx = s.faqs.findIndex((f) => f.id === id);
+  const target = idx + direction;
+  if (idx < 0 || target < 0 || target >= s.faqs.length) return false;
+
+  const [item] = s.faqs.splice(idx, 1);
+  s.faqs.splice(target, 0, item);
+  return commit(s);
+}
+
+export function removeFaq(id) {
+  const s = cloneState();
+  s.faqs = s.faqs.filter((f) => f.id !== id);
+  return commit(s);
+}
+
 export function generateCommentUrl(text = '', countrySlug = '') {
   const s = cloneState();
   const id = createId('cm');
   const url = `${window.location.origin}/comment/${id}`;
-  const comment = {
+  s.comments.push({
     id,
     url,
     text,
     countrySlug,
     createdAt: new Date().toISOString(),
-  };
-  s.comments.push(comment);
+  });
   commit(s);
-  return comment;
+  return { id, url };
 }
 
 export function removeComment(id) {
   const s = cloneState();
   s.comments = s.comments.filter((c) => c.id !== id);
-  commit(s);
+  return commit(s);
 }
 
 export function resetStore() {
   localStorage.removeItem(STORAGE_KEY);
-  state = null;
-  const fresh = migrateSeed();
-  state = fresh;
+  state = migrateSeed();
   saveToStorage(state);
   emit();
 }

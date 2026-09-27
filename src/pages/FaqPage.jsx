@@ -1,16 +1,14 @@
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FaqAccordion from '../components/FaqAccordion';
-import { faqs } from '../data/faqs';
+import { getFaqs, subscribe } from '../store/adminStore';
 
 export default function FaqPage() {
-  // Dizaynda birinci sual açıqdır, yalnız bir panel açıq qalır
-  const [openId, setOpenId] = useState(faqs[0]?.id ?? null);
+  const faqs = useSyncExternalStore(subscribe, getFaqs, getFaqs);
+  const [openId, setOpenId] = useState(undefined);
 
-  const handleToggle = (id) => {
-    setOpenId((prev) => (prev === id ? null : id));
-  };
+  const activeId = openId === undefined ? (faqs[0]?.id ?? null) : openId;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f6eeee] font-sans overflow-x-hidden">
@@ -37,11 +35,16 @@ export default function FaqPage() {
               <div key={faq.id} role="listitem">
                 <FaqAccordion
                   faq={faq}
-                  isOpen={openId === faq.id}
-                  onToggle={() => handleToggle(faq.id)}
+                  isOpen={activeId === faq.id}
+                  onToggle={() => setOpenId((prev) => (prev === faq.id ? null : faq.id))}
                 />
               </div>
             ))}
+            {faqs.length === 0 && (
+              <p className="text-center text-[#2f4486]/60 text-[13px] py-10">
+                Hələ sual əlavə edilməyib
+              </p>
+            )}
           </div>
         </div>
       </main>

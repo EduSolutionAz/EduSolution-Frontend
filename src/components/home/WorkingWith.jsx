@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useSyncExternalStore } from 'react';
+import CountryFlag from '../CountryFlag';
 import { getCountries, subscribe } from '../../store/adminStore';
+import { formatUniversityCount, formatUsd } from '../../utils/format';
 
 export default function WorkingWith() {
   const countries = useSyncExternalStore(
@@ -10,7 +12,7 @@ export default function WorkingWith() {
   );
 
   return (
-    <section className="bg-[#080d4a] py-10 sm:py-14">
+    <section id="study" className="bg-[#080d4a] py-10 sm:py-14">
       <div className="max-w-[1100px] mx-auto px-4">
         <h2 className="text-center text-[#e2eeff] font-heading font-bold text-[24px] sm:text-[30px] tracking-wide mb-8 sm:mb-10">
           Working With
@@ -27,17 +29,23 @@ export default function WorkingWith() {
               className="bg-[#0a1145] border border-white/5 rounded-md px-5 py-4 flex flex-col hover:bg-[#121b63] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
             >
               <div className="flex items-center gap-2 mb-2.5">
-                <span className="text-[22px] leading-none">{c.flag || ''}</span>
+                <CountryFlag
+                  country={c}
+                  className="w-[22px] h-[16px]"
+                  emojiClass="text-[22px]"
+                />
                 <h3 className="text-[#f7f7f7] font-accent font-semibold text-[15px]">
                   {c.name}
                 </h3>
               </div>
 
               <ul className="space-y-1 mb-3.5 text-[#f7f7f7] text-[12.5px] font-light">
-                <li className="text-[#e2eeff] font-accent font-medium">
-                  {c.card?.universityCount || ''}
-                </li>
-                <li>{c.card?.tuitionTag || ''}</li>
+                {formatUniversityCount(c.card?.universityCount) && (
+                  <li className="text-[#e2eeff] font-accent font-medium">
+                    {formatUniversityCount(c.card.universityCount)}
+                  </li>
+                )}
+                <li>{formatUsd(c.card?.tuitionFee)}</li>
                 {(c.card?.features || []).map((f) => (
                   <li key={f}>{f}</li>
                 ))}

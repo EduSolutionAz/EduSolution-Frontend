@@ -6,8 +6,8 @@ export const countries = [
     name: 'Germany',
     flag: '🇩🇪',
     card: {
-      universityCount: '400+ universities',
-      tuitionTag: 'Free Tuition Fee',
+      universityCount: 400,
+      tuitionFee: 0,
       features: ['Visa Help', 'Dormitories'],
     },
     heroImage:
@@ -25,7 +25,6 @@ export const countries = [
       'University of F',
     ],
     costs: {
-      university: { value: 'Free', label: 'University Cost', note: '' },
       rental: { value: '1200$', label: 'Rental Fee', note: 'Starting from 1200$, you can find a place to live' },
       monthly: { value: '500$', label: 'Monthly Spending', note: 'Minimum of 500$ is required for market spendings and daily living' },
     },
@@ -36,8 +35,8 @@ export const countries = [
     name: 'Turkiye',
     flag: '🇹🇷',
     card: {
-      universityCount: '100+ universities',
-      tuitionTag: 'Low Tuition Fee',
+      universityCount: 100,
+      tuitionFee: 300,
       features: ['Work Permit', 'Dormitories'],
     },
     heroImage:
@@ -53,7 +52,6 @@ export const countries = [
       'University of D',
     ],
     costs: {
-      university: { value: 'Low', label: 'University Cost', note: 'Affordable tuition for all programs' },
       rental: { value: '300$', label: 'Rental Fee', note: 'Starting from 300$, you can find a place to live' },
       monthly: { value: '200$', label: 'Monthly Spending', note: 'Daily living is very budget friendly' },
     },
@@ -64,8 +62,8 @@ export const countries = [
     name: 'Poland',
     flag: '🇵🇱',
     card: {
-      universityCount: '400+ universities',
-      tuitionTag: 'Affordable',
+      universityCount: 400,
+      tuitionFee: 800,
       features: ['Visa Help', 'Residence Permit'],
     },
     heroImage:
@@ -81,7 +79,6 @@ export const countries = [
       'University of D',
     ],
     costs: {
-      university: { value: 'Affordable', label: 'University Cost', note: 'Low tuition across most programs' },
       rental: { value: '600$', label: 'Rental Fee', note: 'Starting from 600$, you can find a place to live' },
       monthly: { value: '400$', label: 'Monthly Spending', note: 'Comfortable daily living budget' },
     },
@@ -92,8 +89,8 @@ export const countries = [
     name: 'Latvia',
     flag: '🇱🇻',
     card: {
-      universityCount: '400+ universities',
-      tuitionTag: 'Free Tuition Fee',
+      universityCount: 60,
+      tuitionFee: 0,
       features: ['Visa Help', 'Dormitories'],
     },
     heroImage:
@@ -109,7 +106,6 @@ export const countries = [
       'University of D',
     ],
     costs: {
-      university: { value: 'Free', label: 'University Cost', note: '' },
       rental: { value: '400$', label: 'Rental Fee', note: 'Starting from 400$, you can find a place to live' },
       monthly: { value: '300$', label: 'Monthly Spending', note: 'Budget friendly daily living' },
     },
@@ -120,8 +116,8 @@ export const countries = [
     name: 'Italy',
     flag: '🇮🇹',
     card: {
-      universityCount: '400+ universities',
-      tuitionTag: 'Free Tuition Fee',
+      universityCount: 400,
+      tuitionFee: 0,
       features: ['Visa Help', 'Dormitories'],
     },
     heroImage:
@@ -137,7 +133,6 @@ export const countries = [
       'University of D',
     ],
     costs: {
-      university: { value: 'Free', label: 'University Cost', note: '' },
       rental: { value: '800$', label: 'Rental Fee', note: 'Starting from 800$, you can find a place to live' },
       monthly: { value: '500$', label: 'Monthly Spending', note: 'Standard daily living budget' },
     },
@@ -148,8 +143,8 @@ export const countries = [
     name: 'Spain',
     flag: '🇪🇸',
     card: {
-      universityCount: '400+ universities',
-      tuitionTag: 'Free Tuition Fee',
+      universityCount: 400,
+      tuitionFee: 0,
       features: ['Visa Help', 'Dormitories'],
     },
     heroImage:
@@ -165,7 +160,6 @@ export const countries = [
       'University of D',
     ],
     costs: {
-      university: { value: 'Free', label: 'University Cost', note: '' },
       rental: { value: '700$', label: 'Rental Fee', note: 'Starting from 700$, you can find a place to live' },
       monthly: { value: '450$', label: 'Monthly Spending', note: 'Balanced daily living cost' },
     },
@@ -176,8 +170,8 @@ export const countries = [
     name: 'United Kingdom',
     flag: '🇬🇧',
     card: {
-      universityCount: '400+ universities',
-      tuitionTag: 'Affordable',
+      universityCount: 400,
+      tuitionFee: 800,
       features: ['Visa Help', 'Residence Permit'],
     },
     heroImage:
@@ -193,7 +187,6 @@ export const countries = [
       'University of D',
     ],
     costs: {
-      university: { value: 'Affordable', label: 'University Cost', note: 'Varied tuition by program' },
       rental: { value: '1200$', label: 'Rental Fee', note: 'Starting from 1200$, you can find a place to live' },
       monthly: { value: '700$', label: 'Monthly Spending', note: 'Higher living cost in big cities' },
     },
@@ -204,8 +197,8 @@ export const countries = [
     name: 'America',
     flag: '🇺🇸',
     card: {
-      universityCount: '400+ universities',
-      tuitionTag: 'Free Tuition Fee',
+      universityCount: 400,
+      tuitionFee: 0,
       features: ['Visa Help', 'Dormitories'],
     },
     heroImage:
@@ -221,14 +214,9 @@ export const countries = [
       'University of D',
     ],
     costs: {
-      university: { value: 'Free', label: 'University Cost', note: 'Scholarships are widely available' },
       rental: { value: '1000$', label: 'Rental Fee', note: 'Starting from 1000$, you can find a place to live' },
       monthly: { value: '600$', label: 'Monthly Spending', note: 'Standard daily living budget' },
     },
     areasText: `Students choose between the East Coast, West Coast and central states. Each area offers different universities, climates and living costs that we help you compare.`,
   },
 ];
-
-export function getCountryBySlug(slug) {
-  return countries.find((c) => c.slug === slug);
-}

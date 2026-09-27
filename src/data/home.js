@@ -35,15 +35,6 @@ export const services = [
   },
 ];
 
-export const partners = [
-  'University of X',
-  'University of Y',
-  'University of A',
-  'University of B',
-  'University of C',
-  'University of D',
-];
-
 export const whyUs = {
   intro:
     'Whether you\u2019re planning to study in Poland, Germany, Italy, Türkiye, or another destination, our team provides guidance throughout the entire admission process. We work closely with students to make studying abroad simpler, faster, and less stressful.',

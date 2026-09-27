@@ -1,6 +1,19 @@
+import { useMemo, useSyncExternalStore } from 'react';
 import { heroStats } from '../../data/home';
+import { getCountries, subscribe } from '../../store/adminStore';
 
 export default function Hero() {
+  const countries = useSyncExternalStore(subscribe, getCountries, getCountries);
+
+  const partnerCount = useMemo(
+    () => countries.reduce((sum, country) => sum + country.universities.filter((u) => u.isPartner).length, 0),
+    [countries],
+  );
+
+  const stats = heroStats.map((stat) =>
+    stat.label === 'Partner University' ? { ...stat, value: String(partnerCount) } : stat,
+  );
+
   return (
     <section
       className="relative text-center px-4 pt-12 sm:pt-16 pb-8 overflow-hidden"
@@ -33,7 +46,7 @@ export default function Hero() {
       </div>
 
       <div className="max-w-[760px] mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12" role="list">
-        {heroStats.map((s) => (
+        {stats.map((s) => (
           <div key={s.label} role="listitem" className="flex flex-col items-center">
             <span className="text-[#30427d] font-heading font-bold text-[34px] sm:text-[40px] leading-none">
               {s.value}

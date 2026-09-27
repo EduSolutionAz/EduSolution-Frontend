@@ -6,6 +6,8 @@ import {
   removeFaculty,
   subscribe,
 } from '../../store/adminStore';
+import { getUniversityName } from '../../utils/format';
+import { BTN_ACCENT, BTN_DELETE, FIELD_INPUT, FIELD_LABEL, SECTION_TITLE } from './fields';
 
 function getSnapshot() {
   return getCountries();
@@ -27,7 +29,9 @@ export default function FacultiesManager() {
     ? getFaculties(selectedCountry, selectedUniversity)
     : [];
 
-  const selectedUniName = universities.find((u) => u.id === selectedUniversity)?.name;
+  const selectedUniName = universities.find((u) => u.id === selectedUniversity)
+    ? getUniversityName(universities.find((u) => u.id === selectedUniversity))
+    : '';
 
   const handleAdd = (e) => {
     e.preventDefault();
@@ -44,13 +48,13 @@ export default function FacultiesManager() {
 
   return (
     <section className="space-y-6">
-      <h2 className="text-[#080d4a] font-heading font-bold text-[24px] sm:text-[28px]">
+      <h2 className={SECTION_TITLE}>
         Fakultələr
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-[11px] text-[#323643]/70 mb-1">
+          <label className={FIELD_LABEL}>
             Ölkə seçin
           </label>
           <select
@@ -59,24 +63,24 @@ export default function FacultiesManager() {
               setSelectedCountry(e.target.value);
               setSelectedUniversity('');
             }}
-            className="w-full h-[42px] bg-[#f6eeee] rounded px-3 text-[13px] outline-none focus:ring-1 focus:ring-[#26aec4]"
+            className={FIELD_INPUT}
           >
             {countries.map((c) => (
               <option key={c.slug} value={c.slug}>
-                {c.flag} {c.name}
+                {c.name}
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className="block text-[11px] text-[#323643]/70 mb-1">
+          <label className={FIELD_LABEL}>
             Universitet seçin
           </label>
           <select
             value={selectedUniversity}
             onChange={(e) => setSelectedUniversity(e.target.value)}
-            className="w-full h-[42px] bg-[#f6eeee] rounded px-3 text-[13px] outline-none focus:ring-1 focus:ring-[#26aec4]"
+            className={FIELD_INPUT}
             disabled={!universities.length}
           >
             <option value="" disabled>
@@ -84,7 +88,7 @@ export default function FacultiesManager() {
             </option>
             {universities.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.name}
+                {getUniversityName(u)}
               </option>
             ))}
           </select>
@@ -99,20 +103,20 @@ export default function FacultiesManager() {
 
           <form onSubmit={handleAdd} className="flex items-end gap-3">
             <div className="flex-1">
-              <label className="block text-[11px] text-[#323643]/70 mb-1">
+              <label className={FIELD_LABEL}>
                 Fakultə adı *
               </label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Məsələn: Computer Engineering"
-                className="w-full h-[42px] bg-[#f6eeee] rounded px-3 text-[13px] outline-none focus:ring-1 focus:ring-[#26aec4]"
+                className={FIELD_INPUT}
                 required
               />
             </div>
             <button
               type="submit"
-              className="h-[42px] px-5 bg-[#26aec4] text-[#080d4a] font-accent font-semibold rounded-full hover:bg-[#3cc3d8] transition text-[13px]"
+              className={`h-[42px] ${BTN_ACCENT}`}
             >
               Əlavə et
             </button>
@@ -127,7 +131,7 @@ export default function FacultiesManager() {
                 <span className="text-[#080d4a] text-[14px]">{f.name}</span>
                 <button
                   onClick={() => handleDelete(f.id)}
-                  className="px-3 py-1 text-red-600 text-[12px] font-medium hover:bg-red-50 rounded transition"
+                  className={BTN_DELETE}
                 >
                   Sil
                 </button>

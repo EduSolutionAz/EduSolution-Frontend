@@ -1,9 +1,11 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { resetStore } from '../../store/adminStore';
 
 const MENU = [
   { to: '/admin/countries', label: 'Countries', icon: '' },
   { to: '/admin/universities', label: 'Universities', icon: '' },
   { to: '/admin/faculties', label: 'Faculties', icon: '' },
+  { to: '/admin/faqs', label: 'FAQ', icon: '' },
   { to: '/admin/ads', label: 'Ad Board', icon: '' },
   { to: '/admin/prizes', label: 'Spin Prizes', icon: '' },
   { to: '/admin/comments', label: 'Comment URLs', icon: '' },
@@ -36,7 +38,23 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-white/10 space-y-3">
+          <button
+            type="button"
+            onClick={() => {
+              if (
+                window.confirm(
+                  'Bütün demo məlumatlar silinib ilkin vəziyyətə qaytarılacaq (ölkələr, universitetlər, FAQ, reklamlar, nağıllar, şərhlər). Davam etmək istəyirsiniz?',
+                )
+              ) {
+                resetStore();
+              }
+            }}
+            className="w-full px-3 py-1.5 text-left text-[11px] text-white/50 hover:text-white hover:bg-white/10 rounded transition"
+          >
+            Demo datanı sıfırla
+          </button>
+
           <a
             href="/"
             className="flex items-center gap-2 text-[12px] text-white/70 hover:text-white transition-colors"

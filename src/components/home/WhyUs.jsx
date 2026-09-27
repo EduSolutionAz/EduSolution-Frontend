@@ -12,6 +12,7 @@ const ICONS = {
 export default function WhyUs() {
   return (
     <section
+      id="about"
       className="bg-[#080d4a] py-10 sm:py-14"
       style={{
         backgroundImage: `linear-gradient(rgba(8,13,74,0.94), rgba(8,13,74,0.94)), url('/assets/topographic.png')`,

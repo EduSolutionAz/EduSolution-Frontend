@@ -2,11 +2,13 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AuthPage from './pages/AuthPage';
 import FaqPage from './pages/FaqPage';
 import CountryPage from './pages/CountryPage';
+import UniversityPage from './pages/UniversityPage';
 import HomePage from './pages/HomePage';
 import AdminLayout from './components/admin/AdminLayout';
 import CountriesManager from './components/admin/CountriesManager';
 import UniversitiesManager from './components/admin/UniversitiesManager';
 import FacultiesManager from './components/admin/FacultiesManager';
+import FaqManager from './components/admin/FaqManager';
 import AdBoardManager from './components/admin/AdBoardManager';
 import SpinPrizesManager from './components/admin/SpinPrizesManager';
 import CommentUrlGenerator from './components/admin/CommentUrlGenerator';
@@ -32,6 +34,7 @@ function App() {
         <Route path="/login" element={<AuthPage key="login" initialMode="login" />} />
         <Route path="/register" element={<AuthPage key="register" initialMode="register" />} />
          <Route path="/country/:slug" element={<CountryPage />} />
+         <Route path="/country/:slug/university/:id" element={<UniversityPage />} />
          <Route path="/countries/:slug" element={<CountryPage />} />
          <Route path="/comment/:id" element={<CommentPage />} />
          <Route path="/germany" element={<Navigate to="/country/germany" replace />} />
@@ -40,7 +43,8 @@ function App() {
            <Route index element={<CountriesManager />} />
            <Route path="countries" element={<CountriesManager />} />
            <Route path="universities" element={<UniversitiesManager />} />
-           <Route path="faculties" element={<FacultiesManager />} />
+            <Route path="faculties" element={<FacultiesManager />} />
+            <Route path="faqs" element={<FaqManager />} />
            <Route path="ads" element={<AdBoardManager />} />
            <Route path="prizes" element={<SpinPrizesManager />} />
            <Route path="comments" element={<CommentUrlGenerator />} />

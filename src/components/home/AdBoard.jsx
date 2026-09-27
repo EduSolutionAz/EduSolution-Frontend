@@ -19,7 +19,7 @@ export default function AdBoard() {
               className="shrink-0 block"
             >
               <img
-                src={ad.imageUrl}
+                src={ad.imageFile || ad.imageUrl}
                 alt={ad.alt || 'ad'}
                 className="h-14 w-auto object-contain rounded hover:opacity-85 transition"
                 onError={(e) => {

@@ -1,13 +1,15 @@
 import { useParams, Link } from 'react-router-dom';
-import { useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import UniversitiesList from '../components/UniversitiesList';
 import AverageCosts from '../components/AverageCosts';
-import { getCountryBySlug, subscribe } from '../store/adminStore';
+import { getCountries, getCountryBySlug, subscribe } from '../store/adminStore';
 
 export default function CountryPage() {
   const { slug } = useParams();
+  const [brokenSrc, setBrokenSrc] = useState(null);
+  const countries = useSyncExternalStore(subscribe, getCountries, getCountries);
   const country = useSyncExternalStore(
     subscribe,
     () => getCountryBySlug(slug ?? 'germany'),
@@ -21,9 +23,26 @@ export default function CountryPage() {
         <main className="flex-1 flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
           <h1 className="text-2xl font-bold text-[#080d4a]">Ölkə tapılmadı</h1>
           <p className="text-sm text-[#080d4a]/70">"{slug}" adlı ölkə mövcud deyil.</p>
-          <Link to="/country/germany" className="mt-2 inline-flex px-5 py-2 rounded-full bg-[#080d4a] text-white text-sm">
-            Germany-ə get
-          </Link>
+          {countries.length > 0 ? (
+            <div className="mt-2 flex flex-wrap justify-center gap-2">
+              {countries.map((c) => (
+                <Link
+                  key={c.slug}
+                  to={`/country/${c.slug}`}
+                  className="px-4 py-1.5 rounded-full bg-[#080d4a] text-white text-[12px] hover:bg-[#141c63] transition"
+                >
+                  {c.name}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <Link
+              to="/"
+              className="mt-2 inline-flex px-5 py-2 rounded-full bg-[#080d4a] text-white text-sm"
+            >
+              Ana səhifə
+            </Link>
+          )}
         </main>
         <Footer />
       </div>
@@ -49,13 +68,20 @@ export default function CountryPage() {
           </h1>
 
           {/* Hero image */}
-          <div className="w-full overflow-hidden rounded-[2px] shadow-sm mb-5 sm:mb-6">
-            <img
-              src={country.heroImage}
-              alt={country.heroAlt}
-              className="w-full h-[190px] sm:h-[360px] object-cover"
-              loading="eager"
-            />
+          <div className="w-full overflow-hidden rounded-[2px] shadow-sm mb-5 sm:mb-6 bg-[#e6dada]">
+            {country.heroImage && brokenSrc !== country.heroImage ? (
+              <img
+                src={country.heroImage}
+                alt={country.heroAlt}
+                className="w-full h-[190px] sm:h-[360px] object-cover"
+                loading="eager"
+                onError={() => setBrokenSrc(country.heroImage)}
+              />
+            ) : (
+              <div className="w-full h-[190px] sm:h-[360px] flex items-center justify-center text-[#2f3f80]/40 text-[13px]">
+                Şəkil yoxdur
+              </div>
+            )}
           </div>
 
           {/* Description */}
@@ -65,12 +91,20 @@ export default function CountryPage() {
 
           {/* Universities */}
           <div className="mb-8 sm:mb-10">
-            <UniversitiesList universities={country.universities} countryName={country.name} />
+            <UniversitiesList
+              universities={country.universities}
+              countryName={country.name}
+              countrySlug={country.slug}
+            />
           </div>
 
           {/* Costs */}
           <div className="mb-8 sm:mb-10">
-            <AverageCosts costs={country.costs} countryName={country.name} />
+            <AverageCosts
+              tuitionFee={country.card.tuitionFee}
+              costs={country.costs}
+              countryName={country.name}
+            />
           </div>
 
           {/* Areas */}

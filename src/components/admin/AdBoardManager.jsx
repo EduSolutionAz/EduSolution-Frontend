@@ -1,10 +1,22 @@
 import { useState, useSyncExternalStore } from 'react';
+import ImageUploadField from './ImageUploadField';
 import { addAd, getAds, removeAd, subscribe } from '../../store/adminStore';
+import {
+  BTN_ACCENT,
+  BTN_DELETE,
+  BTN_PRIMARY,
+  CARD,
+  FIELD_INPUT,
+  FIELD_LABEL,
+  SECTION_TITLE,
+} from './fields';
+
+const EMPTY_FORM = { imageUrl: '', imageFile: '', linkUrl: '', alt: '' };
 
 export default function AdBoardManager() {
   const ads = useSyncExternalStore(subscribe, getAds, getAds);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ imageUrl: '', linkUrl: '', alt: '' });
+  const [form, setForm] = useState(EMPTY_FORM);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -13,9 +25,21 @@ export default function AdBoardManager() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.imageUrl.trim()) return;
-    addAd({ imageUrl: form.imageUrl.trim(), linkUrl: form.linkUrl.trim(), alt: form.alt.trim() });
-    setForm({ imageUrl: '', linkUrl: '', alt: '' });
+    if (!form.imageUrl.trim() && !form.imageFile) return;
+
+    const saved = addAd({
+      imageUrl: form.imageUrl.trim(),
+      imageFile: form.imageFile,
+      linkUrl: form.linkUrl.trim(),
+      alt: form.alt.trim(),
+    });
+
+    if (!saved) {
+      window.alert('Yadda saxlamaq mümkün olmadı — brauzer yaddaş limiti dolub.');
+      return;
+    }
+
+    setForm(EMPTY_FORM);
     setShowForm(false);
   };
 
@@ -28,73 +52,67 @@ export default function AdBoardManager() {
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-[#080d4a] font-heading font-bold text-[24px] sm:text-[28px]">
-          Reklam Lövhəsi
-        </h2>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="px-5 py-2 bg-[#26aec4] text-[#080d4a] font-accent font-semibold rounded-full hover:bg-[#3cc3d8] transition text-[13px]"
-        >
+        <h2 className={SECTION_TITLE}>Reklam Lövhəsi</h2>
+        <button type="button" onClick={() => setShowForm((v) => !v)} className={BTN_ACCENT}>
           {showForm ? 'İmtina' : 'Əlavə et'}
         </button>
       </div>
 
       {showForm && (
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-lg shadow p-5 grid grid-cols-1 sm:grid-cols-2 gap-4"
-        >
+        <form onSubmit={handleSubmit} className={`${CARD} grid grid-cols-1 sm:grid-cols-2 gap-4`}>
           <div className="sm:col-span-2">
-            <label className="block text-[11px] text-[#323643]/70 mb-1">
-              Şəkil URL *
-            </label>
+            <ImageUploadField
+              label="Şəkil fayl (tövsiyə olunan)"
+              value={form.imageFile}
+              onChange={(value) => setForm((prev) => ({ ...prev, imageFile: value }))}
+              maxSize={900}
+              hint="Fayl varsa URL-ə üstünlük verilir"
+              previewClass="w-full h-[90px] object-contain"
+              previewWrapper="w-full h-[90px]"
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className={FIELD_LABEL} htmlFor="ad-url">Şəkil URL</label>
             <input
+              id="ad-url"
               name="imageUrl"
               value={form.imageUrl}
               onChange={handleChange}
               placeholder="https://example.com/banner.jpg"
-              className="w-full h-[42px] bg-[#f6eeee] rounded px-3 text-[13px] outline-none focus:ring-1 focus:ring-[#26aec4]"
-              required
+              className={FIELD_INPUT}
             />
           </div>
+
           <div>
-            <label className="block text-[11px] text-[#323643]/70 mb-1">
-              Keçid linki
-            </label>
+            <label className={FIELD_LABEL} htmlFor="ad-link">Keçid linki</label>
             <input
+              id="ad-link"
               name="linkUrl"
               value={form.linkUrl}
               onChange={handleChange}
               placeholder="https://..."
-              className="w-full h-[42px] bg-[#f6eeee] rounded px-3 text-[13px] outline-none focus:ring-1 focus:ring-[#26aec4]"
+              className={FIELD_INPUT}
             />
           </div>
+
           <div>
-            <label className="block text-[11px] text-[#323643]/70 mb-1">
-              Alt mətn
-            </label>
+            <label className={FIELD_LABEL} htmlFor="ad-alt">Alt mətn</label>
             <input
+              id="ad-alt"
               name="alt"
               value={form.alt}
               onChange={handleChange}
               placeholder="Reklam təsviri"
-              className="w-full h-[42px] bg-[#f6eeee] rounded px-3 text-[13px] outline-none focus:ring-1 focus:ring-[#26aec4]"
+              className={FIELD_INPUT}
             />
           </div>
+
           <div className="sm:col-span-2 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="px-4 py-1.5 text-[12px]"
-            >
+            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-1.5 text-[12px]">
               Ləğv et
             </button>
-            <button
-              type="submit"
-              className="px-5 py-1.5 bg-[#080d4a] text-white text-[12px] rounded-full hover:bg-[#141c63] transition"
-            >
-              Yadda saxla
-            </button>
+            <button type="submit" className={BTN_PRIMARY}>Yadda saxla</button>
           </div>
         </form>
       )}
@@ -105,43 +123,41 @@ export default function AdBoardManager() {
             key={ad.id}
             className="bg-white rounded-md shadow px-4 py-3 flex items-center gap-4 justify-between"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <img
-                src={ad.imageUrl}
+                src={ad.imageFile || ad.imageUrl}
                 alt={ad.alt || 'ad'}
                 className="w-16 h-10 object-cover rounded"
                 onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/64x40?text=no+image';
+                  e.target.style.visibility = 'hidden';
                 }}
               />
-              <div>
+              <div className="min-w-0">
                 <span className="text-[#080d4a] font-semibold text-[13px] block">
                   {ad.alt || 'Alt mətn yoxdur'}
+                </span>
+                <span className="text-[#323643]/50 text-[11px]">
+                  {ad.imageFile ? 'fayl' : ad.imageUrl || 'şəkil yoxdur'}
                 </span>
                 {ad.linkUrl && (
                   <a
                     href={ad.linkUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#323643]/50 text-[11px] underline"
+                    className="text-[#323643]/50 text-[11px] underline block truncate"
                   >
                     {ad.linkUrl}
                   </a>
                 )}
               </div>
             </div>
-            <button
-              onClick={() => handleDelete(ad.id)}
-              className="px-3 py-1 text-red-600 text-[12px] font-medium hover:bg-red-50 rounded transition"
-            >
+            <button type="button" onClick={() => handleDelete(ad.id)} className={BTN_DELETE}>
               Sil
             </button>
           </li>
         ))}
         {ads.length === 0 && (
-          <li className="text-center py-8 text-[#323643]/50 text-[13px]">
-            Hələ reklam yoxdur
-          </li>
+          <li className="text-center py-8 text-[#323643]/50 text-[13px]">Hələ reklam yoxdur</li>
         )}
       </ul>
     </section>

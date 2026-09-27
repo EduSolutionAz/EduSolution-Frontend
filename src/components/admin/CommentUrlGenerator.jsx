@@ -67,7 +67,7 @@ export default function CommentUrlGenerator() {
             <option value="">Seçilməyib</option>
             {countries.map((c) => (
               <option key={c.slug} value={c.slug}>
-                {c.flag} {c.name}
+                {c.name}
               </option>
             ))}
           </select>
