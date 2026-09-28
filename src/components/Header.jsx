@@ -5,7 +5,6 @@ import { useCountriesWithUniversities } from '../services/contentHooks';
 import { getUniversityName } from '../utils/format';
 
 const NAV_LINKS = [
-  { to: '/login', label: 'Login' },
   { href: '#services', label: 'Visa Help' },
   { href: '#study', label: 'Study Abroad' },
   { href: '#about', label: 'About Us' },
