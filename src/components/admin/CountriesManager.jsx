@@ -166,7 +166,10 @@ function missingRequiredFields(form) {
       } else {
         setStatus({
           state: 'error',
-          message: `${isEditing ? 'Yenilənmədi' : 'Ölkə əlavə edilmədi'}. Server cavabı: ${JSON.stringify(result)}`,
+          message:
+            result === null || result === undefined
+              ? 'Server sorğunu qəbul etdi (200) amma boş cavab qaytardı, ona görə ölkə yaradılmadı. Bu backend problemidir — /country/add_country hələ işləmir.'
+              : `${isEditing ? 'Yenilənmədi' : 'Ölkə əlavə edilmədi'}. Server cavabı: ${JSON.stringify(result)}`,
         });
       }
     } catch (err) {
