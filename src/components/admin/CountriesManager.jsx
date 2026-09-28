@@ -2,6 +2,8 @@ import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addCountry, deleteCountry } from '../../services/contentApi';
 import { useTopCountries, useCountryDetails } from '../../services/contentHooks';
+import { ADMIN_TOKEN_KEY } from '../../config/api';
+import { readToken } from '../../services/httpClient';
 import { mapTopCountry } from '../../services/mappers';
 import { dataUrlToFile } from '../../utils/imageFile';
 import { FEATURE_OPTIONS, formatUniversityCount, formatUsd } from '../../utils/format';
@@ -38,8 +40,12 @@ export default function CountriesManager() {
   const [status, setStatus] = useState({ state: 'idle', message: '' });
   const [isSaving, setIsSaving] = useState(false);
   const [detailName, setDetailName] = useState('');
+  const hasAdminToken = Boolean(readToken(ADMIN_TOKEN_KEY));
 
-  const { data: detail, loading: loadingDetail, error: detailError } = useCountryDetails(detailName);
+  const { data: detail, loading: loadingDetail, error: detailError } = useCountryDetails(
+    detailName,
+    { enabled: hasAdminToken },
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -331,13 +337,27 @@ export default function CountriesManager() {
             <p className="text-[#323643]/50 text-[12px]">Yüklənir...</p>
           )}
 
-          {detailError && (
+          {!hasAdminToken && (
+            <p className="text-[#323643]/60 text-[12px] leading-5">
+              Admin tokeni tapılmadı. Bu endpoint üçün giriş tələb olunur —{' '}
+              <button
+                type="button"
+                onClick={() => window.location.assign('/admin/login')}
+                className="text-[#26aec4] hover:underline"
+              >
+                yenidən daxil olun
+              </button>
+              .
+            </p>
+          )}
+
+          {hasAdminToken && detailError && (
             <p role="alert" className="text-red-600 text-[12px]">
               {detailError.message}
             </p>
           )}
 
-          {!loadingDetail && !detailError && !detail && (
+          {hasAdminToken && !loadingDetail && !detailError && !detail && (
             <p className="text-[#323643]/60 text-[12px] leading-5">
               Endpoint boş cavab qaytardı (200, boş body). Swagger-da da bu endpoint
               yoxdur — backend tərəfdə tamamlanmayan endpoint kimi görünür.

@@ -16,6 +16,14 @@ export default defineConfig({
         target: BACKEND_ORIGIN,
         changeOrigin: true,
         secure: true,
+        // The backend answers 401 with a WWW-Authenticate header, which makes
+        // Chrome open its native Basic-auth dialog on top of the app. Strip it
+        // in dev so the app surfaces the error itself.
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes) => {
+            delete proxyRes.headers['www-authenticate'];
+          });
+        },
       },
     },
   },

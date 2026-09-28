@@ -57,9 +57,9 @@ export function useCountry(countryName, { tokenKey, enabled = true } = {}) {
   });
 }
 
-export function useCountryDetails(countryName) {
+export function useCountryDetails(countryName, { enabled = true } = {}) {
   return useApiResource(() => getCountryDetails(countryName), [countryName], {
-    enabled: Boolean(countryName),
+    enabled: Boolean(countryName) && enabled,
   });
 }
 
