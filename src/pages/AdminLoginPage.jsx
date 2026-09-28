@@ -22,13 +22,25 @@ export default function AdminLoginPage() {
     setError('');
 
     try {
-      await adminLogin({
+      const data = await adminLogin({
         username: form.username.trim(),
         password: form.password,
       });
+
+      if (!data?.token) {
+        setError('Server giriş cavabında token qaytarmadı. Admin hesabını yoxlayın.');
+        return;
+      }
+
       navigate('/admin', { replace: true });
     } catch (err) {
-      setError(err?.message || 'Giriş uğursuz oldu. İstifadəçi adı və şifrəni yoxlayın.');
+      if (err?.status === 401 || err?.status === 403) {
+        setError(
+          'İstifadəçi adı və ya şifrə yanlışdır. Şifrə 9-30 simvol olmalı, içində böyük hərf, kiçik hərf, rəqəm və . , # ? / simvollarından biri olmalıdır.',
+        );
+        return;
+      }
+      setError(err?.message || 'Giriş uğursuz oldu. Yenidən cəhd edin.');
     } finally {
       setIsSubmitting(false);
     }
