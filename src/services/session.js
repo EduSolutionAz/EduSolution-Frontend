@@ -47,12 +47,20 @@ export function isTokenExpired(ttlKey) {
  * The admin area checks access once per browser session, then trusts the
  * result. Re-checking on every render used to bounce a signed-in admin back
  * to the login screen mid-task.
+ *
+ * The remembered flag is only honoured while a token still exists: a flag
+ * left over from a cleared token would otherwise let the admin in while
+ * every request went out unauthenticated and got 401.
  */
 export function canAccessAdmin() {
-  if (readFlag(ADMIN_VERIFIED_KEY) === '1') return true;
-  if (!readToken(ADMIN_TOKEN_KEY)) return false;
+  const hasToken = Boolean(readToken(ADMIN_TOKEN_KEY));
 
-  markAdminVerified();
+  if (!hasToken) {
+    writeFlag(ADMIN_VERIFIED_KEY, null);
+    return false;
+  }
+
+  if (readFlag(ADMIN_VERIFIED_KEY) !== '1') markAdminVerified();
   return true;
 }
 
