@@ -10,7 +10,17 @@ import { mapCountry, mapCountryLogos, mapTopCountry } from '../services/mappers'
 function Loading() {
   return (
     <div className="flex-1 flex items-center justify-center py-24 text-[#2f3f80]/60 text-[13px]">
-      Yüklənir...
+      Yüxlənir...
+    </div>
+  );
+}
+
+function PageShell({ children }) {
+  return (
+    <div className="min-h-screen flex flex-col bg-[#f6eeee] font-sans">
+      <Header />
+      {children}
+      <Footer />
     </div>
   );
 }
@@ -22,34 +32,48 @@ export default function CountryPage() {
   const { data: logoItems } = useCountryLogos();
   const flagMap = mapCountryLogos(logoItems);
 
-  const { data: countries } = useTopCountries();
+  const { data: countries, loading: loadingList } = useTopCountries();
   const countryList = (countries || []).map(mapTopCountry).filter(Boolean);
-
   const bySlug = countryList.find((c) => c.slug === slug);
   const countryName = bySlug?.name || '';
 
-  const { data, loading, error } = useCountry(countryName || slug);
+  // The backend expects the display name, not the slug, so wait until the
+  // country list resolves before requesting details.
+  const { data, loading, error } = useCountry(countryName);
   const country = mapCountry(data);
   const flag = country ? flagMap[country.slug] : '';
 
-  if (loading) {
+  if (loadingList || (loading && countryName)) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#f6eeee]">
-        <Header />
+      <PageShell>
         <Loading />
-        <Footer />
-      </div>
+      </PageShell>
     );
   }
 
   if (!country) {
+    const unauthorized = error?.status === 401;
+
     return (
-      <div className="min-h-screen flex flex-col bg-[#f6eeee]">
-        <Header />
+      <PageShell>
         <main className="flex-1 flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
           <h1 className="text-2xl font-bold text-[#080d4a]">Ölkə tapılmadı</h1>
           <p className="text-sm text-[#080d4a]/70">"{slug}" adlı ölkə mövcud deyil.</p>
-          {error && <p className="text-sm text-red-600">{error.message}</p>}
+
+          {unauthorized && (
+            <p className="text-sm text-red-600 max-w-[420px] leading-6">
+              <code className="text-[12px]">/country/&#123;countryName&#125;</code> endpoint-i
+              hazırda giriş tələb edir (401) və məlumat qaytarmır. Hesaba giriş edib
+              yenidən yoxlayın.
+            </p>
+          )}
+
+          {!unauthorized && !countryName && (
+            <p className="text-sm text-[#080d4a]/60 max-w-[420px] leading-6">
+              Ölkə siyahısı yüklənmədi və ya bu ad uyğun gəlmədi.
+            </p>
+          )}
+
           {countryList.length > 0 ? (
             <div className="mt-2 flex flex-wrap justify-center gap-2">
               {countryList.map((c) => (
@@ -71,15 +95,12 @@ export default function CountryPage() {
             </Link>
           )}
         </main>
-        <Footer />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f6eeee] font-sans overflow-x-hidden">
-      <Header />
-
+    <PageShell>
       <main
         className="flex-1"
         style={{
@@ -155,8 +176,6 @@ export default function CountryPage() {
           </section>
         </div>
       </main>
-
-      <Footer />
-    </div>
+    </PageShell>
   );
 }

@@ -11,9 +11,14 @@ export async function getCountryLogos() {
   return asArray(data);
 }
 
-export async function getCountry(countryName) {
+/**
+ * Country detail. The backend currently answers 401 without a token and an
+ * empty body with one, so a token is sent when the visitor is logged in and
+ * callers must handle an empty result.
+ */
+export async function getCountry(countryName, { tokenKey = USER_TOKEN_KEY } = {}) {
   const { data } = await request(`/country/${encodeURIComponent(countryName)}`, {
-    auth: false,
+    tokenKey,
   });
   return data;
 }
