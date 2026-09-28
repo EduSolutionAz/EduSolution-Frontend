@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useSyncExternalStore } from 'react';
-import { getCountries, subscribe } from '../../store/adminStore';
+import { useState } from 'react';
+import { useTopCountries } from '../../services/contentHooks';
+import { mapTopCountry } from '../../services/mappers';
 
 export default function CountrySearch() {
   const navigate = useNavigate();
-  const countries = useSyncExternalStore(subscribe, getCountries, getCountries);
+  const { data } = useTopCountries();
+  const countries = (data || []).map(mapTopCountry).filter(Boolean);
   const [query, setQuery] = useState('');
   const [notFound, setNotFound] = useState('');
 

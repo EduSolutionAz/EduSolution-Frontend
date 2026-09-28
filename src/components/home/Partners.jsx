@@ -1,6 +1,6 @@
-import { useMemo, useSyncExternalStore } from 'react';
-import { getCountries, subscribe } from '../../store/adminStore';
-import { getUniversityName } from '../../utils/format';
+import { useEffect, useState } from 'react';
+import { getUniversityLogos } from '../../services/contentApi';
+import { mapUniversityLogos } from '../../services/mappers';
 
 const FALLBACK_LOGOS = [
   { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/budapest_metropolitan_university_logo.png', alt: 'Budapest Metropolitan University' },
@@ -14,19 +14,23 @@ const FALLBACK_LOGOS = [
 ];
 
 export default function Partners() {
-  const countries = useSyncExternalStore(subscribe, getCountries, getCountries);
+  const [logos, setLogos] = useState(FALLBACK_LOGOS);
 
-  const logos = useMemo(() => {
-    const fromStore = countries.flatMap((country) =>
-      (country.universities || [])
-        .filter((university) => university.isPartner && university.universityLogo)
-        .map((university) => ({
-          src: university.universityLogo,
-          alt: getUniversityName(university),
-        })),
-    );
-    return fromStore.length > 0 ? fromStore : FALLBACK_LOGOS;
-  }, [countries]);
+  useEffect(() => {
+    let active = true;
+    getUniversityLogos()
+      .then((data) => {
+        if (!active) return;
+        const fromApi = mapUniversityLogos(data);
+        setLogos(fromApi.length > 0 ? fromApi : FALLBACK_LOGOS);
+      })
+      .catch(() => {
+        /* keep fallback */
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <section

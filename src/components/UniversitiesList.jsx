@@ -8,7 +8,7 @@ function UniversityRow({ university, countrySlug }) {
   return (
     <li className="flex items-center gap-2">
       <Link
-        to={`/country/${countrySlug}/university/${university.id}`}
+        to={`/country/${countrySlug}/university/${encodeURIComponent(university.id)}`}
         className="hover:text-[#2f3f80] hover:underline underline-offset-2 transition"
       >
         {getUniversityName(university)}

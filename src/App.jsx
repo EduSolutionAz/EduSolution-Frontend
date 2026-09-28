@@ -12,6 +12,9 @@ import FaqManager from './components/admin/FaqManager';
 import AdBoardManager from './components/admin/AdBoardManager';
 import SpinPrizesManager from './components/admin/SpinPrizesManager';
 import CommentUrlGenerator from './components/admin/CommentUrlGenerator';
+import RequireAdmin from './components/admin/RequireAdmin';
+import AdminLoginPage from './pages/AdminLoginPage';
+import AdminAdminsPage from './pages/AdminAdminsPage';
 import CommentPage from './pages/CommentPage';
 
 function NotFound() {
@@ -39,7 +42,16 @@ function App() {
          <Route path="/comment/:id" element={<CommentPage />} />
          <Route path="/germany" element={<Navigate to="/country/germany" replace />} />
 
-         <Route path="/admin" element={<AdminLayout />}>
+         <Route path="/admin/login" element={<AdminLoginPage />} />
+
+         <Route
+           path="/admin"
+           element={
+             <RequireAdmin>
+               <AdminLayout />
+             </RequireAdmin>
+           }
+         >
            <Route index element={<CountriesManager />} />
            <Route path="countries" element={<CountriesManager />} />
            <Route path="universities" element={<UniversitiesManager />} />
@@ -47,7 +59,8 @@ function App() {
             <Route path="faqs" element={<FaqManager />} />
            <Route path="ads" element={<AdBoardManager />} />
            <Route path="prizes" element={<SpinPrizesManager />} />
-           <Route path="comments" element={<CommentUrlGenerator />} />
+            <Route path="comments" element={<CommentUrlGenerator />} />
+            <Route path="admins" element={<AdminAdminsPage />} />
          </Route>
 
          <Route path="*" element={<NotFound />} />

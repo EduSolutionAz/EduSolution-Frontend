@@ -2,61 +2,113 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { createPassword, login, register, verifyCode } from '../services/authApi';
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const PHONE_RE = /^\+?[0-9\s()-]{6,20}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s]+\.[^\s]{2,}$/;
+const PHONE_RE = /^\+?[0-9\s()-]{9,20}$/;
+
+const LIMITS = {
+  EMAIL_MAX: 50,
+  NAME_MAX: 50,
+  PHONE_MIN: 12,
+  PHONE_MAX: 15,
+  CODE_LENGTH: 6,
+  PASSWORD_MIN: 9,
+  PASSWORD_MAX: 20,
+};
 
 const FIELD_BASE =
   'w-full h-[44px] sm:h-[32px] bg-transparent border rounded-[4px] sm:rounded-[2px] text-white text-[13px] sm:text-[11px] pl-[45px] pr-3 outline-none placeholder-white placeholder-opacity-90';
 
+const INPUT_BASE =
+  'w-full h-[40px] bg-transparent border border-white/60 rounded-[3px] text-white text-[13px] px-3 outline-none placeholder-white/70 focus:border-cyan-300';
+
+const LABEL_BASE = 'block text-[11px] text-white/80 mb-1.5 font-accent';
+
 export default function AuthPage({ initialMode = 'login' }) {
   const [mode, setMode] = useState(initialMode);
+  const [registerStep, setRegisterStep] = useState(1);
   const navigate = useNavigate();
   const location = useLocation();
 
   const [formData, setFormData] = useState({
     identifier: '',
     email: '',
+    name: '',
     phone: '',
+    code: '',
     password: '',
   });
   const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [notice, setNotice] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isLogin = mode === 'login';
 
   const validate = () => {
-    const newErrors = {};
+    const next = {};
 
     if (isLogin) {
       const value = formData.identifier.trim();
       if (!value) {
-        newErrors.identifier = 'Email və ya telefon tələb olunur';
+        next.identifier = 'Email və ya telefon tələb olunur';
       } else if (value.includes('@') && !EMAIL_RE.test(value)) {
-        newErrors.identifier = 'Yanlış email formatı';
+        next.identifier = 'Yanlış email formatı';
+      } else if (value.includes('@') && value.length > LIMITS.EMAIL_MAX) {
+        next.identifier = `Email ${LIMITS.EMAIL_MAX} simvoldan uzun ola bilməz`;
       } else if (!value.includes('@') && !PHONE_RE.test(value)) {
-        newErrors.identifier = 'Yanlış telefon formatı';
+        next.identifier = 'Yanlış telefon formatı';
       }
     } else {
       if (!EMAIL_RE.test(formData.email.trim())) {
-        newErrors.email = 'Düzgün email formatı daxil edin';
+        next.email = 'Düzgün email formatı daxil edin';
+      } else if (formData.email.trim().length > LIMITS.EMAIL_MAX) {
+        next.email = `Email ${LIMITS.EMAIL_MAX} simvoldan uzun ola bilməz`;
       }
-      if (!PHONE_RE.test(formData.phone.trim())) {
-        newErrors.phone = 'Düzgün telefon formatı daxil edin';
+
+      if (registerStep === 1) {
+        if (!formData.name.trim()) {
+          next.name = 'Ad tələb olunur';
+        } else if (formData.name.trim().length > LIMITS.NAME_MAX) {
+          next.name = `Ad ${LIMITS.NAME_MAX} simvoldan uzun ola bilməz`;
+        }
+
+        const phone = formData.phone.trim();
+        if (!phone) {
+          next.phone = 'Telefon tələb olunur';
+        } else if (phone.replace(/[^0-9]/g, '').length < LIMITS.PHONE_MIN) {
+          next.phone = `Telefon minimum ${LIMITS.PHONE_MIN} rəqəm olmalıdır`;
+        } else if (phone.length > LIMITS.PHONE_MAX) {
+          next.phone = `Telefon maksimum ${LIMITS.PHONE_MAX} simvol olmalıdır`;
+        }
+      }
+
+      if (registerStep === 2) {
+        const code = formData.code.trim();
+        if (!code) {
+          next.code = 'Təsdiq kodu tələb olunur';
+        } else if (code.length !== LIMITS.CODE_LENGTH) {
+          next.code = `Kod ${LIMITS.CODE_LENGTH} rəqəm olmalıdır`;
+        }
       }
     }
 
-    if (!formData.password.trim()) {
-      newErrors.password = 'Şifrə tələb olunur';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Şifrə minimum 6 simvol olmalı';
+    const password = formData.password;
+    if (!password.trim()) {
+      next.password = 'Şifrə tələb olunur';
+    } else if (password.length < LIMITS.PASSWORD_MIN) {
+      next.password = `Şifrə minimum ${LIMITS.PASSWORD_MIN} simvol olmalıdır`;
+    } else if (password.length > LIMITS.PASSWORD_MAX) {
+      next.password = `Şifrə maksimum ${LIMITS.PASSWORD_MAX} simvol olmalıdır`;
     }
 
-    return newErrors;
+    return next;
   };
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormError('');
     if (errors[e.target.name]) {
       setErrors((prev) => ({ ...prev, [e.target.name]: null }));
     }
@@ -64,6 +116,8 @@ export default function AuthPage({ initialMode = 'login' }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
+
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -72,12 +126,52 @@ export default function AuthPage({ initialMode = 'login' }) {
 
     setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
       if (isLogin) {
+        const identifier = formData.identifier.trim();
+        await login({ email: identifier, password: formData.password });
         navigate(location.state?.from || '/');
+        return;
+      }
+
+      const email = formData.email.trim();
+
+      if (registerStep === 1) {
+        const data = await register({
+          email,
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+        });
+        setRegisterStep(2);
+        setNotice(
+          data?.is_code_sent
+            ? `Təsdiq kodu ${email} ünvanına göndərildi.`
+            : 'Kod göndərilmədi, yenidən cəhd edin.',
+        );
+        return;
+      }
+
+      if (registerStep === 2) {
+        const data = await verifyCode({ email, code: formData.code.trim() });
+        if (data?.is_verified === false) {
+          setFormError(data?.message || 'Kod təsdiqlənmədi. Yenidən yoxlayın.');
+          return;
+        }
+        setRegisterStep(3);
+        setNotice('Kod təsdiqləndi. İndi şifrənizi təyin edin.');
+        return;
+      }
+
+      await createPassword({ email, password: formData.password });
+      switchMode('login');
+      setFormData((prev) => ({ ...prev, identifier: email }));
+      setNotice('Hesab yaradıldı. İndi giriş edə bilərsiniz.');
+      navigate('/login', { replace: true });
+    } catch (error) {
+      const fieldErrors = error?.errors || [];
+      if (fieldErrors.length > 0) {
+        setFormError(fieldErrors[0].message);
       } else {
-        setMode('login');
-        navigate('/login', { replace: true });
+        setFormError(error?.message || 'Xəta baş verdi. Yenidən cəhd edin.');
       }
     } finally {
       setIsSubmitting(false);
@@ -87,11 +181,23 @@ export default function AuthPage({ initialMode = 'login' }) {
   const switchMode = (nextMode) => {
     setMode(nextMode);
     setErrors({});
-    setFormData({ identifier: '', email: '', phone: '', password: '' });
+    setFormError('');
+    setNotice('');
+    setRegisterStep(1);
+    setFormData({ identifier: '', email: '', name: '', phone: '', code: '', password: '' });
+  };
+
+  const backToStep1 = () => {
+    setRegisterStep(1);
+    setErrors({});
+    setFormError('');
   };
 
   const iconClass = 'w-[16px] h-[16px]';
   const iconWrap = 'absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none';
+
+  const fieldErrorClass = (hasError) =>
+    `${FIELD_BASE} ${hasError ? 'border-red-400' : 'border-white focus:border-cyan-300'}`;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f6eeee] font-sans overflow-x-hidden">
@@ -109,7 +215,7 @@ export default function AuthPage({ initialMode = 'login' }) {
         }}
       >
         <div
-          className="relative w-full max-w-[720px] flex flex-col sm:block sm:h-[380px] overflow-hidden rounded shadow-[0_12px_28px_rgba(0,0,0,0.20)] hover:shadow-[0_18px_40px_rgba(0,0,0,0.28)] transition-shadow duration-700"
+          className="relative w-full max-w-[720px] flex flex-col sm:block sm:h-[420px] overflow-hidden rounded shadow-[0_12px_28px_rgba(0,0,0,0.20)] hover:shadow-[0_18px_40px_rgba(0,0,0,0.28)] transition-shadow duration-700"
           style={{ borderRadius: '6px', backgroundColor: '#080d4a' }}
         >
           <div
@@ -127,7 +233,7 @@ export default function AuthPage({ initialMode = 'login' }) {
           </div>
 
           <div
-            className={`order-2 relative w-full sm:absolute sm:top-0 sm:bottom-0 sm:h-full sm:w-[52%] sm:order-none flex flex-col items-center justify-center z-10 px-5 py-8 min-[400px]:px-8 sm:p-6 transition-all duration-[800ms] ease-[cubic-bezier(0.77, 0, 0.175, 1)] ${
+            className={`order-2 relative w-full sm:absolute sm:top-0 sm:bottom-0 sm:h-full sm:w-[52%] sm:order-none flex flex-col items-center justify-center z-10 px-5 py-8 min-[400px]:px-8 sm:p-6 transition-all duration-[800ms] ease-[cubic-bezier(0.77,0,0.175,1)] ${
               isLogin ? 'sm:left-[52%]' : 'sm:left-0'
             }`}
             style={{
@@ -144,7 +250,7 @@ export default function AuthPage({ initialMode = 'login' }) {
               <div
                 key="login-form"
                 className="flex flex-col items-center w-full max-w-[320px] sm:max-w-[270px]"
-                style={{ animation: 'fadeSlide 700ms cubic-bezier(0.77, 0, 0.175, 1) both' }}
+                style={{ animation: 'fadeSlide 700ms cubic-bezier(0.77,0,0.175,1) both' }}
               >
                 <h2 className="text-[24px] sm:text-[22px] font-semibold mb-5 tracking-wide">Login</h2>
                 <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3 sm:gap-[12px]">
@@ -158,13 +264,11 @@ export default function AuthPage({ initialMode = 'login' }) {
                     <input
                       type="text"
                       name="identifier"
-                      placeholder="Email or Phone Number"
-                      aria-label="Email or Phone Number"
+                      placeholder="Email"
+                      aria-label="Email"
                       value={formData.identifier}
                       onChange={handleChange}
-                      className={`${FIELD_BASE} ${
-                        errors.identifier ? 'border-red-400' : 'border-white focus:border-cyan-300'
-                      }`}
+                      className={fieldErrorClass(errors.identifier)}
                     />
                     {errors.identifier && (
                       <p className="text-red-300 text-[10px] mt-1 pl-[45px]">{errors.identifier}</p>
@@ -185,14 +289,15 @@ export default function AuthPage({ initialMode = 'login' }) {
                       aria-label="Password"
                       value={formData.password}
                       onChange={handleChange}
-                      className={`${FIELD_BASE} ${
-                        errors.password ? 'border-red-400' : 'border-white focus:border-cyan-300'
-                      }`}
+                      className={fieldErrorClass(errors.password)}
                     />
                     {errors.password && (
                       <p className="text-red-300 text-[10px] mt-1 pl-[45px]">{errors.password}</p>
                     )}
                   </div>
+
+                  {formError && <p className="text-red-300 text-[11px] text-center">{formError}</p>}
+                  {notice && <p className="text-cyan-200 text-[11px] text-center">{notice}</p>}
 
                   <div className="flex justify-center pt-2 sm:pt-1">
                     <button
@@ -220,85 +325,127 @@ export default function AuthPage({ initialMode = 'login' }) {
               <div
                 key="register-form"
                 className="flex flex-col items-center w-full max-w-[320px] sm:max-w-[270px]"
-                style={{ animation: 'fadeSlide 700ms cubic-bezier(0.77, 0, 0.175, 1) both' }}
+                style={{ animation: 'fadeSlide 700ms cubic-bezier(0.77,0,0.175,1) both' }}
               >
-                <h2 className="text-[24px] sm:text-[22px] font-semibold mb-5 tracking-wide">Register</h2>
+                <h2 className="text-[24px] sm:text-[22px] font-semibold mb-1 tracking-wide">Register</h2>
+                <p className="text-[10px] text-white/60 mb-4">
+                  Step {registerStep} of 3
+                </p>
+
                 <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3 sm:gap-[12px]">
-                  <div className="relative">
-                    <span className={iconWrap}>
-                      <svg className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6" />
-                        <rect x="3" y="5" width="18" height="14" rx="2" />
-                      </svg>
-                    </span>
+                  <div>
+                    <label className={LABEL_BASE} htmlFor="reg-email">
+                      Email *
+                    </label>
                     <input
+                      id="reg-email"
                       type="email"
                       name="email"
                       placeholder="Email"
-                      aria-label="Email"
                       value={formData.email}
                       onChange={handleChange}
-                      className={`${FIELD_BASE} ${
-                        errors.email ? 'border-red-400' : 'border-white focus:border-cyan-300'
-                      }`}
+                      disabled={registerStep > 1}
+                      className={`${INPUT_BASE} ${errors.email ? 'border-red-400' : ''} disabled:opacity-60`}
                     />
-                    {errors.email && (
-                      <p className="text-red-300 text-[10px] mt-1 pl-[45px]">{errors.email}</p>
-                    )}
+                    {errors.email && <p className="text-red-300 text-[10px] mt-1">{errors.email}</p>}
                   </div>
 
-                  <div className="relative">
-                    <span className={iconWrap}>
-                      <svg className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 4h3l2 5-2 2c1.5 3 3 4.5 6 6l2-2 5 2v3c0 1-1 1-2 1C10.5 21 3 13.5 3 5c0-1 .5-1 2-1z" />
-                      </svg>
-                    </span>
-                    <input
-                      type="tel"
-                      name="phone"
-                      placeholder="Phone Number"
-                      aria-label="Phone Number"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className={`${FIELD_BASE} ${
-                        errors.phone ? 'border-red-400' : 'border-white focus:border-cyan-300'
-                      }`}
-                    />
-                    {errors.phone && (
-                      <p className="text-red-300 text-[10px] mt-1 pl-[45px]">{errors.phone}</p>
-                    )}
-                  </div>
+                  {registerStep === 1 && (
+                    <>
+                      <div>
+                        <label className={LABEL_BASE} htmlFor="reg-name">
+                          Name and Surname *
+                        </label>
+                        <input
+                          id="reg-name"
+                          type="text"
+                          name="name"
+                          placeholder="Name and Surname"
+                          value={formData.name}
+                          onChange={handleChange}
+                          className={`${INPUT_BASE} ${errors.name ? 'border-red-400' : ''}`}
+                        />
+                        {errors.name && <p className="text-red-300 text-[10px] mt-1">{errors.name}</p>}
+                      </div>
 
-                  <div className="relative">
-                    <span className={iconWrap}>
-                      <svg className={iconClass} fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
-                        <rect x="4" y="10" width="16" height="11" rx="2" />
-                        <path strokeLinecap="round" d="M8 10V7a4 4 0 018 0v3" />
-                      </svg>
-                    </span>
-                    <input
-                      type="password"
-                      name="password"
-                      placeholder="Password"
-                      aria-label="Password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className={`${FIELD_BASE} ${
-                        errors.password ? 'border-red-400' : 'border-white focus:border-cyan-300'
-                      }`}
-                    />
-                    {errors.password && (
-                      <p className="text-red-300 text-[10px] mt-1 pl-[45px]">{errors.password}</p>
-                    )}
-                  </div>
+                      <div>
+                        <label className={LABEL_BASE} htmlFor="reg-phone">
+                          Phone Number *
+                        </label>
+                        <input
+                          id="reg-phone"
+                          type="tel"
+                          name="phone"
+                          placeholder="Phone Number"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          className={`${INPUT_BASE} ${errors.phone ? 'border-red-400' : ''}`}
+                        />
+                        {errors.phone && <p className="text-red-300 text-[10px] mt-1">{errors.phone}</p>}
+                      </div>
+                    </>
+                  )}
 
-                  <div className="flex justify-center pt-2 sm:pt-1">
+                  {registerStep === 2 && (
+                    <div>
+                      <label className={LABEL_BASE} htmlFor="reg-code">
+                        Verification Code *
+                      </label>
+                      <input
+                        id="reg-code"
+                        type="text"
+                        inputMode="numeric"
+                        name="code"
+                        maxLength={LIMITS.CODE_LENGTH}
+                        placeholder="6-digit code"
+                        value={formData.code}
+                        onChange={handleChange}
+                        className={`${INPUT_BASE} ${errors.code ? 'border-red-400' : ''}`}
+                      />
+                      {errors.code && <p className="text-red-300 text-[10px] mt-1">{errors.code}</p>}
+                    </div>
+                  )}
+
+                  {registerStep === 3 && (
+                    <div>
+                      <label className={LABEL_BASE} htmlFor="reg-pass">
+                        Create Password *
+                      </label>
+                      <input
+                        id="reg-pass"
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        className={`${INPUT_BASE} ${errors.password ? 'border-red-400' : ''}`}
+                      />
+                      {errors.password && (
+                        <p className="text-red-300 text-[10px] mt-1">{errors.password}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {formError && <p className="text-red-300 text-[11px] text-center">{formError}</p>}
+                  {notice && <p className="text-cyan-200 text-[11px] text-center">{notice}</p>}
+
+                  <div className="flex items-center justify-center gap-3 pt-1">
+                    {registerStep > 1 && (
+                      <button
+                        type="button"
+                        onClick={registerStep === 2 ? backToStep1 : () => setRegisterStep(2)}
+                        className="text-white/60 hover:text-white text-[11px] underline cursor-pointer"
+                      >
+                        Geri
+                      </button>
+                    )}
+
                     <button
                       type="submit"
                       disabled={isSubmitting}
                       className="w-[130px] h-[38px] sm:w-[88px] sm:h-[25px] bg-white text-[#080d4a] rounded-full text-[13px] sm:text-[10px] font-accent font-semibold hover:bg-gray-200 transition-all hover:scale-105 sm:hover:scale-110 hover:shadow-[0_0_12px_rgba(255,255,255,0.5)] cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isSubmitting ? 'Göndərilir...' : 'Register'}
+                      {isSubmitting ? 'Göndərilir...' : registerStep === 3 ? 'Finish' : 'Continue'}
                     </button>
                   </div>
 

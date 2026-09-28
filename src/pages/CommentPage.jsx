@@ -1,9 +1,9 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { APPLICANT_SERVICES, LIMITS, sendReview } from '../services/commentApi';
-import { getApplicants, subscribe } from '../store/adminStore';
+import { APPLICANT_SERVICES, LIMITS } from '../services/commentApi';
+import { sendReview } from '../services/contentApi';
 
 const STATUS = {
   IDLE: 'idle',
@@ -18,7 +18,6 @@ const FIELD =
 
 export default function CommentPage() {
   const { id: token = '' } = useParams();
-  const applicants = useSyncExternalStore(subscribe, getApplicants, getApplicants);
 
   const [service, setService] = useState(APPLICANT_SERVICES[0].value);
   const [comment, setComment] = useState('');
@@ -35,21 +34,34 @@ export default function CommentPage() {
     setStatus(STATUS.SENDING);
     setMessages([]);
 
-    const result = await sendReview({ token, service, comment });
+    let result;
+    try {
+      result = await sendReview({ token, service, comment: comment.trim() });
+    } catch (error) {
+      setMessages(
+        error?.errors?.length > 0
+          ? error.errors.map((item) => item.message)
+          : [error?.message || 'Rəy göndərilmədi. Yenidən cəhd edin.'],
+      );
+      setStatus(STATUS.IDLE);
+      return;
+    }
 
-    if (result.is_comment_accepted) {
+    if (result?.is_comment_accepted) {
       setStatus(STATUS.DONE);
       setMessages([]);
       setComment('');
       return;
     }
 
-    const found = (result.errors || []).map((item) => item.message);
+    const found = (result?.errors || []).map((item) => item.message);
     const isTokenProblem = found.some((message) =>
       /token/i.test(message),
     );
 
-    setMessages(found);
+    setMessages(
+      found.length > 0 ? found : ['Rəy qəbul edilmədi. Yenidən cəhd edin.'],
+    );
     setStatus(isTokenProblem ? STATUS.BLOCKED : STATUS.IDLE);
   };
 
@@ -181,12 +193,6 @@ export default function CommentPage() {
                 {isSubmitting ? 'Göndərilir...' : 'Rəyi göndər'}
               </button>
             </form>
-          )}
-
-          {applicants.length > 0 && (
-            <p className="text-center text-[#323643]/40 text-[11px] mt-8">
-              {applicants.length} rəy qeydə alınıb
-            </p>
           )}
         </div>
       </main>

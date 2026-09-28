@@ -1,19 +1,10 @@
 import { useParams, Link } from 'react-router-dom';
-import { useSyncExternalStore } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import CountryFlag from '../components/CountryFlag';
 import UniversityInfo from '../components/UniversityInfo';
-import {
-  getCountryBySlug,
-  getUniversityById,
-  subscribe,
-} from '../store/adminStore';
-import {
-  getUniversityName,
-  getUniversityTypeLabel,
-  universityInitials,
-} from '../utils/format';
+import { useCountryLogos, useTopCountries, useUniversityDetails } from '../services/contentHooks';
+import { mapCountryLogos, mapTopCountry, mapUniversity } from '../services/mappers';
+import { getUniversityTypeLabel, universityInitials } from '../utils/format';
 
 const PAGE_BACKGROUND = {
   backgroundImage: `linear-gradient(rgba(246,238,238,0.94), rgba(246,238,238,0.94)), url('/assets/topographic.png')`,
@@ -44,12 +35,30 @@ function UniversityLogo({ university, name }) {
 
 export default function UniversityPage() {
   const { slug, id } = useParams();
+  const universityName = id || '';
 
-  const getUniversity = () => getUniversityById(slug, id) ?? null;
-  const university = useSyncExternalStore(subscribe, getUniversity, getUniversity);
+  const { data, loading, error } = useUniversityDetails(universityName);
+  const university = mapUniversity(data);
 
-  const getCountry = () => getCountryBySlug(slug) ?? null;
-  const country = useSyncExternalStore(subscribe, getCountry, getCountry);
+  const { data: logoItems } = useCountryLogos();
+  const flagMap = mapCountryLogos(logoItems);
+  const { data: topCountries } = useTopCountries();
+  const country = (topCountries || [])
+    .map(mapTopCountry)
+    .filter(Boolean)
+    .find((c) => c.slug === slug);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#f6eeee] font-sans">
+        <Header />
+        <main className="flex-1 flex items-center justify-center text-[#2f3f80]/60 text-[13px]">
+          Yüklənir...
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!university) {
     return (
@@ -58,6 +67,7 @@ export default function UniversityPage() {
         <main className="flex-1 flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
           <h1 className="text-2xl font-bold text-[#080d4a]">Universitet tapılmadı</h1>
           <p className="text-sm text-[#080d4a]/70">Bu universitet artıq mövcud deyil.</p>
+          {error && <p className="text-sm text-red-600">{error.message}</p>}
           <Link
             to={`/country/${slug}`}
             className="mt-2 inline-flex px-5 py-2 rounded-full bg-[#080d4a] text-white text-sm"
@@ -70,7 +80,7 @@ export default function UniversityPage() {
     );
   }
 
-  const name = getUniversityName(university);
+  const name = university.universityName;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f6eeee] font-sans overflow-x-hidden">
@@ -108,7 +118,14 @@ export default function UniversityPage() {
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] sm:text-[12px] text-[#2f3f80]/80">
                 {country && (
                   <span className="inline-flex items-center gap-1.5">
-                    <CountryFlag country={country} className="w-[18px] h-[13px]" emojiClass="text-[14px]" />
+                    {flagMap[country.slug] && (
+                      <img
+                        src={flagMap[country.slug]}
+                        alt={country.name}
+                        className="w-[18px] h-[13px] object-contain"
+                        loading="lazy"
+                      />
+                    )}
                     {country.name}
                   </span>
                 )}
@@ -141,7 +158,7 @@ export default function UniversityPage() {
 
           {university.area && (
             <section className="mb-8 sm:mb-10 text-center">
-              <h2 className="text-[#2f3f80] text-[18px] sm:text-[22px] font-normal tracking-wide mb-3">
+              <h2 className="text-center text-[#2f3f80] text-[18px] sm:text-[22px] font-normal tracking-wide mb-3">
                 Area
               </h2>
               <p className="text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6">

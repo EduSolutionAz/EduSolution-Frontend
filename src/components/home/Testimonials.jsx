@@ -1,30 +1,31 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 import { testimonials } from '../../data/home';
 import { getServiceLabel } from '../../services/commentApi';
-import { getApplicants, subscribe } from '../../store/adminStore';
+import { useTopComments } from '../../services/contentHooks';
+import { mapComment } from '../../services/mappers';
 
 export default function Testimonials() {
-  const applicants = useSyncExternalStore(subscribe, getApplicants, getApplicants);
+  const { data } = useTopComments();
+  const [active, setActive] = useState(0);
 
   const items =
-    applicants.length > 0
-      ? applicants.map((applicant) => ({
-          key: applicant.id,
-          text: applicant.comment,
-          author: applicant.applicantName,
-          service: getServiceLabel(applicant.applicantServiceType),
-        }))
-      : testimonials.map((entry) => ({ ...entry, key: entry.author, service: null }));
+    (data || [])
+      .map(mapComment)
+      .filter(Boolean)
+      .map((entry) => ({ ...entry, service: getServiceLabel(entry.service) }));
 
-  const [active, setActive] = useState(0);
-  const total = items.length;
+  const displayItems =
+    items.length > 0 ? items : testimonials.map((entry) => ({ ...entry, key: entry.author, service: null }));
 
-  const goTo = (index) => {
-    const next = (index + total) % total;
-    setActive(next);
+  const total = displayItems.length;
+  const index = total > 0 ? active % total : 0;
+
+  const goTo = (nextIndex) => {
+    if (total === 0) return;
+    setActive((nextIndex + total) % total);
   };
 
-  const item = items[active];
+  const item = displayItems[index];
 
   return (
     <section
@@ -43,7 +44,7 @@ export default function Testimonials() {
         <div className="flex items-center gap-3 sm:gap-5">
           <button
             type="button"
-            onClick={() => goTo(active - 1)}
+            onClick={() => goTo(index - 1)}
             aria-label="Previous comment"
             className="shrink-0 text-[#1a2e5a] text-[34px] font-bold leading-none hover:text-[#1a2e5a]/70 transition-colors cursor-pointer px-1"
           >
@@ -51,7 +52,7 @@ export default function Testimonials() {
           </button>
 
           <figure
-            key={active}
+            key={index}
             className="flex-1 bg-white rounded-md shadow-[0_4px_14px_rgba(26,46,90,0.08)] px-6 sm:px-10 py-7 text-center border border-[#1a2e5a]/5"
             style={{ animation: 'fadeSlide 500ms ease both' }}
           >
@@ -73,7 +74,7 @@ export default function Testimonials() {
 
           <button
             type="button"
-            onClick={() => goTo(active + 1)}
+            onClick={() => goTo(index + 1)}
             aria-label="Next comment"
             className="shrink-0 text-[#1a2e5a] text-[34px] font-bold leading-none hover:text-[#1a2e5a]/70 transition-colors cursor-pointer px-1"
           >
@@ -82,15 +83,15 @@ export default function Testimonials() {
         </div>
 
         <div className="flex justify-center gap-2 mt-6">
-          {items.map((entry, i) => (
+          {displayItems.map((entry, i) => (
             <button
-              key={entry.key}
+              key={entry.key ?? entry.id}
               type="button"
               onClick={() => goTo(i)}
               aria-label={`Show comment ${i + 1}`}
-              aria-current={i === active}
+              aria-current={i === index}
               className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
-                i === active ? 'bg-[#1a2e5a] w-5' : 'bg-[#1a2e5a]/20 hover:bg-[#1a2e5a]/40'
+                i === index ? 'bg-[#1a2e5a] w-5' : 'bg-[#1a2e5a]/20 hover:bg-[#1a2e5a]/40'
               }`}
             />
           ))}

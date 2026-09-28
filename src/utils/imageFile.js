@@ -44,3 +44,24 @@ export function readImageFile(file, { maxSize = 1400, quality = 0.85 } = {}) {
 
   return readAsDataUrl(file).then((source) => drawToDataUrl(source, maxSize, quality));
 }
+
+export function dataUrlToFile(dataUrl, filename = 'image') {
+  if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) return null;
+
+  const match = /^data:([^;,]+)?(;base64)?,/.exec(dataUrl);
+  if (!match) return null;
+
+  const mime = match[1] || 'image/jpeg';
+  const isBase64 = Boolean(match[2]);
+
+  if (!isBase64) {
+    return Promise.resolve(new File([decodeURIComponent(dataUrl.slice(match[0].length))], filename, { type: mime }));
+  }
+
+  const base64 = dataUrl.slice(match[0].length);
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+  return Promise.resolve(new File([bytes], filename, { type: mime }));
+}

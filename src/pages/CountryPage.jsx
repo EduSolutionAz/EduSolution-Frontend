@@ -1,20 +1,46 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import UniversitiesList from '../components/UniversitiesList';
 import AverageCosts from '../components/AverageCosts';
-import { getCountries, getCountryBySlug, subscribe } from '../store/adminStore';
+import { useCountry, useCountryLogos, useTopCountries } from '../services/contentHooks';
+import { mapCountry, mapCountryLogos, mapTopCountry } from '../services/mappers';
+
+function Loading() {
+  return (
+    <div className="flex-1 flex items-center justify-center py-24 text-[#2f3f80]/60 text-[13px]">
+      Yüklənir...
+    </div>
+  );
+}
 
 export default function CountryPage() {
   const { slug } = useParams();
   const [brokenSrc, setBrokenSrc] = useState(null);
-  const countries = useSyncExternalStore(subscribe, getCountries, getCountries);
-  const country = useSyncExternalStore(
-    subscribe,
-    () => getCountryBySlug(slug ?? 'germany'),
-    () => getCountryBySlug(slug ?? 'germany'),
-  );
+
+  const { data: logoItems } = useCountryLogos();
+  const flagMap = mapCountryLogos(logoItems);
+
+  const { data: countries } = useTopCountries();
+  const countryList = (countries || []).map(mapTopCountry).filter(Boolean);
+
+  const bySlug = countryList.find((c) => c.slug === slug);
+  const countryName = bySlug?.name || '';
+
+  const { data, loading, error } = useCountry(countryName || slug);
+  const country = mapCountry(data);
+  const flag = country ? flagMap[country.slug] : '';
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#f6eeee]">
+        <Header />
+        <Loading />
+        <Footer />
+      </div>
+    );
+  }
 
   if (!country) {
     return (
@@ -23,9 +49,10 @@ export default function CountryPage() {
         <main className="flex-1 flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
           <h1 className="text-2xl font-bold text-[#080d4a]">Ölkə tapılmadı</h1>
           <p className="text-sm text-[#080d4a]/70">"{slug}" adlı ölkə mövcud deyil.</p>
-          {countries.length > 0 ? (
+          {error && <p className="text-sm text-red-600">{error.message}</p>}
+          {countryList.length > 0 ? (
             <div className="mt-2 flex flex-wrap justify-center gap-2">
-              {countries.map((c) => (
+              {countryList.map((c) => (
                 <Link
                   key={c.slug}
                   to={`/country/${c.slug}`}
@@ -63,9 +90,19 @@ export default function CountryPage() {
       >
         <div className="max-w-[900px] mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16">
           {/* Title */}
-          <h1 className="text-center text-[#2f3f80] font-bold text-[22px] sm:text-[28px] tracking-wide mb-4 sm:mb-5">
-            {country.name}
-          </h1>
+          <div className="flex items-center justify-center gap-2.5 mb-4 sm:mb-5">
+            {flag && (
+              <img
+                src={flag}
+                alt={country.name}
+                className="w-7 h-5 object-contain"
+                loading="lazy"
+              />
+            )}
+            <h1 className="text-center text-[#2f3f80] font-bold text-[22px] sm:text-[28px] tracking-wide">
+              {country.name}
+            </h1>
+          </div>
 
           {/* Hero image */}
           <div className="w-full overflow-hidden rounded-[2px] shadow-sm mb-5 sm:mb-6 bg-[#e6dada]">
@@ -109,7 +146,7 @@ export default function CountryPage() {
 
           {/* Areas */}
           <section>
-            <h2 className="text-center text-[#2f3f80] text-[18px] sm:text-[22px] font-normal tracking-wide mb-3">
+            <h2 className="text-center text-[#2f3f80] font-normal text-[18px] sm:text-[22px] tracking-wide mb-3">
               Areas in {country.name}
             </h2>
             <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6">

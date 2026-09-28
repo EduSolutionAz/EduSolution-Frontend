@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
-import { useSyncExternalStore } from 'react';
 import CountryFlag from '../CountryFlag';
-import { getCountries, subscribe } from '../../store/adminStore';
+import { useCountriesWithUniversities } from '../../services/contentHooks';
 import { formatUniversityCount, formatUsd } from '../../utils/format';
 
 const FLAG_MAP = {
@@ -16,7 +15,8 @@ const FLAG_MAP = {
 };
 
 export default function WorkingWith() {
-  const countries = useSyncExternalStore(subscribe, getCountries, getCountries);
+  const { data } = useCountriesWithUniversities();
+  const countries = data || [];
 
   return (
     <section

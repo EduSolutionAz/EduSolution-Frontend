@@ -1,72 +1,121 @@
-import { useState, useSyncExternalStore } from 'react';
-import {
-  addFaculty,
-  getCountries,
-  getFaculties,
-  removeFaculty,
-  subscribe,
-} from '../../store/adminStore';
-import { getUniversityName } from '../../utils/format';
+import { useEffect, useState } from 'react';
+import { addFaculty, deleteFaculty, getFaculties } from '../../services/contentApi';
+import { useTopCountries } from '../../services/contentHooks';
+import { mapFaculties, mapTopCountry } from '../../services/mappers';
 import { BTN_ACCENT, BTN_DELETE, FIELD_INPUT, FIELD_LABEL, SECTION_TITLE } from './fields';
 
-function getSnapshot() {
-  return getCountries();
-}
-
-function getServerSnapshot() {
-  return getCountries();
-}
-
 export default function FacultiesManager() {
-  const countries = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const [selectedCountry, setSelectedCountry] = useState(countries[0]?.slug || '');
+  const { data, loading: loadingCountries } = useTopCountries();
+  const countries = (data || []).map(mapTopCountry).filter(Boolean);
+
+  const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedUniversity, setSelectedUniversity] = useState('');
   const [name, setName] = useState('');
 
-  const currentCountry = countries.find((c) => c.slug === selectedCountry);
-  const universities = currentCountry?.universities || [];
-  const faculties = selectedUniversity
-    ? getFaculties(selectedCountry, selectedUniversity)
-    : [];
+  const [faculties, setFaculties] = useState([]);
+  const [loadingFaculties, setLoadingFaculties] = useState(false);
+  const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
-  const selectedUniName = universities.find((u) => u.id === selectedUniversity)
-    ? getUniversityName(universities.find((u) => u.id === selectedUniversity))
-    : '';
+  const activeCountry = selectedCountry || countries[0]?.name || '';
 
-  const handleAdd = (e) => {
+  useEffect(() => {
+    if (!selectedUniversity) {
+      setFaculties([]);
+      return undefined;
+    }
+
+    let active = true;
+    setLoadingFaculties(true);
+    setError('');
+
+    getFaculties({ universityName: selectedUniversity })
+      .then((result) => {
+        if (active) setFaculties(mapFaculties(result));
+      })
+      .catch((err) => {
+        if (!active) return;
+        setFaculties([]);
+        setError(err?.message || 'Fakultələr yüklənmədi.');
+      })
+      .finally(() => {
+        if (active) setLoadingFaculties(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selectedUniversity]);
+
+  const handleAdd = async (e) => {
     e.preventDefault();
     if (!name.trim() || !selectedUniversity) return;
-    addFaculty(selectedCountry, selectedUniversity, name.trim());
-    setName('');
+
+    setIsSaving(true);
+    setError('');
+
+    try {
+      const result = await addFaculty({
+        facultyName: name.trim(),
+        universityName: selectedUniversity,
+      });
+
+      if (result?.is_created) {
+        setName('');
+        setFaculties((prev) => [
+          ...prev,
+          { id: name.trim(), name: name.trim() },
+        ]);
+      } else {
+        setError((result?.errors || [])[0]?.message || 'Fakultə əlavə edilmədi.');
+      }
+    } catch (err) {
+      setError(err?.message || 'Fakultə əlavə edilmədi.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Fakultəni silmək istəyirsiz?')) {
-      removeFaculty(selectedCountry, selectedUniversity, id);
+  const handleDelete = async (facultyName) => {
+    if (!window.confirm(`"${facultyName}" fakultəsi silinsin?`)) return;
+
+    setError('');
+    try {
+      const result = await deleteFaculty({
+        facultyName,
+        universityName: selectedUniversity,
+      });
+      if (result?.is_deleted) {
+        setFaculties((prev) => prev.filter((f) => f.name !== facultyName));
+      }
+    } catch (err) {
+      setError(err?.message || 'Fakultə silinmədi.');
     }
   };
 
   return (
     <section className="space-y-6">
-      <h2 className={SECTION_TITLE}>
-        Fakultələr
-      </h2>
+      <h2 className={SECTION_TITLE}>Fakultələr</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className={FIELD_LABEL}>
+          <label className={FIELD_LABEL} htmlFor="fac-country">
             Ölkə seçin
           </label>
           <select
-            value={selectedCountry}
+            id="fac-country"
+            value={activeCountry}
             onChange={(e) => {
               setSelectedCountry(e.target.value);
               setSelectedUniversity('');
+              setFaculties([]);
             }}
             className={FIELD_INPUT}
+            disabled={loadingCountries}
           >
+            {countries.length === 0 && <option value="">Ölkə yoxdur</option>}
             {countries.map((c) => (
-              <option key={c.slug} value={c.slug}>
+              <option key={c.slug} value={c.name}>
                 {c.name}
               </option>
             ))}
@@ -74,39 +123,43 @@ export default function FacultiesManager() {
         </div>
 
         <div>
-          <label className={FIELD_LABEL}>
-            Universitet seçin
+          <label className={FIELD_LABEL} htmlFor="fac-university">
+            Universitet adı
           </label>
-          <select
+          <input
+            id="fac-university"
+            type="text"
             value={selectedUniversity}
             onChange={(e) => setSelectedUniversity(e.target.value)}
+            placeholder="Universitetin tam adını yazın"
             className={FIELD_INPUT}
-            disabled={!universities.length}
-          >
-            <option value="" disabled>
-              Universitet seçin
-            </option>
-            {universities.map((u) => (
-              <option key={u.id} value={u.id}>
-                {getUniversityName(u)}
-              </option>
-            ))}
-          </select>
+          />
         </div>
       </div>
+
+      <p className="text-[12px] text-[#323643]/60">
+        Universitet seçmək üçün dropdown yoxdur — adı yazıb fakultələri yükləyə bilərsiniz.
+      </p>
+
+      {error && (
+        <p role="alert" className="text-red-600 text-[12px]">
+          {error}
+        </p>
+      )}
 
       {selectedUniversity ? (
         <>
           <p className="text-[12px] text-[#323643]/70">
-            Seçilmiş: <strong>{selectedUniName}</strong>
+            Seçilmiş: <strong>{selectedUniversity}</strong>
           </p>
 
           <form onSubmit={handleAdd} className="flex items-end gap-3">
             <div className="flex-1">
-              <label className={FIELD_LABEL}>
+              <label className={FIELD_LABEL} htmlFor="fac-name">
                 Fakultə adı *
               </label>
               <input
+                id="fac-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Məsələn: Computer Engineering"
@@ -114,39 +167,41 @@ export default function FacultiesManager() {
                 required
               />
             </div>
-            <button
-              type="submit"
-              className={`h-[42px] ${BTN_ACCENT}`}
-            >
-              Əlavə et
+            <button type="submit" disabled={isSaving} className={`h-[42px] ${BTN_ACCENT}`}>
+              {isSaving ? 'Göndərilir...' : 'Əlavə et'}
             </button>
           </form>
 
-          <ul className="space-y-2" role="list">
-            {faculties.map((f) => (
-              <li
-                key={f.id}
-                className="bg-white rounded-md shadow px-4 py-3 flex items-center justify-between"
-              >
-                <span className="text-[#080d4a] text-[14px]">{f.name}</span>
-                <button
-                  onClick={() => handleDelete(f.id)}
-                  className={BTN_DELETE}
+          {loadingFaculties ? (
+            <p className="text-center py-8 text-[#323643]/50 text-[13px]">Yüklənir...</p>
+          ) : (
+            <ul className="space-y-2" role="list">
+              {faculties.map((f) => (
+                <li
+                  key={f.id}
+                  className="bg-white rounded-md shadow px-4 py-3 flex items-center justify-between"
                 >
-                  Sil
-                </button>
-              </li>
-            ))}
-            {faculties.length === 0 && (
-              <li className="text-center py-8 text-[#323643]/50 text-[13px]">
-                Bu universitetdə fakultə yoxdur
-              </li>
-            )}
-          </ul>
+                  <span className="text-[#080d4a] text-[14px]">{f.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(f.name)}
+                    className={BTN_DELETE}
+                  >
+                    Sil
+                  </button>
+                </li>
+              ))}
+              {faculties.length === 0 && (
+                <li className="text-center py-8 text-[#323643]/50 text-[13px]">
+                  Bu universitetdə fakultə yoxdur
+                </li>
+              )}
+            </ul>
+          )}
         </>
       ) : (
         <p className="text-center py-8 text-[#323643]/50 text-[13px]">
-          Fakultə əlavə etmək üçün universitet seçin
+          Fakultə əlavə etmək üçün universitet adı yazın
         </p>
       )}
     </section>

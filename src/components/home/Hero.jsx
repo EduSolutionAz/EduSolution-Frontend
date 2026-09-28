@@ -1,6 +1,6 @@
-import { useMemo, useSyncExternalStore } from "react";
+import { useMemo } from "react";
 import { heroStats } from "../../data/home";
-import { getCountries, subscribe } from "../../store/adminStore";
+import { useCountriesWithUniversities } from "../../services/contentHooks";
 
 const SOCIAL_LINKS = [
   { key: "linkedin", label: "LinkedIn", url: "", icon: (
@@ -58,10 +58,10 @@ const ICONS = {
 };
 
 export default function Hero() {
-  const countries = useSyncExternalStore(subscribe, getCountries, getCountries);
+  const { data: countries } = useCountriesWithUniversities();
 
   const partnerCount = useMemo(
-    () => countries.reduce((sum, country) => sum + country.universities.filter((u) => u.isPartner).length, 0),
+    () => (countries || []).reduce((sum, country) => sum + (country.universities || []).length, 0),
     [countries],
   );
 

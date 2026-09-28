@@ -1,5 +1,6 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { resetStore } from '../../store/adminStore';
+import { clearAdminToken } from '../../services/session';
 
 const MENU = [
   { to: '/admin/countries', label: 'Countries', icon: '' },
@@ -9,9 +10,17 @@ const MENU = [
   { to: '/admin/ads', label: 'Ad Board', icon: '' },
   { to: '/admin/prizes', label: 'Spin Prizes', icon: '' },
   { to: '/admin/comments', label: 'Comment URLs', icon: '' },
+  { to: '/admin/admins', label: 'Admins', icon: '' },
 ];
 
 export default function AdminLayout() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    clearAdminToken();
+    navigate('/admin/login', { replace: true });
+  };
+
   return (
     <div className="min-h-screen flex bg-[#f6eeee] font-sans overflow-x-hidden">
       <aside className="w-64 sm:w-72 bg-[#080d4a] text-white flex flex-col shrink-0">
@@ -53,6 +62,14 @@ export default function AdminLayout() {
             className="w-full px-3 py-1.5 text-left text-[11px] text-white/50 hover:text-white hover:bg-white/10 rounded transition"
           >
             Demo datanı sıfırla
+          </button>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full px-3 py-1.5 text-left text-[11px] text-white/50 hover:text-white hover:bg-white/10 rounded transition"
+          >
+            Çıxış
           </button>
 
           <a

@@ -1,16 +1,38 @@
 import { useState } from 'react';
+import { createContact } from '../../services/contentApi';
+import { SERVICE_OPTIONS } from '../../services/mappers';
 
 export default function ContactSection() {
   const [form, setForm] = useState({ name: '', phone: '', service: '' });
+  const [status, setStatus] = useState({ state: 'idle', message: '' });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (status.state !== 'idle') setStatus({ state: 'idle', message: '' });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Backend /api/contact qoşulacaq
-    console.log('Contact məlumatları:', form);
+    setStatus({ state: 'loading', message: '' });
+    try {
+      const data = await createContact({
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        service: form.service,
+      });
+      if (data?.is_created) {
+        setForm({ name: '', phone: '', service: '' });
+        setStatus({ state: 'success', message: 'Sorğunuz göndərildi. Tezliklə əlaqə saxlayacağıq.' });
+      } else {
+        const first = (data?.errors || [])[0];
+        setStatus({
+          state: 'error',
+          message: first?.message || 'Sorğu göndərilmədi. Yenidən cəhd edin.',
+        });
+      }
+    } catch (error) {
+      setStatus({ state: 'error', message: error.message || 'Xəta baş verdi.' });
+    }
   };
 
   return (
@@ -64,17 +86,30 @@ export default function ContactSection() {
                 <option value="" disabled hidden>
                   Service you Want
                 </option>
-                <option>Admission to Universities</option>
-                <option>Legalization Process in Poland</option>
-                <option>Student / Work / Touristic Visa</option>
-                <option>Consultation</option>
+                {SERVICE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
               <button
                 type="submit"
-                className="self-center w-[150px] h-[42px] bg-[#26aec4] text-[#080d4a] rounded-full font-accent font-semibold text-[14px] hover:bg-[#3cc3d8] hover:scale-105 active:scale-95 transition-all tracking-wide cursor-pointer"
+                disabled={status.state === 'loading'}
+                className="self-center w-[150px] h-[42px] bg-[#26aec4] text-[#080d4a] rounded-full font-accent font-semibold text-[14px] hover:bg-[#3cc3d8] hover:scale-105 active:scale-95 transition-all tracking-wide cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Send
+                {status.state === 'loading' ? 'Göndərilir...' : 'Send'}
               </button>
+
+              {status.message && (
+                <p
+                  role="status"
+                  className={`text-center text-[12px] ${
+                    status.state === 'success' ? 'text-[#7ee0c0]' : 'text-red-300'
+                  }`}
+                >
+                  {status.message}
+                </p>
+              )}
             </form>
           </div>
 

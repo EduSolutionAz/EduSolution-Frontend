@@ -1,0 +1,110 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { adminLogin } from '../services/authApi';
+
+const INPUT =
+  'w-full h-[42px] bg-white/95 border border-white/30 rounded px-4 text-[13px] text-[#080d4a] outline-none focus:border-[#26aec4] transition';
+
+export default function AdminLoginPage() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError('');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      await adminLogin({
+        username: form.username.trim(),
+        password: form.password,
+      });
+      navigate('/admin', { replace: true });
+    } catch (err) {
+      setError(err?.message || 'Giriş uğursuz oldu. İstifadəçi adı və şifrəni yoxlayın.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center px-4 font-sans"
+      style={{
+        backgroundColor: '#080d4a',
+        backgroundImage: `linear-gradient(rgba(8,13,74,0.94), rgba(8,13,74,0.94)), url('/assets/topographic.png')`,
+        backgroundRepeat: 'repeat',
+        backgroundSize: '650px auto',
+      }}
+    >
+      <div className="w-full max-w-[360px]">
+        <div className="text-center mb-7">
+          <h1 className="text-white text-[22px] font-heading font-bold tracking-wide">Admin Panel</h1>
+          <p className="text-white/60 text-[12px] mt-1.5">Davam etmək üçün daxil olun</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="bg-[#0a1145] rounded-lg px-6 py-7 space-y-4">
+          <div>
+            <label htmlFor="admin-user" className="block text-white/80 text-[11px] mb-1.5">
+              İstifadəçi adı
+            </label>
+            <input
+              id="admin-user"
+              type="text"
+              name="username"
+              autoComplete="username"
+              value={form.username}
+              onChange={handleChange}
+              className={INPUT}
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="admin-pass" className="block text-white/80 text-[11px] mb-1.5">
+              Şifrə
+            </label>
+            <input
+              id="admin-pass"
+              type="password"
+              name="password"
+              autoComplete="current-password"
+              value={form.password}
+              onChange={handleChange}
+              className={INPUT}
+              required
+            />
+          </div>
+
+          {error && (
+            <p role="alert" className="text-red-300 text-[12px]">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full h-[42px] bg-[#26aec4] text-[#080d4a] rounded-full font-accent font-semibold text-[13px] hover:bg-[#3cc3d8] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? 'Daxil olunur...' : 'Daxil ol'}
+          </button>
+
+          <a
+            href="/"
+            className="block text-center text-white/50 text-[11px] hover:text-white transition-colors"
+          >
+            ← Ana səhifəyə qayıt
+          </a>
+        </form>
+      </div>
+    </div>
+  );
+}

@@ -1,7 +1,7 @@
-import { useState, useSyncExternalStore, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import CountryFlag from './CountryFlag';
-import { getCountries, subscribe } from '../store/adminStore';
+import { useCountriesWithUniversities } from '../services/contentHooks';
 import { getUniversityName } from '../utils/format';
 
 const NAV_LINKS = [
@@ -35,7 +35,8 @@ export default function Header() {
   const [mobileUnis, setMobileUnis] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const countries = useSyncExternalStore(subscribe, getCountries, getCountries);
+  const { data } = useCountriesWithUniversities();
+  const countries = data || [];
   const cRef = useRef(null);
   const uRef = useRef(null);
 
