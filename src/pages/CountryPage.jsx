@@ -5,6 +5,8 @@ import Footer from '../components/Footer';
 import UniversitiesList from '../components/UniversitiesList';
 import AverageCosts from '../components/AverageCosts';
 import { useCountry, useCountryLogos, useTopCountries } from '../services/contentHooks';
+import { isUserAuthenticated } from '../services/session';
+import { USER_TOKEN_KEY } from '../config/api';
 import {
   mapCountry,
   mapCountryFromSummary,
@@ -42,9 +44,13 @@ export default function CountryPage() {
   const summary = countryList.find((c) => c.slug === slug) || null;
   const countryName = summary?.name || '';
 
-  // The backend expects the display name, not the slug, so wait until the
-  // country list resolves before requesting details.
-  const { data, loading } = useCountry(countryName);
+  // GET /country/{name} answers 401 without a token, which pops the browser's
+  // native auth dialog. Only request it when a token actually exists.
+  const signedIn = isUserAuthenticated();
+  const { data, loading } = useCountry(countryName, {
+    tokenKey: USER_TOKEN_KEY,
+    enabled: signedIn,
+  });
   const detail = data ? mapCountry(data) : null;
 
   // Fall back to the summary entry so a country that exists in

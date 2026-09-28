@@ -12,11 +12,11 @@ export async function getCountryLogos() {
 }
 
 /**
- * Country detail. The backend currently answers 401 without a token and an
- * empty body with one, so a token is sent when the visitor is logged in and
- * callers must handle an empty result.
+ * Country detail. The backend currently answers 401 without a token, so this
+ * must only be called when the caller actually has one: an unauthenticated
+ * 401 makes the browser show its native Basic-auth dialog.
  */
-export async function getCountry(countryName, { tokenKey = USER_TOKEN_KEY } = {}) {
+export async function getCountry(countryName, { tokenKey } = {}) {
   const { data } = await request(`/country/${encodeURIComponent(countryName)}`, {
     tokenKey,
   });

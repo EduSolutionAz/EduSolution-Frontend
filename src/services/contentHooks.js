@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   getTopCountries,
   getCountry,
@@ -7,7 +7,7 @@ import {
   getUniversityDetails,
   getTopComments,
 } from './contentApi';
-import { attachFlags, mapCountryLogos, mapTopCountry as mapTopCountryDto } from './mappers';
+import { attachFlags, mapCountryLogos, mapTopCountry } from './mappers';
 
 export function useApiResource(loader, deps = [], { enabled = true, fallback = null } = {}) {
   const [state, setState] = useState({ data: fallback, loading: enabled, error: null });
@@ -51,9 +51,9 @@ export function useCountryLogos() {
   return useApiResource(() => getCountryLogos(), [], { fallback: EMPTY_LIST });
 }
 
-export function useCountry(countryName) {
-  return useApiResource(() => getCountry(countryName), [countryName], {
-    enabled: Boolean(countryName),
+export function useCountry(countryName, { tokenKey, enabled = true } = {}) {
+  return useApiResource(() => getCountry(countryName, { tokenKey }), [countryName, tokenKey], {
+    enabled: Boolean(countryName) && enabled,
   });
 }
 
@@ -73,40 +73,19 @@ export function useTopComments() {
   return useApiResource(() => getTopComments(), [], { fallback: EMPTY_LIST });
 }
 
-async function mapTopCountry(entry) {
-  const base = mapTopCountryDto(entry);
-  if (!base) return null;
-
-  const detail = await getCountry(base.name).catch(() => null);
-
-  return {
-    ...base,
-    heroImage: detail?.photo_url || base.countryBgUrl || '',
-    universities: (Array.isArray(detail?.universities) ? detail.universities : [])
-      .map((entry2) => (typeof entry2 === 'string' ? entry2 : entry2?.name))
-      .filter(Boolean)
-      .map((universityName) => ({ id: universityName, universityName })),
-  };
-}
-
 /**
- * Top countries plus each country's university list.
- * The backend has no bulk university endpoint, so country details are
- * fetched per country and a failure degrades that country to an empty list.
+ * Country list with flags. Deliberately does not call GET /country/{name}:
+ * that endpoint answers 401 without a token, and firing it on every public
+ * page made the browser show its native Basic-auth dialog on each load.
  */
 export function useCountriesWithUniversities() {
-  const { data, ...rest } = useApiResource(async () => {
-    const entries = await getTopCountries();
-    const results = await Promise.all(entries.map(mapTopCountry));
-    return results.filter(Boolean);
-  }, [], { fallback: EMPTY_LIST });
-
+  const { data, ...rest } = useApiResource(() => getTopCountries(), [], {
+    fallback: EMPTY_LIST,
+  });
   const { data: logoItems } = useCountryLogos();
 
-  const countries = useMemo(
-    () => attachFlags(data, mapCountryLogos(logoItems)),
-    [data, logoItems],
-  );
+  const countries = (data || []).map(mapTopCountry).filter(Boolean);
+  const withFlags = attachFlags(countries, mapCountryLogos(logoItems));
 
-  return { ...rest, data: countries };
+  return { ...rest, data: withFlags, loadingUniversities: false, loadUniversities: () => {} };
 }
