@@ -41,6 +41,21 @@ export default function CountriesManager() {
 
   const isEditing = Boolean(editingName);
 
+// CountryAddRequestDTO and UpdateCountryRequestDTO mark these as required
+// with minLength 1, so an empty value makes the backend reject the request.
+const REQUIRED_LABELS = {
+  name: 'Ölkə adı',
+  icon: 'İkon (mətn)',
+  description: 'Təsvir',
+  areasText: 'Ərazilər mətni',
+};
+
+function missingRequiredFields(form) {
+  return Object.entries(REQUIRED_LABELS)
+    .filter(([key]) => !String(form[key] || '').trim())
+    .map(([, label]) => label);
+}
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -86,6 +101,15 @@ export default function CountriesManager() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
+
+    const missing = missingRequiredFields(form);
+    if (missing.length > 0) {
+      setStatus({
+        state: 'error',
+        message: `Bu sahələr doldurulmalıdır: ${missing.join(', ')}.`,
+      });
+      return;
+    }
 
     setIsSaving(true);
     setStatus({ state: 'loading', message: '' });

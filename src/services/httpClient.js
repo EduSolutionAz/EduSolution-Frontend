@@ -35,11 +35,17 @@ export function writeToken(key, ttlKey, token, expiresIn) {
 
 export function toFormData(payload) {
   const formData = new FormData();
+
   Object.entries(payload || {}).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === '') return;
+    // Empty strings must still be appended: the backend DTOs mark several
+    // text fields as required with minLength 1, and dropping the key makes
+    // the whole request look like it is missing a required field.
+    if (value === undefined || value === null) return;
+
     if (value instanceof File || value instanceof Blob) formData.append(key, value);
     else formData.append(key, String(value));
   });
+
   return formData;
 }
 

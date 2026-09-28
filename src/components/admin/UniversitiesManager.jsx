@@ -45,6 +45,16 @@ export default function UniversitiesManager() {
 
   const isEditing = Boolean(editingName);
 
+// AddUniversityRequestDTO and UpdateUniversityRequestDTO mark these text
+// fields as required with minLength 1.
+const REQUIRED_LABELS = {
+  universityName: 'Universitet adı',
+  shortDescription: 'Qısa təsvir',
+  city: 'Şəhər',
+  content: 'Content (uzun mətn)',
+  area: 'Area',
+};
+
   const activeCountry = selectedCountry || countries[0]?.name || '';
 
   useEffect(() => {
@@ -118,6 +128,16 @@ export default function UniversitiesManager() {
     setStatus({ state: 'loading', message: '' });
 
     try {
+      const missing = Object.entries(REQUIRED_LABELS)
+        .filter(([key]) => !String(form[key] || '').trim())
+        .map(([, label]) => label);
+
+      if (missing.length > 0) {
+        setStatus({ state: 'error', message: `Bu sahələr doldurulmalıdır: ${missing.join(', ')}.` });
+        setIsSaving(false);
+        return;
+      }
+
       const logo = await dataUrlToFile(form.universityLogo, 'logo');
       if (!logo) {
         setStatus({ state: 'error', message: 'Universitet loqosu faylı məcburidir.' });
