@@ -129,6 +129,7 @@ export default function FacultiesManager() {
           <input
             id="fac-university"
             type="text"
+            autoComplete="off"
             value={selectedUniversity}
             onChange={(e) => setSelectedUniversity(e.target.value)}
             placeholder="Universitetin tam adını yazın"
@@ -160,6 +161,7 @@ export default function FacultiesManager() {
               </label>
               <input
                 id="fac-name"
+                autoComplete="off"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Məsələn: Computer Engineering"

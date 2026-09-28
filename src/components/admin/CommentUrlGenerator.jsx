@@ -125,6 +125,7 @@ export default function CommentUrlGenerator() {
             <input
               id="gen-email"
               type="email"
+              autoComplete="off"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@example.com"

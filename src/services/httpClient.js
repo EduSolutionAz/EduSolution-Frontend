@@ -114,11 +114,35 @@ function toApiError(status, body) {
     (body && (body.message || body.detail || body.error)) ||
     STATUS_MESSAGES[status] ||
     `Request failed (${status})`;
+
   return new ApiError(message, {
     code: body?.code,
     status,
     errors: normalizeErrors(body?.errors),
+    body,
   });
+}
+
+/**
+ * Human readable failure detail for admin screens: the backend sometimes
+ * answers 200 with an empty body, so the status and payload are shown too.
+ */
+export function describeFailure(error, fallback) {
+  const parts = [];
+
+  if (error?.status) parts.push(`[${error.status}]`);
+  if (error?.code) parts.push(error.code);
+  if (error?.message) parts.push(error.message);
+
+  const fieldErrors = (error?.errors || []).map((item) => item.message).filter(Boolean);
+  if (fieldErrors.length > 0) parts.push(fieldErrors.join(' | '));
+
+  if (parts.length === 0) {
+    if (error) parts.push(String(error.message || error));
+    else parts.push(fallback);
+  }
+
+  return parts.join(' ');
 }
 
 export async function request(path, options = {}) {

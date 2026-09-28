@@ -127,6 +127,7 @@ export default function AdminAdminsPage() {
           <label className={FIELD_LABEL} htmlFor="admin-new-username">İstifadəçi adı *</label>
           <input
             id="admin-new-username"
+            autoComplete="off"
             name="username"
             value={form.username}
             onChange={handleChange}
@@ -144,6 +145,7 @@ export default function AdminAdminsPage() {
           <input
             id="admin-new-email"
             type="email"
+            autoComplete="off"
             name="email"
             value={form.email}
             onChange={handleChange}
@@ -159,6 +161,7 @@ export default function AdminAdminsPage() {
           <input
             id="admin-new-password"
             type="password"
+            autoComplete="new-password"
             name="password"
             value={form.password}
             onChange={handleChange}

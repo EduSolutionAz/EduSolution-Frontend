@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addCountry, deleteCountry, updateCountry } from '../../services/contentApi';
+import { describeFailure } from '../../services/httpClient';
 import { useTopCountries } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
 import { dataUrlToFile } from '../../utils/imageFile';
@@ -165,11 +166,11 @@ function missingRequiredFields(form) {
       } else {
         setStatus({
           state: 'error',
-          message: (result?.errors || [])[0]?.message || 'Ölkə əlavə edilmədi.',
+          message: `${isEditing ? 'Yenilənmədi' : 'Ölkə əlavə edilmədi'}. Server cavabı: ${JSON.stringify(result)}`,
         });
       }
     } catch (err) {
-      setStatus({ state: 'error', message: err?.message || 'Xəta baş verdi.' });
+      setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });
     } finally {
       setIsSaving(false);
     }
