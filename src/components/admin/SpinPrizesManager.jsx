@@ -4,21 +4,17 @@ import { addPrize, getPrizes, removePrize, subscribe } from '../../store/adminSt
 export default function SpinPrizesManager() {
   const prizes = useSyncExternalStore(subscribe, getPrizes, getPrizes);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', probability: 0 });
+  const [form, setForm] = useState({ name: '' });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: name === 'probability' ? Number(value) : value,
-    }));
+    setForm((prev) => ({ ...prev, name: e.target.value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
-    addPrize(form.name.trim(), form.probability);
-    setForm({ name: '', probability: 0 });
+    addPrize(form.name.trim());
+    setForm({ name: '' });
     setShowForm(false);
   };
 
@@ -27,8 +23,6 @@ export default function SpinPrizesManager() {
       removePrize(id);
     }
   };
-
-  const totalProb = prizes.reduce((sum, p) => sum + (p.probability || 0), 0);
 
   return (
     <section className="space-y-6">
@@ -49,7 +43,7 @@ export default function SpinPrizesManager() {
           onSubmit={handleSubmit}
           className="bg-white rounded-lg shadow p-5 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end"
         >
-          <div>
+          <div className="sm:col-span-2">
             <label className="block text-[11px] text-[#323643]/70 mb-1">
               Nağıl adı *
             </label>
@@ -62,21 +56,7 @@ export default function SpinPrizesManager() {
               required
             />
           </div>
-          <div>
-            <label className="block text-[11px] text-[#323643]/70 mb-1">
-              Ehtimallılıq (%)
-            </label>
-            <input
-              type="number"
-              name="probability"
-              value={form.probability}
-              onChange={handleChange}
-              min="0"
-              max="100"
-              className="w-full h-[42px] bg-[#f6eeee] rounded px-3 text-[13px] outline-none focus:ring-1 focus:ring-[#26aec4]"
-            />
-          </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 sm:justify-end">
             <button
               type="button"
               onClick={() => setShowForm(false)}
@@ -95,19 +75,13 @@ export default function SpinPrizesManager() {
       )}
 
       <div className="bg-white rounded-lg shadow p-4">
-        <p className="text-[12px] text-[#323643]/70 mb-3">
-          Cəm: <strong>{totalProb}%</strong>
-        </p>
         <ul className="space-y-2" role="list">
           {prizes.map((p) => (
             <li
               key={p.id}
               className="flex items-center justify-between py-2 border-b last:border-0"
             >
-              <div>
-                <span className="text-[#080d4a] text-[14px] font-medium">{p.name}</span>
-                <span className="text-[#323643]/50 text-[12px]"> ({p.probability || 0}%)</span>
-              </div>
+              <span className="text-[#080d4a] text-[14px] font-medium">{p.name}</span>
               <button
                 onClick={() => handleDelete(p.id)}
                 className="px-3 py-1 text-red-600 text-[12px] font-medium hover:bg-red-50 rounded transition"

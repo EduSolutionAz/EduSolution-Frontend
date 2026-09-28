@@ -1,16 +1,30 @@
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { testimonials } from '../../data/home';
+import { getServiceLabel } from '../../services/commentApi';
+import { getApplicants, subscribe } from '../../store/adminStore';
 
 export default function Testimonials() {
+  const applicants = useSyncExternalStore(subscribe, getApplicants, getApplicants);
+
+  const items =
+    applicants.length > 0
+      ? applicants.map((applicant) => ({
+          key: applicant.id,
+          text: applicant.comment,
+          author: applicant.applicantName,
+          service: getServiceLabel(applicant.applicantServiceType),
+        }))
+      : testimonials.map((entry) => ({ ...entry, key: entry.author, service: null }));
+
   const [active, setActive] = useState(0);
-  const total = testimonials.length;
+  const total = items.length;
 
   const goTo = (index) => {
     const next = (index + total) % total;
     setActive(next);
   };
 
-  const item = testimonials[active];
+  const item = items[active];
 
   return (
     <section
@@ -49,6 +63,11 @@ export default function Testimonials() {
             </blockquote>
             <figcaption className="text-[#1a2e5a]/70 text-[12.5px] font-accent font-medium mt-4">
               — {item.author}
+              {item.service && (
+                <span className="block text-[11px] text-[#1a2e5a]/50 font-normal mt-0.5">
+                  {item.service}
+                </span>
+              )}
             </figcaption>
           </figure>
 
@@ -63,9 +82,9 @@ export default function Testimonials() {
         </div>
 
         <div className="flex justify-center gap-2 mt-6">
-          {testimonials.map((t, i) => (
+          {items.map((entry, i) => (
             <button
-              key={t.author}
+              key={entry.key}
               type="button"
               onClick={() => goTo(i)}
               aria-label={`Show comment ${i + 1}`}

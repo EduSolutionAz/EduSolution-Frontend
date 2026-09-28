@@ -19,8 +19,9 @@ const DEFAULT_STATE = {
   schemaVersion: SCHEMA_VERSION,
   ads: [],
   prizes: [],
-  comments: [],
   faqs: [],
+  applicants: [],
+  applicantGenerations: [],
   countries: [],
 };
 
@@ -135,12 +136,40 @@ function migrateSeed() {
   };
 }
 
+function normalizeApplicant(applicant) {
+  return {
+    id: applicant.id || createId('app'),
+    applicantName: applicant.applicantName || 'Anonim',
+    applicantEmail: applicant.applicantEmail || '',
+    applicantServiceType: applicant.applicantServiceType || '',
+    comment: applicant.comment || '',
+    createdAt: applicant.createdAt || new Date().toISOString(),
+  };
+}
+
+function normalizeApplicants(stored) {
+  const current = Array.isArray(stored.applicants) ? stored.applicants : [];
+  if (current.length > 0) return current.map(normalizeApplicant);
+
+  const legacy = Array.isArray(stored.comments) ? stored.comments : [];
+  return legacy
+    .filter((item) => item && item.text)
+    .map((item) =>
+      normalizeApplicant({
+        id: item.id,
+        comment: item.text,
+        createdAt: item.createdAt,
+      }),
+    );
+}
+
 function migrateStored(stored) {
   return {
     schemaVersion: SCHEMA_VERSION,
     ads: stored.ads || [],
     prizes: stored.prizes || [],
-    comments: stored.comments || [],
+    applicants: normalizeApplicants(stored),
+    applicantGenerations: Array.isArray(stored.applicantGenerations) ? stored.applicantGenerations : [],
     faqs: Array.isArray(stored.faqs) ? stored.faqs.map(normalizeFaq) : seedFaqs.map(normalizeFaq),
     countries: (stored.countries || []).map(normalizeCountry),
   };
@@ -302,9 +331,9 @@ export function getPrizes() {
   return ensureState().prizes;
 }
 
-export function addPrize(name, probability = 0) {
+export function addPrize(name) {
   const s = cloneState();
-  s.prizes.push({ id: createId('prize'), name, probability });
+  s.prizes.push({ id: createId('prize'), name });
   return commit(s);
 }
 
@@ -312,10 +341,6 @@ export function removePrize(id) {
   const s = cloneState();
   s.prizes = s.prizes.filter((p) => p.id !== id);
   return commit(s);
-}
-
-export function getComments() {
-  return ensureState().comments;
 }
 
 export function getFaqs() {
@@ -354,24 +379,42 @@ export function removeFaq(id) {
   return commit(s);
 }
 
-export function generateCommentUrl(text = '', countrySlug = '') {
-  const s = cloneState();
-  const id = createId('cm');
-  const url = `${window.location.origin}/comment/${id}`;
-  s.comments.push({
-    id,
-    url,
-    text,
-    countrySlug,
-    createdAt: new Date().toISOString(),
-  });
-  commit(s);
-  return { id, url };
+export function getApplicants() {
+  return ensureState().applicants;
 }
 
-export function removeComment(id) {
+export function getApplicantGenerations() {
+  return ensureState().applicantGenerations;
+}
+
+export function findGenerationByTokenHash(tokenHash) {
+  return ensureState().applicantGenerations.find((g) => g.tokenHash === tokenHash) ?? null;
+}
+
+export function addApplicantGeneration(generation) {
   const s = cloneState();
-  s.comments = s.comments.filter((c) => c.id !== id);
+  s.applicantGenerations.unshift(generation);
+  return commit(s);
+}
+
+export function markGenerationUsed(id, used = true) {
+  const s = cloneState();
+  const index = s.applicantGenerations.findIndex((g) => g.id === id);
+  if (index < 0) return false;
+
+  s.applicantGenerations[index].used = used;
+  return commit(s);
+}
+
+export function addApplicant(applicant) {
+  const s = cloneState();
+  s.applicants.unshift(applicant);
+  return commit(s);
+}
+
+export function removeGeneration(id) {
+  const s = cloneState();
+  s.applicantGenerations = s.applicantGenerations.filter((g) => g.id !== id);
   return commit(s);
 }
 

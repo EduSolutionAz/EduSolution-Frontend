@@ -1,149 +1,194 @@
 import { useState, useSyncExternalStore } from 'react';
+import { generateCommentLink } from '../../services/commentApi';
 import {
-  getComments,
-  generateCommentUrl,
-  getCountries,
-  removeComment,
+  getApplicantGenerations,
+  removeGeneration,
   subscribe,
 } from '../../store/adminStore';
+import {
+  BTN_DELETE,
+  BTN_PRIMARY,
+  CARD,
+  FIELD_INPUT,
+  FIELD_LABEL,
+  SECTION_TITLE,
+} from './fields';
+
+function statusOf(generation) {
+  if (generation.used) return { label: 'İstifadə edildi', className: 'bg-[#26aec4]/15 text-[#1a8a99]' };
+  if (new Date(generation.expiresAt).getTime() < Date.now()) {
+    return { label: 'Vaxtı bitdi', className: 'bg-red-100 text-red-700' };
+  }
+  return { label: 'Gözləyir', className: 'bg-amber-100 text-amber-700' };
+}
 
 export default function CommentUrlGenerator() {
-  const comments = useSyncExternalStore(subscribe, getComments, getComments);
-  const countries = useSyncExternalStore(subscribe, getCountries, getCountries);
-  const [text, setText] = useState('');
-  const [countrySlug, setCountrySlug] = useState('');
-  const [generated, setGenerated] = useState(null);
+  const generations = useSyncExternalStore(
+    subscribe,
+    getApplicantGenerations,
+    getApplicantGenerations,
+  );
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [errors, setErrors] = useState([]);
+  const [sentLink, setSentLink] = useState(null);
 
-  const handleGenerate = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = generateCommentUrl(text.trim(), countrySlug);
-    setGenerated(result);
-    setText('');
-    setCountrySlug('');
-  };
+    setIsSending(true);
+    setErrors([]);
+    setSentLink(null);
 
-  const handleDelete = (id) => {
-    if (window.confirm('URL-i arxivdən silmək istəyirsiz?')) {
-      removeComment(id);
+    const result = await generateCommentLink({ name, email });
+
+    setIsSending(false);
+    if (!result.is_sent) {
+      setErrors(result.errors.map((item) => item.message));
+      return;
     }
+
+    const link = generations[0]?.link ?? null;
+    setSentLink(link);
+    setName('');
+    setEmail('');
   };
 
   const copyToClipboard = (url) => {
-    navigator.clipboard.writeText(url).then(() => {
-      alert('URL kopyilədi!');
-    });
+    navigator.clipboard.writeText(url);
   };
 
   return (
     <section className="space-y-6">
-      <h2 className="text-[#080d4a] font-heading font-bold text-[24px] sm:text-[28px]">
-        Şərhlək URL Generatoru
-      </h2>
+      <h2 className={SECTION_TITLE}>Rəy Linki Göndər</h2>
 
-      <form
-        onSubmit={handleGenerate}
-        className="bg-white rounded-lg shadow p-5 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end"
-      >
-        <div className="sm:col-span-2">
-          <label className="block text-[11px] text-[#323643]/70 mb-1">
-            Şərh mətni (ixtiyəri)
-          </label>
-          <input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Bu sitə çox faydalı oldu..."
-            className="w-full h-[42px] bg-[#f6eeee] rounded px-3 text-[13px] outline-none focus:ring-1 focus:ring-[#26aec4]"
-          />
+      <p className="text-[#323643]/60 text-[12px] leading-5 -mt-3">
+        Ad və e-poçt daxil edin — sistem şəxsi təsdiqləyici link yaradıb 2 saat ərzində
+        müştəqiyyətlə göndərəcək. Həmin linkdə müştəqi rəyini özü yazacaq.
+      </p>
+
+      <form onSubmit={handleSubmit} className={`${CARD} space-y-4`}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={FIELD_LABEL} htmlFor="gen-name">Ad *</label>
+            <input
+              id="gen-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Müştəqinin adı"
+              className={FIELD_INPUT}
+              required
+            />
+          </div>
+
+          <div>
+            <label className={FIELD_LABEL} htmlFor="gen-email">E-poçt *</label>
+            <input
+              id="gen-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@example.com"
+              className={FIELD_INPUT}
+              required
+            />
+          </div>
         </div>
-        <div>
-          <label className="block text-[11px] text-[#323643]/70 mb-1">
-            Ölkə (ixtiyəri)
-          </label>
-          <select
-            value={countrySlug}
-            onChange={(e) => setCountrySlug(e.target.value)}
-            className="w-full h-[42px] bg-[#f6eeee] rounded px-3 text-[13px] outline-none focus:ring-1 focus:ring-[#26aec4]"
-          >
-            <option value="">Seçilməyib</option>
-            {countries.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {c.name}
-              </option>
+
+        {errors.length > 0 && (
+          <ul className="text-red-600 text-[12px] space-y-1" role="alert">
+            {errors.map((message) => (
+              <li key={message}>{message}</li>
             ))}
-          </select>
-        </div>
-        <div className="sm:col-span-3">
-          <button
-            type="submit"
-            className="w-full sm:w-auto px-6 py-2 bg-[#080d4a] text-white font-accent font-semibold rounded-full hover:bg-[#141c63] transition text-[13px]"
-          >
-            URL Yarat
+          </ul>
+        )}
+
+        <div className="flex justify-end">
+          <button type="submit" disabled={isSending} className={BTN_PRIMARY}>
+            {isSending ? 'Göndərilir...' : 'Link yarat və göndər'}
           </button>
         </div>
       </form>
 
-      {generated && (
-        <div className="bg-[#d6eef2] rounded-lg p-4 flex items-center justify-between">
+      {sentLink && (
+        <div className="bg-[#d6eef2] rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="break-all text-[13px] text-[#1f2a5a]">
-            <span className="font-semibold">Link:</span> {generated.url}
+            <span className="font-semibold">Link:</span> {sentLink}
           </div>
           <button
-            onClick={() => copyToClipboard(generated.url)}
-            className="ml-4 shrink-0 px-4 py-1.5 bg-[#26aec4] text-[#080d4a] font-accent font-semibold rounded-full hover:bg-[#3cc3d8] transition text-[12px]"
+            type="button"
+            onClick={() => copyToClipboard(sentLink)}
+            className="shrink-0 px-4 py-1.5 rounded-full bg-[#26aec4] text-[#080d4a] font-accent font-semibold hover:bg-[#3cc3d8] transition text-[12px]"
           >
-            Kopyila
+            Kopyala
           </button>
         </div>
       )}
 
+      <h3 className="text-[#080d4a] text-[16px] font-semibold">
+        Göndərilmiş linklər ({generations.length})
+      </h3>
+
       <ul className="space-y-2" role="list">
-        {comments.map((c) => (
-          <li
-            key={c.id}
-            className="bg-white rounded-md shadow px-4 py-3 flex items-center justify-between gap-3"
-          >
-            <div className="min-w-0 flex-1">
-              <a
-                href={c.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#26aec4] text-[13px] hover:underline break-all block"
-              >
-                {c.url}
-              </a>
-              {c.text && (
-                <p className="text-[#323643]/60 text-[11px] mt-1 line-clamp-1">
-                  "{c.text}"
-                </p>
-              )}
-              {c.countrySlug && (
-                <span className="text-[#323643]/40 text-[10px]">
-                  Ölkə: {c.countrySlug}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] text-[#323643]/40">
-                {new Date(c.createdAt).toLocaleString('az-AZ')}
-              </span>
-              <button
-                onClick={() => copyToClipboard(c.url)}
-                className="px-2 py-1 text-[#26aec4] text-[11px] hover:bg-[#26aec4]/10 rounded transition"
-              >
-                Kopy
-              </button>
-              <button
-                onClick={() => handleDelete(c.id)}
-                className="px-2 py-1 text-red-600 text-[11px] hover:bg-red-50 rounded transition"
-              >
-                Sil
-              </button>
-            </div>
-          </li>
-        ))}
-        {comments.length === 0 && (
+        {generations.map((generation) => {
+          const status = statusOf(generation);
+          return (
+            <li key={generation.id} className="bg-white rounded-md shadow px-4 py-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[#080d4a] text-[13px] font-medium">
+                    {generation.clientName}{' '}
+                    <span className="text-[#323643]/50 font-normal">
+                      · {generation.clientEmail}
+                    </span>
+                  </p>
+                  <p className="text-[#323643]/50 text-[11px] mt-1">
+                    {new Date(generation.createdAt).toLocaleString('az-AZ')} · bitmə:{' '}
+                    {new Date(generation.expiresAt).toLocaleString('az-AZ')}
+                  </p>
+                  {!generation.used && (
+                    <a
+                      href={generation.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#26aec4] text-[11px] hover:underline break-all inline-block mt-1"
+                    >
+                      {generation.link}
+                    </a>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${status.className}`}>
+                    {status.label}
+                  </span>
+                  {!generation.used && (
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(generation.link)}
+                      className="px-2 py-1 text-[#26aec4] text-[11px] hover:bg-[#26aec4]/10 rounded transition"
+                    >
+                      Kopyala
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm('Bu linki silmək istəyirsiniz?')) removeGeneration(generation.id);
+                    }}
+                    className={BTN_DELETE}
+                  >
+                    Sil
+                  </button>
+                </div>
+              </div>
+            </li>
+          );
+        })}
+
+        {generations.length === 0 && (
           <li className="text-center py-8 text-[#323643]/50 text-[13px]">
-            Hələ heç bir URL yaradılmayıb
+            Hələ link göndərilməyib
           </li>
         )}
       </ul>
