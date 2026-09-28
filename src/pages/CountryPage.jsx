@@ -5,7 +5,12 @@ import Footer from '../components/Footer';
 import UniversitiesList from '../components/UniversitiesList';
 import AverageCosts from '../components/AverageCosts';
 import { useCountry, useCountryLogos, useTopCountries } from '../services/contentHooks';
-import { mapCountry, mapCountryLogos, mapTopCountry } from '../services/mappers';
+import {
+  mapCountry,
+  mapCountryFromSummary,
+  mapCountryLogos,
+  mapTopCountry,
+} from '../services/mappers';
 
 function Loading() {
   return (
@@ -34,14 +39,23 @@ export default function CountryPage() {
 
   const { data: countries, loading: loadingList } = useTopCountries();
   const countryList = (countries || []).map(mapTopCountry).filter(Boolean);
-  const bySlug = countryList.find((c) => c.slug === slug);
-  const countryName = bySlug?.name || '';
+  const summary = countryList.find((c) => c.slug === slug) || null;
+  const countryName = summary?.name || '';
 
   // The backend expects the display name, not the slug, so wait until the
   // country list resolves before requesting details.
-  const { data, loading, error } = useCountry(countryName);
-  const country = mapCountry(data);
-  const flag = country ? flagMap[country.slug] : '';
+  const { data, loading } = useCountry(countryName);
+  const detail = data ? mapCountry(data) : null;
+
+  // Fall back to the summary entry so a country that exists in
+  // /country/top_countries is never shown as "not found".
+  const country = detail
+    ? { ...summary, ...detail }
+    : summary
+      ? mapCountryFromSummary(summary)
+      : null;
+
+  const flag = country ? flagMap[country.slug] || country.flag : '';
 
   if (loadingList || (loading && countryName)) {
     return (
@@ -52,27 +66,11 @@ export default function CountryPage() {
   }
 
   if (!country) {
-    const unauthorized = error?.status === 401;
-
     return (
       <PageShell>
         <main className="flex-1 flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
           <h1 className="text-2xl font-bold text-[#080d4a]">Ölkə tapılmadı</h1>
           <p className="text-sm text-[#080d4a]/70">"{slug}" adlı ölkə mövcud deyil.</p>
-
-          {unauthorized && (
-            <p className="text-sm text-red-600 max-w-[420px] leading-6">
-              <code className="text-[12px]">/country/&#123;countryName&#125;</code> endpoint-i
-              hazırda giriş tələb edir (401) və məlumat qaytarmır. Hesaba giriş edib
-              yenidən yoxlayın.
-            </p>
-          )}
-
-          {!unauthorized && !countryName && (
-            <p className="text-sm text-[#080d4a]/60 max-w-[420px] leading-6">
-              Ölkə siyahısı yüklənmədi və ya bu ad uyğun gəlmədi.
-            </p>
-          )}
 
           {countryList.length > 0 ? (
             <div className="mt-2 flex flex-wrap justify-center gap-2">
@@ -143,9 +141,15 @@ export default function CountryPage() {
           </div>
 
           {/* Description */}
-          <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6 mb-8 sm:mb-10">
-            {country.description}
-          </p>
+          {country.description ? (
+            <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6 mb-8 sm:mb-10">
+              {country.description}
+            </p>
+          ) : (
+            <p className="text-center text-[#2f3f80]/50 text-[11px] mb-8 sm:mb-10">
+              Bu ölkə üçün hələ təfsilat yüklənməyib.
+            </p>
+          )}
 
           {/* Universities */}
           <div className="mb-8 sm:mb-10">
@@ -166,14 +170,16 @@ export default function CountryPage() {
           </div>
 
           {/* Areas */}
-          <section>
-            <h2 className="text-center text-[#2f3f80] font-normal text-[18px] sm:text-[22px] tracking-wide mb-3">
-              Areas in {country.name}
-            </h2>
-            <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6">
-              {country.areasText}
-            </p>
-          </section>
+          {country.areasText && (
+            <section>
+              <h2 className="text-center text-[#2f3f80] font-normal text-[18px] sm:text-[22px] tracking-wide mb-3">
+                Areas in {country.name}
+              </h2>
+              <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6">
+                {country.areasText}
+              </p>
+            </section>
+          )}
         </div>
       </main>
     </PageShell>

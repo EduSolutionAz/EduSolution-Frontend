@@ -10,6 +10,11 @@ export const SERVICE_VALUES = ['VISA', 'RESIDENCE_PERMIT', 'UNIVERSITY'];
 
 const EMPTY_COST = { value: '—', label: '', note: '' };
 
+const EMPTY_COSTS = {
+  rental: { ...EMPTY_COST, label: 'Rental Fee' },
+  monthly: { ...EMPTY_COST, label: 'Monthly Spending' },
+};
+
 function asList(value) {
   return Array.isArray(value) ? value : [];
 }
@@ -109,7 +114,30 @@ export function mapCountry(dto) {
       .filter(Boolean)
       .map((universityName) => ({ id: universityName, universityName })),
     card: { universityCount: 0, tuitionFee: 0, features: [] },
-    costs: { rental: { ...EMPTY_COST, label: 'Rental Fee' }, monthly: { ...EMPTY_COST, label: 'Monthly Spending' } },
+    costs: { rental: { ...EMPTY_COSTS.rental }, monthly: { ...EMPTY_COSTS.monthly } },
+  };
+}
+
+/**
+ * Builds a country page from the summary entry in /country/top_countries.
+ * Used when GET /country/{name} is unavailable so a country that exists is
+ * never rendered as "not found".
+ */
+export function mapCountryFromSummary(summary) {
+  if (!summary) return null;
+
+  return {
+    slug: summary.slug,
+    name: summary.name,
+    flag: summary.flag || '',
+    heroImage: summary.heroImage || '',
+    heroAlt: summary.heroAlt || summary.name,
+    description: '',
+    areasText: '',
+    universities: [],
+    card: summary.card || { universityCount: 0, tuitionFee: 0, features: [] },
+    costs: { rental: { ...EMPTY_COSTS.rental }, monthly: { ...EMPTY_COSTS.monthly } },
+    detailsUnavailable: true,
   };
 }
 
