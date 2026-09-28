@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
-import { addCountry, deleteCountry } from '../../services/contentApi';
+import { addCountry, deleteCountry, updateCountry } from '../../services/contentApi';
 import { useTopCountries } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
 import { dataUrlToFile } from '../../utils/imageFile';
@@ -34,9 +34,12 @@ export default function CountriesManager() {
   const countries = (data || []).map(mapTopCountry).filter(Boolean);
 
   const [showForm, setShowForm] = useState(false);
+  const [editingName, setEditingName] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
   const [status, setStatus] = useState({ state: 'idle', message: '' });
   const [isSaving, setIsSaving] = useState(false);
+
+  const isEditing = Boolean(editingName);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,8 +56,31 @@ export default function CountriesManager() {
   };
   const closeForm = () => {
     setShowForm(false);
+    setEditingName('');
     setForm(EMPTY_FORM);
     setStatus({ state: 'idle', message: '' });
+  };
+
+  const handleEdit = (country) => {
+    setForm({
+      name: country.name,
+      flag: '',
+      universityCount: String(country.card.universityCount || ''),
+      tuitionFee: String(country.card.tuitionFee || ''),
+      rentalFee: '',
+      features: [
+        ...(country.card.features.includes('Visa Help') ? ['isVisaHelp'] : []),
+        ...(country.card.features.includes('Dormitories') ? ['isDormitoryHelp'] : []),
+        ...(country.visaHelp || country.dormitoryHelp ? ['isTopList'] : []),
+      ],
+      heroImage: country.heroImage,
+      description: '',
+      areasText: '',
+      icon: country.name,
+    });
+    setEditingName(country.name);
+    setStatus({ state: 'idle', message: '' });
+    setShowForm(true);
   };
 
   const handleSubmit = async (e) => {
@@ -79,20 +105,35 @@ export default function CountriesManager() {
         return;
       }
 
-      const result = await addCountry({
-        countryName: form.name.trim(),
-        flagImage,
-        countryImage,
-        universityCount: Number(form.universityCount) || 0,
-        tuitionFee: Number(form.tuitionFee) || 0,
-        rentalFee: Number(form.rentalFee) || 0,
-        isVisaHelp: form.features.includes('isVisaHelp'),
-        isDormitoryHelp: form.features.includes('isDormitoryHelp'),
-        isTopList: form.features.includes('isTopList'),
-        content: form.description.trim(),
-        area: form.areasText.trim(),
-        icon: form.icon.trim() || form.name.trim(),
-      });
+      const result = isEditing
+        ? await updateCountry({
+            countryName: form.name.trim(),
+            flagImage,
+            countryImage,
+            universityCount: Number(form.universityCount) || 0,
+            tuitionFee: Number(form.tuitionFee) || 0,
+            rentalFee: Number(form.rentalFee) || 0,
+            isVisaHelp: form.features.includes('isVisaHelp'),
+            isDormitoryHelp: form.features.includes('isDormitoryHelp'),
+            isTopList: form.features.includes('isTopList'),
+            content: form.description.trim(),
+            area: form.areasText.trim(),
+            icon: form.icon.trim() || form.name.trim(),
+          })
+        : await addCountry({
+            countryName: form.name.trim(),
+            flagImage,
+            countryImage,
+            universityCount: Number(form.universityCount) || 0,
+            tuitionFee: Number(form.tuitionFee) || 0,
+            rentalFee: Number(form.rentalFee) || 0,
+            isVisaHelp: form.features.includes('isVisaHelp'),
+            isDormitoryHelp: form.features.includes('isDormitoryHelp'),
+            isTopList: form.features.includes('isTopList'),
+            content: form.description.trim(),
+            area: form.areasText.trim(),
+            icon: form.icon.trim() || form.name.trim(),
+          });
 
       if (result?.is_country_created) {
         closeForm();
@@ -124,11 +165,21 @@ export default function CountriesManager() {
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className={SECTION_TITLE}>Ölkələr</h2>
-        <button type="button" onClick={() => (showForm ? closeForm() : setShowForm(true))} className={BTN_ACCENT}>
-          {showForm ? 'İmtina' : 'Əlavə et'}
-        </button>
-      </div>
+        <h2 className={SECTION_TITLE}>
+          Ölkələr
+          {isEditing && (
+            <span className="ml-2 align-middle text-[12px] font-accent font-medium text-[#26aec4]">
+              Redaktə: {form.name}
+            </span>
+          )}
+        </h2>
+        <button
+          type="button"
+          onClick={() => (showForm || isEditing ? closeForm() : setShowForm(true))}
+          className={BTN_ACCENT}
+        >
+          {showForm || isEditing ? 'İmtina' : 'Əlavə et'}
+        </button>      </div>
 
       {error && (
         <p role="alert" className="text-red-600 text-[12px]">
@@ -265,7 +316,7 @@ export default function CountriesManager() {
               Ləğv et
             </button>
             <button type="submit" disabled={isSaving} className={BTN_PRIMARY}>
-              {isSaving ? 'Göndərilir...' : 'Yadda saxla'}
+              {isSaving ? 'Göndərilir...' : isEditing ? 'Yenilə' : 'Yadda saxla'}
             </button>
           </div>
         </form>
@@ -290,6 +341,13 @@ export default function CountriesManager() {
               </div>
             </div>
             <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => handleEdit(country)}
+                className="px-3 py-1 text-[#26aec4] text-[12px] font-medium hover:bg-[#26aec4]/10 rounded transition"
+              >
+                Redaktə
+              </button>
               <button
                 type="button"
                 onClick={() => handleDelete(country)}

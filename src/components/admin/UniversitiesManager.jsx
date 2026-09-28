@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import ImageUploadField from './ImageUploadField';
-import { addUniversity, deleteUniversity, getUniversitiesByCountry } from '../../services/contentApi';
+import { addUniversity, deleteUniversity, getUniversitiesByCountry, updateUniversity } from '../../services/contentApi';
 import { useTopCountries } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
 import { dataUrlToFile } from '../../utils/imageFile';
@@ -26,6 +26,7 @@ const EMPTY_FORM = {
   content: '',
   area: '',
   isPartner: false,
+  fee: '',
 };
 
 export default function UniversitiesManager() {
@@ -37,9 +38,12 @@ export default function UniversitiesManager() {
   const [loadingList, setLoadingList] = useState(false);
 
   const [showForm, setShowForm] = useState(false);
+  const [editingName, setEditingName] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
   const [status, setStatus] = useState({ state: 'idle', message: '' });
   const [isSaving, setIsSaving] = useState(false);
+
+  const isEditing = Boolean(editingName);
 
   const activeCountry = selectedCountry || countries[0]?.name || '';
 
@@ -82,8 +86,27 @@ export default function UniversitiesManager() {
 
   const closeForm = () => {
     setShowForm(false);
+    setEditingName('');
     setForm(EMPTY_FORM);
     setStatus({ state: 'idle', message: '' });
+  };
+
+  const handleEdit = (university) => {
+    setForm({
+      universityName: university.universityName,
+      countryName: activeCountry,
+      universityType: 'PUBLIC',
+      shortDescription: '',
+      universityLogo: '',
+      city: '',
+      content: '',
+      area: '',
+      isPartner: false,
+      fee: '',
+    });
+    setEditingName(university.universityName);
+    setStatus({ state: 'idle', message: '' });
+    setShowForm(true);
   };
 
   const handleSubmit = async (e) => {
@@ -102,17 +125,22 @@ export default function UniversitiesManager() {
         return;
       }
 
-      const result = await addUniversity({
+      const payload = {
         universityName: form.universityName.trim(),
         countryName,
         universityType: form.universityType,
         shortDescription: form.shortDescription.trim(),
         universityLogo: logo,
+        fee: Number(form.fee) || 0,
         city: form.city.trim(),
         content: form.content.trim(),
         area: form.area.trim(),
         isPartner: form.isPartner,
-      });
+      };
+
+      const result = isEditing
+        ? await updateUniversity(payload)
+        : await addUniversity(payload);
 
       if (result?.is_created) {
         setSelectedCountry(countryName);
@@ -153,9 +181,20 @@ export default function UniversitiesManager() {
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className={SECTION_TITLE}>Universitetlər</h2>
-        <button type="button" onClick={() => (showForm ? closeForm() : setShowForm(true))} className={BTN_ACCENT}>
-          {showForm ? 'İmtina' : 'Əlavə et'}
+        <h2 className={SECTION_TITLE}>
+          Universitetlər
+          {isEditing && (
+            <span className="ml-2 align-middle text-[12px] font-accent font-medium text-[#26aec4]">
+              Redaktə: {form.universityName}
+            </span>
+          )}
+        </h2>
+        <button
+          type="button"
+          onClick={() => (showForm || isEditing ? closeForm() : setShowForm(true))}
+          className={BTN_ACCENT}
+        >
+          {showForm || isEditing ? 'İmtina' : 'Əlavə et'}
         </button>
       </div>
 
@@ -249,6 +288,22 @@ export default function UniversitiesManager() {
             />
           </div>
 
+          <div className="sm:col-span-2 sm:col-start-1">
+            <label className={FIELD_LABEL} htmlFor="uni-fee">University Fee ($)</label>
+            <input
+              id="uni-fee"
+              name="fee"
+              type="number"
+              min="0"
+              step="1"
+              inputMode="numeric"
+              value={form.fee}
+              onChange={handleChange}
+              placeholder="0 = pulsuz"
+              className={FIELD_INPUT}
+            />
+          </div>
+
           <div className="sm:col-span-2">
             <ImageUploadField
               label="Universitet loqosu (fayl) *"
@@ -295,7 +350,7 @@ export default function UniversitiesManager() {
               Ləğv et
             </button>
             <button type="submit" disabled={isSaving} className={BTN_PRIMARY}>
-              {isSaving ? 'Göndərilir...' : 'Əlavə et'}
+              {isSaving ? 'Göndərilir...' : isEditing ? 'Yenilə' : 'Əlavə et'}
             </button>
           </div>
         </form>
@@ -316,6 +371,13 @@ export default function UniversitiesManager() {
                 </span>
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => handleEdit(university)}
+                  className="px-3 py-1 text-[#26aec4] text-[12px] font-medium hover:bg-[#26aec4]/10 rounded transition"
+                >
+                  Redaktə
+                </button>
                 <button
                   type="button"
                   onClick={() => handleDelete(university.universityName)}

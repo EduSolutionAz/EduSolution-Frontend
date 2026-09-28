@@ -65,6 +65,16 @@ export async function deleteCountry({ countryName }, { tokenKey = ADMIN_TOKEN_KE
   return data;
 }
 
+/** Mirrors UpdateCountryRequestDTO: multipart, same fields as add. */
+export async function updateCountry(payload, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request('/country/update', {
+    method: 'PATCH',
+    tokenKey,
+    formData: toFormData(payload),
+  });
+  return data;
+}
+
 export async function getUniversityLogos() {
   const { data } = await request('/university/university_logos', { auth: false });
   return asArray(data);
@@ -92,6 +102,16 @@ export async function deleteUniversity({ universityName }, { tokenKey = ADMIN_TO
     method: 'DELETE',
     tokenKey,
     body: { university_name: universityName },
+  });
+  return data;
+}
+
+/** Mirrors UpdateUniversityRequestDTO: multipart, fee instead of a fee name. */
+export async function updateUniversity(payload, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request('/university/update', {
+    method: 'PATCH',
+    tokenKey,
+    formData: toFormData(payload),
   });
   return data;
 }
@@ -141,6 +161,22 @@ export async function createContact({ phone, service, name }) {
 export async function getTopComments() {
   const { data } = await request('/applicant/top_comments', { auth: false });
   return asArray(data);
+}
+
+/** All applicant comments. Admin token required. */
+export async function getAllComments({ tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request('/applicant/all', { tokenKey });
+  return asArray(data);
+}
+
+/** Identifies a comment by name + comment text. Admin token required. */
+export async function deleteComment({ name, comment }, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request('/applicant/delete', {
+    method: 'DELETE',
+    tokenKey,
+    body: { name, comment },
+  });
+  return data;
 }
 
 export async function sendReview({ token, service, comment }) {

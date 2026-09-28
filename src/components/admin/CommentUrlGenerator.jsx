@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { generateCommentLink } from '../../services/contentApi';
+import { useEffect, useState } from 'react';
+import { deleteComment, generateCommentLink, getAllComments } from '../../services/contentApi';
 import {
   BTN_PRIMARY,
   CARD,
@@ -14,6 +14,56 @@ export default function CommentUrlGenerator() {
   const [isSending, setIsSending] = useState(false);
   const [errors, setErrors] = useState([]);
   const [sentTo, setSentTo] = useState(null);
+
+  const [comments, setComments] = useState([]);
+  const [loadingComments, setLoadingComments] = useState(true);
+  const [commentError, setCommentError] = useState('');
+  const [deleting, setDeleting] = useState(null);
+
+  const loadComments = async () => {
+    setLoadingComments(true);
+    setCommentError('');
+    try {
+      const data = await getAllComments();
+      setComments(
+        data
+          .map((item) => ({
+            name: item?.name || '',
+            comment: item?.comment || '',
+          }))
+          .filter((item) => item.comment),
+      );
+    } catch (err) {
+      setComments([]);
+      setCommentError(
+        err?.message || 'Rəylər yüklənmədi. Admin tokeni lazımdır.',
+      );
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  useEffect(() => {
+    loadComments();
+  }, []);
+
+  const handleDeleteComment = async (item) => {
+    if (!window.confirm(`"${item.name}" tərəfindən yazılan rəy silinsin?`)) return;
+
+    setDeleting(item.name);
+    try {
+      const result = await deleteComment({ name: item.name, comment: item.comment });
+      if (result?.is_deleted) {
+        setComments((prev) => prev.filter((c) => c.comment !== item.comment));
+      } else {
+        setCommentError('Rəy silinmədi.');
+      }
+    } catch (err) {
+      setCommentError(err?.message || 'Rəy silinmədi.');
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -109,6 +159,50 @@ export default function CommentUrlGenerator() {
           </p>
         </div>
       )}
+
+      <h3 className="text-[#080d4a] text-[16px] font-semibold">
+        Rəylər ({comments.length})
+      </h3>
+
+      {commentError && (
+        <p role="alert" className="text-red-600 text-[12px]">
+          {commentError}
+        </p>
+      )}
+
+      <ul className="space-y-2" role="list">
+        {comments.map((item, index) => (
+          <li
+            key={`${item.name}-${index}`}
+            className="bg-white rounded-md shadow px-4 py-3 flex items-start justify-between gap-3"
+          >
+            <div className="min-w-0">
+              <p className="text-[#080d4a] text-[13px] font-medium truncate">{item.name}</p>
+              <p className="text-[#323643]/70 text-[12px] leading-5 mt-1 break-words">
+                {item.comment}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleDeleteComment(item)}
+              disabled={deleting === index}
+              className="shrink-0 px-3 py-1 text-red-600 text-[11px] hover:bg-red-50 rounded transition disabled:opacity-50"
+            >
+              {deleting === index ? 'Silinir...' : 'Sil'}
+            </button>
+          </li>
+        ))}
+
+        {loadingComments && (
+          <li className="text-center py-6 text-[#323643]/50 text-[13px]">Yüklənir...</li>
+        )}
+
+        {!loadingComments && comments.length === 0 && (
+          <li className="text-center py-6 text-[#323643]/50 text-[13px]">
+            Hələ rəy yoxdur
+          </li>
+        )}
+      </ul>
     </section>
   );
 }
