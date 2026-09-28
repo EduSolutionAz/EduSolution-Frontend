@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addUniversity, deleteUniversity, getUniversitiesByCountry, updateUniversity } from '../../services/contentApi';
+import { describeFailure } from '../../services/httpClient';
 import { useTopCountries } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
 import { dataUrlToFile } from '../../utils/imageFile';
@@ -173,11 +174,14 @@ const REQUIRED_LABELS = {
       } else {
         setStatus({
           state: 'error',
-          message: (result?.errors || [])[0]?.message || 'Universitet əlavə edilmədi.',
+          message:
+            result === null || result === undefined
+              ? `Server sorğunu qəbul etdi (200) amma boş cavab qaytardı, ona görə universitet yaradılmadı. Endpoint: POST /university/add_university`
+              : `${isEditing ? 'Yenilənmədi' : 'Universitet əlavə edilmədi'}. Server cavabı: ${JSON.stringify(result)}`,
         });
       }
     } catch (err) {
-      setStatus({ state: 'error', message: err?.message || 'Xəta baş verdi.' });
+      setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });
     } finally {
       setIsSaving(false);
     }

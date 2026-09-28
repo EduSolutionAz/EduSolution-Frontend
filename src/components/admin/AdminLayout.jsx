@@ -1,6 +1,34 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { resetStore } from '../../store/adminStore';
 import { clearAdminToken } from '../../services/session';
+import { ADMIN_TOKEN_KEY } from '../../config/api';
+import { readToken } from '../../services/httpClient';
+
+/**
+ * Shows whether an admin token is actually stored. A stale or missing token
+ * makes every write endpoint answer 200 with an empty body, which is
+ * impossible to tell apart from a real failure without this.
+ */
+function TokenStatus() {
+  const token = readToken(ADMIN_TOKEN_KEY);
+
+  if (!token) {
+    return (
+      <p className="text-[10px] leading-[1.5] text-red-300">
+        Admin tokeni yoxdur. Bütün yazma sorğuları 401 qaytaracaq — yenidən daxil olun.
+      </p>
+    );
+  }
+
+  const looksLikeJwt = token.split('.').length === 3;
+
+  return (
+    <p className="text-[10px] leading-[1.5] text-white/50">
+      Token: {token.slice(0, 12)}… ({token.length} simvol)
+      {looksLikeJwt ? ' · JWT formatında' : ' · JWT DEYİL'}
+    </p>
+  );
+}
 
 const MENU = [
   { to: '/admin/countries', label: 'Countries', icon: '' },
@@ -48,6 +76,8 @@ export default function AdminLayout() {
           ))}
         </nav>
         <div className="p-4 border-t border-white/10 space-y-3">
+          <TokenStatus />
+
           <button
             type="button"
             onClick={() => {
