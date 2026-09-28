@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addCountry, deleteCountry } from '../../services/contentApi';
-import { useTopCountries } from '../../services/contentHooks';
+import { useTopCountries, useCountryDetails } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
 import { dataUrlToFile } from '../../utils/imageFile';
 import { FEATURE_OPTIONS, formatUniversityCount, formatUsd } from '../../utils/format';
@@ -37,6 +37,9 @@ export default function CountriesManager() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [status, setStatus] = useState({ state: 'idle', message: '' });
   const [isSaving, setIsSaving] = useState(false);
+  const [detailName, setDetailName] = useState('');
+
+  const { data: detail, loading: loadingDetail, error: detailError } = useCountryDetails(detailName);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -293,6 +296,13 @@ export default function CountriesManager() {
             <div className="flex items-center gap-1 shrink-0">
               <button
                 type="button"
+                onClick={() => setDetailName((prev) => (prev === country.name ? '' : country.name))}
+                className="px-3 py-1 text-[#26aec4] text-[12px] font-medium hover:bg-[#26aec4]/10 rounded transition"
+              >
+                {detailName === country.name ? 'Bağla' : 'Detallar'}
+              </button>
+              <button
+                type="button"
                 onClick={() => handleDelete(country)}
                 className={BTN_DELETE}
               >
@@ -305,6 +315,49 @@ export default function CountriesManager() {
           <li className="text-center py-8 text-[#323643]/50 text-[13px]">Heç bir ölkə yoxdur</li>
         )}
       </ul>
+
+      {detailName && (
+        <div className={`${CARD} space-y-3`}>
+          <div className="flex items-center justify-between">
+            <h3 className="text-[#080d4a] text-[15px] font-semibold">
+              Detallar: {detailName}
+            </h3>
+            <code className="text-[10px] text-[#323643]/50 break-all">
+              GET /country/country_details/{detailName}
+            </code>
+          </div>
+
+          {loadingDetail && (
+            <p className="text-[#323643]/50 text-[12px]">Yüklənir...</p>
+          )}
+
+          {detailError && (
+            <p role="alert" className="text-red-600 text-[12px]">
+              {detailError.message}
+            </p>
+          )}
+
+          {!loadingDetail && !detailError && !detail && (
+            <p className="text-[#323643]/60 text-[12px] leading-5">
+              Endpoint boş cavab qaytardı (200, boş body). Swagger-da da bu endpoint
+              yoxdur — backend tərəfdə tamamlanmayan endpoint kimi görünür.
+            </p>
+          )}
+
+          {detail && (
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[12px]">
+              {Object.entries(detail).map(([key, value]) => (
+                <div key={key} className="flex gap-2">
+                  <dt className="text-[#323643]/60 shrink-0">{key}:</dt>
+                  <dd className="text-[#080d4a] break-all">
+                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
+      )}
     </section>
   );
 }

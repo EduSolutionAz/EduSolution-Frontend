@@ -18,6 +18,18 @@ export async function getCountry(countryName) {
   return data;
 }
 
+/**
+ * Authenticated country details. Not present in the OpenAPI spec: it is
+ * missing from swagger, returns 401 without a token, and currently answers
+ * 200 with an empty body for any "Bearer" value.
+ */
+export async function getCountryDetails(countryName, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request(`/country/country_details/${encodeURIComponent(countryName)}`, {
+    tokenKey,
+  });
+  return data;
+}
+
 export async function addCountry(payload, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
   const { data } = await request('/country/add_country', {
     method: 'POST',

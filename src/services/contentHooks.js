@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   getTopCountries,
   getCountry,
+  getCountryDetails,
   getCountryLogos,
   getUniversityDetails,
   getTopComments,
@@ -52,6 +53,12 @@ export function useCountryLogos() {
 
 export function useCountry(countryName) {
   return useApiResource(() => getCountry(countryName), [countryName], {
+    enabled: Boolean(countryName),
+  });
+}
+
+export function useCountryDetails(countryName) {
+  return useApiResource(() => getCountryDetails(countryName), [countryName], {
     enabled: Boolean(countryName),
   });
 }
