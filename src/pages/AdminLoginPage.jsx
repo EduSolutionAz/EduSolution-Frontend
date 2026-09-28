@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminLogin } from '../services/authApi';
+import { markAdminVerified } from '../services/session';
 
 const INPUT =
   'w-full h-[42px] bg-white/95 border border-white/30 rounded px-4 text-[13px] text-[#080d4a] outline-none focus:border-[#26aec4] transition';
@@ -32,6 +33,7 @@ export default function AdminLoginPage() {
         return;
       }
 
+      markAdminVerified();
       navigate('/admin', { replace: true });
     } catch (err) {
       if (err?.status === 401 || err?.status === 403) {
