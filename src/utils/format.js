@@ -1,8 +1,9 @@
+// Mirrors CountryAddRequestDTO on the backend: it accepts only these three
+// flags, there is no residence or work permit field.
 export const FEATURE_OPTIONS = [
-  'Visa Help',
-  'Dormitories',
-  'Work Permit',
-  'Residence Permit',
+  { value: 'isVisaHelp', label: 'Visa Help' },
+  { value: 'isDormitoryHelp', label: 'Dormitories' },
+  { value: 'isTopList', label: 'Top List' },
 ];
 
 export const UNIVERSITY_TYPES = [

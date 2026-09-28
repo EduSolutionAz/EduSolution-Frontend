@@ -5,6 +5,7 @@ import {
   getCountryDetails,
   getCountryLogos,
   getUniversityDetails,
+  getAllUniversities,
   getTopComments,
 } from './contentApi';
 import { attachFlags, mapCountryLogos, mapTopCountry } from './mappers';
@@ -51,10 +52,15 @@ export function useCountryLogos() {
   return useApiResource(() => getCountryLogos(), [], { fallback: EMPTY_LIST });
 }
 
-export function useCountry(countryName, { tokenKey, enabled = true } = {}) {
-  return useApiResource(() => getCountry(countryName, { tokenKey }), [countryName, tokenKey], {
-    enabled: Boolean(countryName) && enabled,
+export function useCountry(countryName) {
+  return useApiResource(() => getCountry(countryName), [countryName], {
+    enabled: Boolean(countryName),
   });
+}
+
+/** All universities for the public header dropdown. */
+export function useAllUniversities() {
+  return useApiResource(() => getAllUniversities(), [], { fallback: EMPTY_LIST });
 }
 
 export function useCountryDetails(countryName, { enabled = true } = {}) {

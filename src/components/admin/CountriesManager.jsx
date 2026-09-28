@@ -51,7 +51,6 @@ export default function CountriesManager() {
         : [...prev.features, option],
     }));
   };
-
   const closeForm = () => {
     setShowForm(false);
     setForm(EMPTY_FORM);
@@ -87,9 +86,9 @@ export default function CountriesManager() {
         universityCount: Number(form.universityCount) || 0,
         tuitionFee: Number(form.tuitionFee) || 0,
         rentalFee: Number(form.rentalFee) || 0,
-        isVisaHelp: form.features.includes('Visa Help'),
-        isDormitoryHelp: form.features.includes('Dormitories'),
-        isTopList: true,
+        isVisaHelp: form.features.includes('isVisaHelp'),
+        isDormitoryHelp: form.features.includes('isDormitoryHelp'),
+        isTopList: form.features.includes('isTopList'),
         content: form.description.trim(),
         area: form.areasText.trim(),
         icon: form.icon.trim() || form.name.trim(),
@@ -220,14 +219,14 @@ export default function CountriesManager() {
             <legend className={FIELD_LABEL}>Xüsusiyyətlər</legend>
             <div className="flex flex-wrap gap-x-6 gap-y-2">
               {FEATURE_OPTIONS.map((option) => (
-                <label key={option} className="inline-flex items-center gap-2 text-[13px] text-[#323643] cursor-pointer">
+                <label key={option.value} className="inline-flex items-center gap-2 text-[13px] text-[#323643] cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={form.features.includes(option)}
-                    onChange={() => toggleFeature(option)}
+                    checked={form.features.includes(option.value)}
+                    onChange={() => toggleFeature(option.value)}
                     className="w-4 h-4 accent-[#26aec4]"
                   />
-                  {option}
+                  {option.label}
                 </label>
               ))}
             </div>

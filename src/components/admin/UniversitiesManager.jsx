@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import ImageUploadField from './ImageUploadField';
-import { addUniversity, deleteUniversity, getCountry } from '../../services/contentApi';
+import { addUniversity, deleteUniversity, getUniversitiesByCountry } from '../../services/contentApi';
 import { useTopCountries } from '../../services/contentHooks';
-import { ADMIN_TOKEN_KEY } from '../../config/api';
 import { mapTopCountry } from '../../services/mappers';
 import { dataUrlToFile } from '../../utils/imageFile';
 import { UNIVERSITY_TYPES, getUniversityTypeLabel } from '../../utils/format';
@@ -53,13 +52,13 @@ export default function UniversitiesManager() {
     let active = true;
     setLoadingList(true);
 
-    getCountry(activeCountry, { tokenKey: ADMIN_TOKEN_KEY })
+    getUniversitiesByCountry(activeCountry)
       .then((data) => {
         if (!active) return;
-        const list = Array.isArray(data?.universities) ? data.universities : [];
+        const list = Array.isArray(data) ? data : [];
         setUniversities(
           list
-            .map((entry) => (typeof entry === 'string' ? entry : entry?.name))
+            .map((entry) => (typeof entry === 'string' ? entry : entry?.university_name))
             .filter(Boolean)
             .map((name) => ({ id: name, universityName: name })),
         );

@@ -11,16 +11,28 @@ export async function getCountryLogos() {
   return asArray(data);
 }
 
-/**
- * Country detail. The backend currently answers 401 without a token, so this
- * must only be called when the caller actually has one: an unauthenticated
- * 401 makes the browser show its native Basic-auth dialog.
- */
-export async function getCountry(countryName, { tokenKey } = {}) {
-  const { data } = await request(`/country/${encodeURIComponent(countryName)}`, {
-    tokenKey,
-  });
+export async function getCountry(countryName) {
+  const { data } = await request(
+    `/country/country_detail/${encodeURIComponent(countryName)}`,
+    { auth: false },
+  );
   return data;
+}
+
+/** All universities, public. Returns [{ university_name, country_name }]. */
+export async function getAllUniversities() {
+  const { data } = await request('/university/all', { auth: false });
+  return asArray(data);
+}
+
+/** Universities of one country. Admin token required. */
+export async function getUniversitiesByCountry(countryName, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request('/university/all_by_country', {
+    method: 'GET',
+    tokenKey,
+    body: { countryName },
+  });
+  return asArray(data);
 }
 
 /**

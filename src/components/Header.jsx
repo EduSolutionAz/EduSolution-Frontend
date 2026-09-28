@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import CountryFlag from './CountryFlag';
-import { useCountriesWithUniversities } from '../services/contentHooks';
-import { getUniversityName } from '../utils/format';
+import { useCountriesWithUniversities, useAllUniversities } from '../services/contentHooks';
+import { slugify } from '../utils/format';
 
 const NAV_LINKS = [
   { href: '#services', label: 'Visa Help' },
@@ -36,17 +36,23 @@ export default function Header() {
   const navigate = useNavigate();
   const { data } = useCountriesWithUniversities();
   const countries = data || [];
+  const { data: allUniversities } = useAllUniversities();
   const cRef = useRef(null);
   const uRef = useRef(null);
 
-  const universities = countries.flatMap((c) =>
-    (c.universities || []).map((u) => ({
-      id: u.id,
-      name: getUniversityName(u),
-      countrySlug: c.slug,
-      countryName: c.name,
-    })),
-  );
+  const universities = (allUniversities || [])
+    .map((entry) => {
+      const name = typeof entry === 'string' ? entry : entry?.university_name;
+      const countryName = typeof entry === 'string' ? '' : entry?.country_name;
+      if (!name) return null;
+      return {
+        id: name,
+        name,
+        countryName,
+        countrySlug: slugify(countryName),
+      };
+    })
+    .filter(Boolean);
 
   useEffect(() => {
     const onClick = (e) => {

@@ -34,7 +34,6 @@ export function mapTopCountry(dto) {
   const features = [];
   if (dto.visa_help) features.push('Visa Help');
   if (dto.dormitory_help) features.push('Dormitories');
-
   return {
     slug: slugify(name),
     name,

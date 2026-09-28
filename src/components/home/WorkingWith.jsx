@@ -40,16 +40,17 @@ export default function WorkingWith() {
               className="group relative overflow-hidden rounded-[22px] h-[148px] sm:h-[160px] flex flex-col justify-between p-3 sm:p-3.5 shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.18)] hover:scale-[1.02] transition-all duration-300"
             >
               {/* background image */}
-              <div className="absolute inset-0">
-                <img
-                  src={c.heroImage}
-                  alt={c.name}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  onError={(e) => (e.currentTarget.style.display = 'none')}
-                />
-                <div className="absolute inset-0 bg-[#0b1140]/65 group-hover:bg-[#0b1140]/70 transition" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-[#1a2e5a]">
+                {c.heroImage && (
+                  <img
+                    src={c.heroImage}
+                    alt={c.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                )}
+                <div className="absolute inset-0 bg-[#0b1140]/40 group-hover:bg-[#0b1140]/50 transition" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
               </div>
 
               {/* content */}
