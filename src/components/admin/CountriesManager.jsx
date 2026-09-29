@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addCountry, deleteCountry, getCountry, getTopCountries, updateCountry } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
-import { useAllCountries } from '../../services/contentHooks';
+import { useTopCountries } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
 import { dataUrlToFile } from '../../utils/imageFile';
 import { FEATURE_OPTIONS, formatUniversityCount, formatUsd } from '../../utils/format';
@@ -33,8 +33,8 @@ const EMPTY_FORM = {
 };
 
 export default function CountriesManager() {
-  const { data, loading, error, reload } = useAllCountries();
-  const countries = data || [];
+  const { data, loading, error, reload } = useTopCountries();
+  const countries = (data || []).map(mapTopCountry).filter(Boolean);
 
   const [showForm, setShowForm] = useState(false);
   const [editingName, setEditingName] = useState('');
@@ -194,10 +194,10 @@ function missingRequiredFields(form) {
       // The backend creates the record but answers 200 with an empty body, so
       // the response cannot be trusted. The list is refetched and the outcome
       // is verified against it instead.
-      const fresh = await getAllCountries().catch(() => null);
+      const fresh = await getTopCountries().catch(() => null);
       reload();
 
-      const saved = (fresh || []).some((country) => country.slug === slugify(form.name.trim()));
+      const saved = (fresh || []).some((entry) => entry?.country_name === form.name.trim());
 
       closeForm();
 
@@ -237,10 +237,10 @@ function missingRequiredFields(form) {
     try {
       // Always refetch: the delete response can be an empty 200 as well.
       await deleteCountry({ countryName: country.name });
-      const fresh = await getAllCountries().catch(() => null);
+      const fresh = await getTopCountries().catch(() => null);
       reload();
 
-      const stillThere = (fresh || []).some((entry) => entry.slug === country.slug);
+      const stillThere = (fresh || []).some((entry) => entry?.country_name === country.name);
       setStatus({
         state: stillThere ? 'error' : 'success',
         message: stillThere
@@ -278,10 +278,9 @@ function missingRequiredFields(form) {
       )}
 
       <p className="text-[#323643]/50 text-[11px] -mt-3">
-        Siyahı iki endpoint birləşdirilir: <code className="text-[#323643]/70">top_countries</code>{' '}
-        (yalnız 6 ölkə qaytarır) və <code className="text-[#323643]/70">country_logos</code> (bütün
-        ölkələr). <strong>Top list-də olmayan</strong> ölkələr yalnız ad kimi görünür və redaktə
-        edilə bilmir — backend bütün ölkələri qaytaran endpoint tələb edir.
+        Siyahı <code className="text-[#323643]/70">GET /country/top_countries</code> endpoint-indən
+        gəlir və backend yalnız ilk 6 ölkəni qaytarır. Yeni ölkə əlavə etdikdə
+        <strong> Top List</strong> seçili olmalıdır, əks halda siyahıda görünməyəcək.
       </p>
 
       {showForm && (
@@ -448,13 +447,9 @@ function missingRequiredFields(form) {
                   {country.name}
                 </span>
                 <span className="text-[#323643]/50 text-[11px]">
-                  {country.limited
-                    ? 'top list-də yoxdur — məlumat yalnız ad kimi'
-                    : `${formatUniversityCount(country.card.universityCount) || 'universitet sayı yoxdur'}${
-                        country.card.tuitionFee
-                          ? ` · ${formatUsd(country.card.tuitionFee)}`
-                          : ''
-                      }${country.card.features.length > 0 ? ` · ${country.card.features.join(', ')}` : ''}`}
+                  {formatUniversityCount(country.card.universityCount) || 'universitet sayı yoxdur'}
+                  {country.card.tuitionFee ? ` · ${formatUsd(country.card.tuitionFee)}` : ''}
+                  {country.card.features.length > 0 ? ` · ${country.card.features.join(', ')}` : ''}
                 </span>
               </div>
             </div>
