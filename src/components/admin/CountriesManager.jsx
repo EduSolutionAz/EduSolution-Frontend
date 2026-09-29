@@ -40,6 +40,7 @@ export default function CountriesManager() {
   const [editingName, setEditingName] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
   const [status, setStatus] = useState({ state: 'idle', message: '' });
+  const [rawResponse, setRawResponse] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   const isEditing = Boolean(editingName);
@@ -139,6 +140,7 @@ function missingRequiredFields(form) {
 
     setIsSaving(true);
     setStatus({ state: 'loading', message: '' });
+    setRawResponse('');
 
     try {
       const [flagImage, countryImage] = await Promise.all([
@@ -214,10 +216,18 @@ function missingRequiredFields(form) {
         message:
           result === null || result === undefined
             ? 'Server boş cavab qaytardı və ölkə siyahıda da görünmür. Server loglarına baxın — /country/add_country daxilində xəta ola bilər.'
-            : `${isEditing ? 'Yenilənmədi' : 'Ölkə əlavə edilmədi'} və siyahıda da görünmür. Server cavabı: ${JSON.stringify(result)}`,
+            : `${isEditing ? 'Yenilənmədi' : 'Ölkə əlavə edilmədi'} və siyahıda da görünmür.`,
       });
+      setRawResponse(
+        result === null || result === undefined
+          ? 'Server cavabı boş idi (200, content-length: 0).'
+          : JSON.stringify(result, null, 2),
+      );
     } catch (err) {
       setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });
+      setRawResponse(
+        err?.body ? JSON.stringify(err.body, null, 2) : 'Server cavab body-sı yoxdur.',
+      );
     } finally {
       setIsSaving(false);
     }
@@ -397,6 +407,24 @@ function missingRequiredFields(form) {
             <p role="alert" className="sm:col-span-2 text-[12px] text-red-600">
               {status.message}
             </p>
+          )}
+
+          {rawResponse && (
+            <div className="sm:col-span-2">
+              <p className="text-[11px] text-[#323643]/60 mb-1">
+                Server cavabı (kopyalayıb göndər):
+              </p>
+              <pre className="bg-[#0b1140] text-[#8ef6e4] text-[11px] rounded p-3 overflow-x-auto whitespace-pre-wrap break-all max-h-48">
+                {rawResponse}
+              </pre>
+              <button
+                type="button"
+                onClick={() => navigator.clipboard?.writeText(rawResponse)}
+                className="mt-1 text-[11px] text-[#26aec4] hover:underline"
+              >
+                Kopyala
+              </button>
+            </div>
           )}
 
           <div className="sm:col-span-2 flex justify-end gap-2">
