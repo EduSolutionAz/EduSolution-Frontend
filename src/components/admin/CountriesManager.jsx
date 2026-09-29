@@ -23,7 +23,9 @@ const EMPTY_FORM = {
   universityCount: '',
   tuitionFee: '',
   rentalFee: '',
-  features: [],
+  // Checked by default: the admin list reads /country/top_countries, so a
+  // country saved without this flag is invisible and cannot be edited.
+  features: ['isTopList'],
   heroImage: '',
   description: '',
   areasText: '',
@@ -106,9 +108,9 @@ function missingRequiredFields(form) {
       tuitionFee: String(country.card.tuitionFee ?? ''),
       rentalFee: '',
       features: [
+        'isTopList',
         ...(country.card.features.includes('Visa Help') ? ['isVisaHelp'] : []),
         ...(country.card.features.includes('Dormitories') ? ['isDormitoryHelp'] : []),
-        ...(country.visaHelp || country.dormitoryHelp ? ['isTopList'] : []),
       ],
       description: detail?.content || '',
       areasText: detail?.areas || '',
@@ -241,6 +243,12 @@ function missingRequiredFields(form) {
           {error.message}
         </p>
       )}
+
+      <p className="text-[#323643]/50 text-[11px] -mt-3">
+        Bu siyahı <code className="text-[#323643]/70">GET /country/top_countries</code> endpoint-indən
+        gəlir, yəni yalnız <strong>Top List</strong> işarəli ölkələr görünür. Top List olmayan
+        ölkələri idarə etmək mümkün deyil — backend-də bütün ölkələri qaytaran endpoint yoxdur.
+      </p>
 
       {showForm && (
         <form onSubmit={handleSubmit} className={`${CARD} grid grid-cols-1 sm:grid-cols-2 gap-4`}>
