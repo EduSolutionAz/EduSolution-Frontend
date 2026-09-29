@@ -189,23 +189,39 @@ const REQUIRED_LABELS = {
         ? await updateUniversity(payload)
         : await addUniversity(payload);
 
-      if (result?.is_created) {
-        setSelectedCountry(countryName);
-        closeForm();
-        setUniversities((prev) =>
-          prev.some((u) => u.universityName === form.universityName.trim())
-            ? prev
-            : [...prev, { id: form.universityName.trim(), universityName: form.universityName.trim() }],
+      // The backend may answer 200 with an empty body, so the list is refetched
+      // and the outcome verified instead of trusting the response.
+      const fresh = await getUniversitiesByCountry(countryName).catch(() => null);
+      const saved = Array.isArray(fresh)
+        && fresh.some((entry) =>
+          (typeof entry === 'string' ? entry : entry?.university_name)
+            === form.universityName.trim(),
         );
-      } else {
+
+      setSelectedCountry(countryName);
+      closeForm();
+
+      if (saved) {
+        setUniversities(
+          (fresh || []).map((entry) => {
+            const name = typeof entry === 'string' ? entry : entry?.university_name;
+            return { id: name, universityName: name };
+          }),
+        );
         setStatus({
-          state: 'error',
-          message:
-            result === null || result === undefined
-              ? `Server sorğunu qəbul etdi (200) amma boş cavab qaytardı, ona görə universitet yaradılmadı. Endpoint: POST /university/add_university`
-              : `${isEditing ? 'Yenilənmədi' : 'Universitet əlavə edilmədi'}. Server cavabı: ${JSON.stringify(result)}`,
+          state: 'success',
+          message: `"${form.universityName.trim()}" ${isEditing ? 'yeniləndi' : 'əlavə edildi'} və siyahı yeniləndi.`,
         });
+        return;
       }
+
+      setStatus({
+        state: 'error',
+        message:
+          result === null || result === undefined
+            ? 'Server boş cavab qaytardı və universitet siyahıda da görünmür. Server loglarına baxın.'
+            : `${isEditing ? 'Yenilənmədi' : 'Universitet əlavə edilmədi'} və siyahıda da görünmür. Server cavabı: ${JSON.stringify(result)}`,
+      });
     } catch (err) {
       setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });
     } finally {
@@ -217,14 +233,26 @@ const REQUIRED_LABELS = {
     if (!window.confirm(`"${universityName}" universiteti silinsin?`)) return;
 
     try {
-      const result = await deleteUniversity({ universityName });
-      if (result?.is_deleted) {
-        setUniversities((prev) => prev.filter((u) => u.universityName !== universityName));
+      await deleteUniversity({ universityName });
+      const fresh = await getUniversitiesByCountry(activeCountry).catch(() => null);
+
+      if (Array.isArray(fresh)) {
+        setUniversities(
+          fresh.map((entry) => {
+            const name = typeof entry === 'string' ? entry : entry?.university_name;
+            return { id: name, universityName: name };
+          }),
+        );
       } else {
-        window.alert('Universitet silinmədi.');
+        setUniversities((prev) => prev.filter((u) => u.universityName !== universityName));
       }
+
+      setStatus({
+        state: 'success',
+        message: `"${universityName}" silindi və siyahı yeniləndi.`,
+      });
     } catch (err) {
-      window.alert(err?.message || 'Universitet silinmədi.');
+      setStatus({ state: 'error', message: describeFailure(err, 'Universitet silinmədi.') });
     }
   };
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
-import { addCountry, deleteCountry, getCountry, updateCountry } from '../../services/contentApi';
+import { addCountry, deleteCountry, getCountry, getTopCountries, updateCountry } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
 import { useTopCountries } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
@@ -189,18 +189,33 @@ function missingRequiredFields(form) {
             icon: form.icon.trim() || form.name.trim(),
           });
 
-      if (result?.is_country_created) {
-        closeForm();
-        reload();
-      } else {
+      // The backend creates the record but answers 200 with an empty body, so
+      // the response cannot be trusted. The list is refetched and the outcome
+      // is verified against it instead.
+      const fresh = await getTopCountries().catch(() => null);
+      reload();
+
+      const saved = (fresh || [])
+        .map((entry) => entry?.country_name)
+        .includes(form.name.trim());
+
+      closeForm();
+
+      if (saved) {
         setStatus({
-          state: 'error',
-          message:
-            result === null || result === undefined
-              ? 'Server sorğunu qəbul etdi (200) amma boş cavab qaytardı, ona görə ölkə yaradılmadı. Bu backend problemidir — /country/add_country hələ işləmir.'
-              : `${isEditing ? 'Yenilənmədi' : 'Ölkə əlavə edilmədi'}. Server cavabı: ${JSON.stringify(result)}`,
+          state: 'success',
+          message: `"${form.name.trim()}" ${isEditing ? 'yeniləndi' : 'əlavə edildi'} və siyahı yeniləndi.`,
         });
+        return;
       }
+
+      setStatus({
+        state: 'error',
+        message:
+          result === null || result === undefined
+            ? 'Server boş cavab qaytardı və ölkə siyahıda da görünmür. Server loglarına baxın — /country/add_country daxilində xəta ola bilər.'
+            : `${isEditing ? 'Yenilənmədi' : 'Ölkə əlavə edilmədi'} və siyahıda da görünmür. Server cavabı: ${JSON.stringify(result)}`,
+      });
     } catch (err) {
       setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });
     } finally {
@@ -212,8 +227,18 @@ function missingRequiredFields(form) {
     if (!window.confirm(`"${country.name}" silinsin?`)) return;
 
     try {
-      const result = await deleteCountry({ countryName: country.name });
-      if (result?.is_deleted) reload();
+      // Always refetch: the delete response can be an empty 200 as well.
+      await deleteCountry({ countryName: country.name });
+      const fresh = await getTopCountries().catch(() => null);
+      reload();
+
+      const stillThere = (fresh || []).some((entry) => entry?.country_name === country.name);
+      setStatus({
+        state: stillThere ? 'error' : 'success',
+        message: stillThere
+          ? `"${country.name}" hələ də siyahıdadır — silinmədi.`
+          : `"${country.name}" silindi.`,
+      });
     } catch (err) {
       window.alert(err?.message || 'Silmək mümkün olmadı.');
     }
