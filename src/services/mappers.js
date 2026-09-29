@@ -1,4 +1,4 @@
-import { slugify } from '../utils/format';
+import { formatUsd, slugify } from '../utils/format';
 
 export const SERVICE_OPTIONS = [
   { value: 'UNIVERSITY', label: 'Admission to Universities' },
@@ -81,6 +81,39 @@ export function mapAllCountry(dto) {
     visaHelp: Boolean(dto.is_visa_help),
     dormitoryHelp: Boolean(dto.is_dormitory_help),
     isTopList: false,
+  };
+}
+
+/**
+ * /country/country_entity -> fees, images and flags. Merged onto the detail
+ * response so the public country page can show the hero image and the
+ * average costs, which /country/country_detail does not carry.
+ */
+export function mapCountryEntity(dto) {
+  if (!dto) return null;
+
+  const tuitionFee = Number(dto.tuitionFee) || 0;
+  const rentalFee = Number(dto.rentalFee) || 0;
+
+  return {
+    heroImage: text(dto.countryImage),
+    flag: text(dto.flagImage),
+    card: {
+      universityCount: Number(dto.universityCount) || 0,
+      tuitionFee,
+      features: [
+        ...(dto.isVisaHelp ? ['Visa Help'] : []),
+        ...(dto.isDormitoryHelp ? ['Dormitories'] : []),
+      ],
+    },
+    costs: {
+      rental: {
+        ...EMPTY_COSTS.rental,
+        value: rentalFee > 0 ? formatUsd(rentalFee) : EMPTY_COSTS.rental.value,
+      },
+      monthly: { ...EMPTY_COSTS.monthly },
+    },
+    isTopList: Boolean(dto.isTopList),
   };
 }
 

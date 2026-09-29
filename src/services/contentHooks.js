@@ -4,6 +4,7 @@ import {
   getAllCountries,
   getCountry,
   getCountryDetails,
+  getCountryEntity,
   getCountryLogos,
   getUniversityDetails,
   getAllUniversities,
@@ -79,6 +80,12 @@ export function useCountryLogos() {
 
 export function useCountry(countryName) {
   return useApiResource(() => getCountry(countryName), [countryName], {
+    enabled: Boolean(countryName),
+  });
+}
+
+export function useCountryEntity(countryName) {
+  return useApiResource(() => getCountryEntity(countryName), [countryName], {
     enabled: Boolean(countryName),
   });
 }

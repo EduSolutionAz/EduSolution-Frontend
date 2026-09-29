@@ -4,9 +4,10 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import UniversitiesList from '../components/UniversitiesList';
 import AverageCosts from '../components/AverageCosts';
-import { useCountry, useCountryLogos, useTopCountries } from '../services/contentHooks';
+import { useCountry, useCountryEntity, useCountryLogos, useTopCountries } from '../services/contentHooks';
 import {
   mapCountry,
+  mapCountryEntity,
   mapCountryFromSummary,
   mapCountryLogos,
   mapTopCountry,
@@ -45,15 +46,21 @@ export default function CountryPage() {
   const { data, loading } = useCountry(countryName);
   const detail = data ? mapCountry(data) : null;
 
-  // Fall back to the summary entry so a country that exists in
-  // /country/top_countries is never shown as "not found".
-  const country = detail
-    ? { ...summary, ...detail }
-    : summary
-      ? mapCountryFromSummary(summary)
-      : null;
+  // /country/country_detail omits the fees, the flag and the background image,
+  // so those come from /country/country_entity.
+  const { data: entityData } = useCountryEntity(countryName);
+  const entity = mapCountryEntity(entityData);
 
-  const flag = country ? flagMap[country.slug] || country.flag : '';
+  // Fall back to the summary entry so a country that exists is never shown as
+  // "not found".
+  const country = detail || (summary ? mapCountryFromSummary(summary) : null);
+  if (country && entity) {
+    country.heroImage = country.heroImage || entity.heroImage;
+    country.card = { ...country.card, ...entity.card };
+    country.costs = entity.costs;
+  }
+
+  const flag = (country && flagMap[country.slug]) || (entity && entity.flag) || '';
 
   if (loadingList || (loading && countryName)) {
     return (
@@ -119,6 +126,7 @@ export default function CountryPage() {
             <h1 className="text-center text-[#2f3f80] font-bold text-[22px] sm:text-[28px] tracking-wide">
               {country.name}
             </h1>
+            {country.icon && <span className="text-[20px] leading-none">{country.icon}</span>}
           </div>
 
           {/* Hero image */}
