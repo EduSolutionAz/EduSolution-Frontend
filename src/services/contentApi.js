@@ -1,5 +1,6 @@
 import { ADMIN_TOKEN_KEY, USER_TOKEN_KEY } from '../config/api';
 import { asArray, request, toFormData } from './httpClient';
+import { mapCountryLogos, mapTopCountry } from './mappers';
 
 export async function getTopCountries() {
   const { data } = await request('/country/top_countries', { auth: false });
@@ -9,6 +10,38 @@ export async function getTopCountries() {
 export async function getCountryLogos() {
   const { data } = await request('/country/country_logos', { auth: false });
   return asArray(data);
+}
+
+/**
+ * Every country, merged from the capped top list and the logo list.
+ * /country/top_countries only returns a handful, /country/country_logos
+ * returns one entry per country.
+ */
+export async function getAllCountries() {
+  const [top, logos] = await Promise.all([
+    getTopCountries().catch(() => []),
+    getCountryLogos().catch(() => []),
+  ]);
+
+  const rich = asArray(top).map(mapTopCountry).filter(Boolean);
+  const bySlug = new Set(rich.map((country) => country.slug));
+
+  const inferred = Object.keys(mapCountryLogos(logos))
+    .filter((slug) => !bySlug.has(slug))
+    .map((slug) => ({
+      slug,
+      name: slug.replace(/-/g, ' '),
+      flag: '',
+      heroImage: '',
+      heroAlt: slug.replace(/-/g, ' '),
+      card: { universityCount: 0, tuitionFee: 0, features: [] },
+      countryBgUrl: '',
+      visaHelp: false,
+      dormitoryHelp: false,
+      limited: true,
+    }));
+
+  return [...rich.map((c) => ({ ...c, limited: false })), ...inferred];
 }
 
 export async function getCountry(countryName) {

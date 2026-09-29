@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addCountry, deleteCountry, getCountry, getTopCountries, updateCountry } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
-import { useTopCountries } from '../../services/contentHooks';
+import { useAllCountries } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
 import { dataUrlToFile } from '../../utils/imageFile';
 import { FEATURE_OPTIONS, formatUniversityCount, formatUsd } from '../../utils/format';
@@ -33,8 +33,8 @@ const EMPTY_FORM = {
 };
 
 export default function CountriesManager() {
-  const { data, loading, error, reload } = useTopCountries();
-  const countries = (data || []).map(mapTopCountry).filter(Boolean);
+  const { data, loading, error, reload } = useAllCountries();
+  const countries = data || [];
 
   const [showForm, setShowForm] = useState(false);
   const [editingName, setEditingName] = useState('');
@@ -194,12 +194,10 @@ function missingRequiredFields(form) {
       // The backend creates the record but answers 200 with an empty body, so
       // the response cannot be trusted. The list is refetched and the outcome
       // is verified against it instead.
-      const fresh = await getTopCountries().catch(() => null);
+      const fresh = await getAllCountries().catch(() => null);
       reload();
 
-      const saved = (fresh || [])
-        .map((entry) => entry?.country_name)
-        .includes(form.name.trim());
+      const saved = (fresh || []).some((country) => country.slug === slugify(form.name.trim()));
 
       closeForm();
 
@@ -239,10 +237,10 @@ function missingRequiredFields(form) {
     try {
       // Always refetch: the delete response can be an empty 200 as well.
       await deleteCountry({ countryName: country.name });
-      const fresh = await getTopCountries().catch(() => null);
+      const fresh = await getAllCountries().catch(() => null);
       reload();
 
-      const stillThere = (fresh || []).some((entry) => entry?.country_name === country.name);
+      const stillThere = (fresh || []).some((entry) => entry.slug === country.slug);
       setStatus({
         state: stillThere ? 'error' : 'success',
         message: stillThere
@@ -280,9 +278,10 @@ function missingRequiredFields(form) {
       )}
 
       <p className="text-[#323643]/50 text-[11px] -mt-3">
-        Bu siyahı <code className="text-[#323643]/70">GET /country/top_countries</code> endpoint-indən
-        gəlir, yəni yalnız <strong>Top List</strong> işarəli ölkələr görünür. Top List olmayan
-        ölkələri idarə etmək mümkün deyil — backend-də bütün ölkələri qaytaran endpoint yoxdur.
+        Siyahı iki endpoint birləşdirilir: <code className="text-[#323643]/70">top_countries</code>{' '}
+        (yalnız 6 ölkə qaytarır) və <code className="text-[#323643]/70">country_logos</code> (bütün
+        ölkələr). <strong>Top list-də olmayan</strong> ölkələr yalnız ad kimi görünür və redaktə
+        edilə bilmir — backend bütün ölkələri qaytaran endpoint tələb edir.
       </p>
 
       {showForm && (
@@ -449,10 +448,13 @@ function missingRequiredFields(form) {
                   {country.name}
                 </span>
                 <span className="text-[#323643]/50 text-[11px]">
-                  {formatUniversityCount(country.card.universityCount) || 'universitet sayı yoxdur'}
-                  {' · '}
-                  {formatUsd(country.card.tuitionFee)}
-                  {country.card.features.length > 0 && ` · ${country.card.features.join(', ')}`}
+                  {country.limited
+                    ? 'top list-də yoxdur — məlumat yalnız ad kimi'
+                    : `${formatUniversityCount(country.card.universityCount) || 'universitet sayı yoxdur'}${
+                        country.card.tuitionFee
+                          ? ` · ${formatUsd(country.card.tuitionFee)}`
+                          : ''
+                      }${country.card.features.length > 0 ? ` · ${country.card.features.join(', ')}` : ''}`}
                 </span>
               </div>
             </div>

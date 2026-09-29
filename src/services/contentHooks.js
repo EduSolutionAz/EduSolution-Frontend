@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   getTopCountries,
   getCountry,
@@ -46,6 +46,52 @@ const EMPTY_LIST = [];
 
 export function useTopCountries() {
   return useApiResource(() => getTopCountries(), [], { fallback: EMPTY_LIST });
+}
+
+/**
+ * Full admin country list.
+ *
+ * GET /country/top_countries is capped server side and only returns the top
+ * handful, so a country outside that cap can never be listed, edited or
+ * deleted. GET /country/country_logos returns every country, so the two are
+ * merged: the top list supplies the rich fields and the logo list supplies
+ * the names that are missing from it.
+ */
+export function useAllCountries() {
+  const top = useTopCountries();
+  const logos = useCountryLogos();
+
+  const data = useMemo(() => {
+    const rich = (top.data || []).map(mapTopCountry).filter(Boolean);
+    const bySlug = new Map(rich.map((country) => [country.slug, country]));
+
+    const inferred = Object.keys(mapCountryLogos(logos.data))
+      .filter((slug) => !bySlug.has(slug))
+      .map((slug) => {
+        const name = slug.replace(/-/g, ' ');
+        return {
+          slug,
+          name,
+          flag: '',
+          heroImage: '',
+          heroAlt: name,
+          card: { universityCount: 0, tuitionFee: 0, features: [] },
+          countryBgUrl: '',
+          visaHelp: false,
+          dormitoryHelp: false,
+          limited: true,
+        };
+      });
+
+    return [...rich.map((c) => ({ ...c, limited: false })), ...inferred];
+  }, [top.data, logos.data]);
+
+  return {
+    ...top,
+    data,
+    loading: top.loading || logos.loading,
+    error: top.error || logos.error,
+  };
 }
 
 export function useCountryLogos() {
