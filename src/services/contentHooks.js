@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   getTopCountries,
+  getAllCountries,
   getCountry,
   getCountryDetails,
   getCountryLogos,
@@ -8,7 +9,12 @@ import {
   getAllUniversities,
   getTopComments,
 } from './contentApi';
-import { attachFlags, mapCountryLogos, mapTopCountry } from './mappers';
+import {
+  attachFlags,
+  mapAllCountry,
+  mapCountryLogos,
+  mapTopCountry,
+} from './mappers';
 
 export function useApiResource(loader, deps = [], { enabled = true, fallback = null } = {}) {
   const [state, setState] = useState({ data: fallback, loading: enabled, error: null });
@@ -46,6 +52,25 @@ const EMPTY_LIST = [];
 
 export function useTopCountries() {
   return useApiResource(() => getTopCountries(), [], { fallback: EMPTY_LIST });
+}
+
+/**
+ * Every country for the admin list. GET /country/top_countries is capped at
+ * six server side, so anything outside that cap could not be edited or
+ * deleted. Flags are attached from /country/country_logos.
+ */
+export function useAllCountries() {
+  const { data, ...rest } = useApiResource(() => getAllCountries(), [], {
+    fallback: EMPTY_LIST,
+  });
+  const { data: logoItems } = useCountryLogos();
+
+  const countries = attachFlags(
+    (data || []).map(mapAllCountry).filter(Boolean),
+    mapCountryLogos(logoItems),
+  );
+
+  return { ...rest, data: countries };
 }
 
 export function useCountryLogos() {

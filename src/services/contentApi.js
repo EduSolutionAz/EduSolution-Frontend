@@ -6,6 +6,12 @@ export async function getTopCountries() {
   return asArray(data);
 }
 
+/** Every country. The fields are snake_case and differ from top_countries. */
+export async function getAllCountries() {
+  const { data } = await request('/country/all', { auth: false });
+  return asArray(data);
+}
+
 export async function getCountryLogos() {
   const { data } = await request('/country/country_logos', { auth: false });
   return asArray(data);
@@ -25,14 +31,31 @@ export async function getAllUniversities() {
   return asArray(data);
 }
 
-/** Universities of one country. Admin token required. */
-export async function getUniversitiesByCountry(countryName, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
-  const { data } = await request('/university/all_by_country', {
-    method: 'GET',
-    tokenKey,
-    body: { countryName },
-  });
+/** Universities of one country, public. */
+export async function getUniversitiesByCountry(countryName) {
+  const { data } = await request(
+    `/university/all_by_country/${encodeURIComponent(countryName)}`,
+    { auth: false },
+  );
   return asArray(data);
+}
+
+/** Full university record for prefilling the edit form. */
+export async function getUniversityEntity(universityName, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request(
+    `/university/university_entity/${encodeURIComponent(universityName)}`,
+    { tokenKey },
+  );
+  return data;
+}
+
+/** Full country record for prefilling the edit form. */
+export async function getCountryEntity(countryName, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request(
+    `/country/country_entity/${encodeURIComponent(countryName)}`,
+    { tokenKey },
+  );
+  return data;
 }
 
 /**
@@ -65,7 +88,17 @@ export async function deleteCountry({ countryName }, { tokenKey = ADMIN_TOKEN_KE
   return data;
 }
 
-/** Mirrors UpdateCountryRequestDTO: multipart, same fields as add. */
+/** Mirrors UpdateUniversityRequestDTO: multipart, fee instead of a fee name. */
+export async function updateUniversity(payload, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request('/university/update', {
+    method: 'PATCH',
+    tokenKey,
+    formData: toFormData(payload),
+  });
+  return data;
+}
+
+/** Mirrors UpdateCountryRequestDTO. */
 export async function updateCountry(payload, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
   const { data } = await request('/country/update', {
     method: 'PATCH',
@@ -106,45 +139,11 @@ export async function deleteUniversity({ universityName }, { tokenKey = ADMIN_TO
   return data;
 }
 
-/** Mirrors UpdateUniversityRequestDTO: multipart, fee instead of a fee name. */
-export async function updateUniversity(payload, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
-  const { data } = await request('/university/update', {
-    method: 'PATCH',
-    tokenKey,
-    formData: toFormData(payload),
-  });
-  return data;
-}
-
-/**
- * Full university record for prefilling the edit form.
- * Authenticated and takes the name in the body, not the path.
- */
-export async function getUniversityEntity(universityName, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
-  const { data } = await request('/university/university_entity', {
-    method: 'GET',
-    tokenKey,
-    body: { university_name: universityName },
-  });
-  return data;
-}
-
-/** Full country record for prefilling the edit form. */
-export async function getCountryEntity(countryName, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
-  const { data } = await request('/country/country_entity', {
-    method: 'GET',
-    tokenKey,
-    body: { country_name: countryName },
-  });
-  return data;
-}
-
 export async function getFaculties({ universityName }, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
-  const { data } = await request('/faculty/get_faculties', {
-    method: 'GET',
-    tokenKey,
-    query: { university_name: universityName },
-  });
+  const { data } = await request(
+    `/faculty/get_faculties/${encodeURIComponent(universityName)}`,
+    { tokenKey },
+  );
   return asArray(data);
 }
 

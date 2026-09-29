@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
-import { addCountry, deleteCountry, getCountry, getTopCountries, updateCountry } from '../../services/contentApi';
+import { addCountry, deleteCountry, getAllCountries, getCountryEntity, updateCountry } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
-import { useTopCountries } from '../../services/contentHooks';
-import { mapTopCountry } from '../../services/mappers';
+import { useAllCountries } from '../../services/contentHooks';
 import { dataUrlToFile } from '../../utils/imageFile';
 import { FEATURE_OPTIONS, formatUniversityCount, formatUsd } from '../../utils/format';
 import {
@@ -33,8 +32,8 @@ const EMPTY_FORM = {
 };
 
 export default function CountriesManager() {
-  const { data, loading, error, reload } = useTopCountries();
-  const countries = (data || []).map(mapTopCountry).filter(Boolean);
+  const { data, loading, error, reload } = useAllCountries();
+  const countries = data || [];
 
   const [showForm, setShowForm] = useState(false);
   const [editingName, setEditingName] = useState('');
@@ -87,41 +86,32 @@ function missingRequiredFields(form) {
 
     let detail = null;
     let loadNote = '';
-
-    // /country/country_entity is documented as GET with a requestBody, which no
-    // HTTP client can send, so it answers 500. The public detail endpoint
-    // carries the same text fields, so it is used instead.
     try {
-      const { data } = await getCountry(country.name);
-      detail = data || null;
-      if (!detail) {
-        loadNote = 'Server boş cavab qaytardı';
-      }
+      detail = await getCountryEntity(country.name);
+      if (!detail) loadNote = 'Server boş cavab qaytardı';
     } catch (err) {
       loadNote = describeFailure(err, 'Məlumat yüklənmədi');
     }
 
     setForm({
-      name: detail?.title || country.name,
-      flag: '',
-      heroImage: detail?.photo_url || country.heroImage || '',
-      universityCount: String(country.card.universityCount ?? ''),
-      tuitionFee: String(country.card.tuitionFee ?? ''),
-      rentalFee: '',
+      name: detail?.countryName || country.name,
+      flag: detail?.flagImage || '',
+      heroImage: detail?.countryImage || '',
+      universityCount: String(detail?.universityCount ?? ''),
+      tuitionFee: String(detail?.tuitionFee ?? ''),
+      rentalFee: String(detail?.rentalFee ?? ''),
       features: [
-        'isTopList',
-        ...(country.card.features.includes('Visa Help') ? ['isVisaHelp'] : []),
-        ...(country.card.features.includes('Dormitories') ? ['isDormitoryHelp'] : []),
+        ...(detail?.isVisaHelp ? ['isVisaHelp'] : []),
+        ...(detail?.isDormitoryHelp ? ['isDormitoryHelp'] : []),
+        ...(detail?.isTopList ? ['isTopList'] : ['isTopList']),
       ],
       description: detail?.content || '',
-      areasText: detail?.areas || '',
-      icon: country.name,
+      areasText: detail?.area || '',
+      icon: detail?.icon || country.name,
     });
     setStatus({
-      state: 'error',
-      message: loadNote
-        ? `Redaktə məlumatı: ${loadNote}`
-        : 'Qiymət və bayraq serverdən gəlmir (country_entity endpoint-i səhv dizayn edilib) — əllə doldurmalı olacaq.',
+      state: loadNote ? 'error' : 'idle',
+      message: loadNote ? `Redaktə məlumatı: ${loadNote}` : '',
     });
   };
 
@@ -194,7 +184,7 @@ function missingRequiredFields(form) {
       // The backend creates the record but answers 200 with an empty body, so
       // the response cannot be trusted. The list is refetched and the outcome
       // is verified against it instead.
-      const fresh = await getTopCountries().catch(() => null);
+      const fresh = await getAllCountries().catch(() => null);
       reload();
 
       const saved = (fresh || []).some((entry) => entry?.country_name === form.name.trim());
@@ -237,7 +227,7 @@ function missingRequiredFields(form) {
     try {
       // Always refetch: the delete response can be an empty 200 as well.
       await deleteCountry({ countryName: country.name });
-      const fresh = await getTopCountries().catch(() => null);
+      const fresh = await getAllCountries().catch(() => null);
       reload();
 
       const stillThere = (fresh || []).some((entry) => entry?.country_name === country.name);
@@ -278,9 +268,10 @@ function missingRequiredFields(form) {
       )}
 
       <p className="text-[#323643]/50 text-[11px] -mt-3">
-        Siyahı <code className="text-[#323643]/70">GET /country/top_countries</code> endpoint-indən
-        gəlir və backend yalnız ilk 6 ölkəni qaytarır. Yeni ölkə əlavə etdikdə
-        <strong> Top List</strong> seçili olmalıdır, əks halda siyahıda görünməyəcək.
+        Siyahı <code className="text-[#323643]/70">GET /country/all</code> endpoint-indən gəlir
+        və bütün ölkələri göstərir. Ana səhifə isə yalnız{' '}
+        <code className="text-[#323643]/70">top_countries</code> (ilk 6) siyahısını istifadə edir —
+        yeni ölkə orada görünmək üçün <strong>Top List</strong> seçili olmalıdır.
       </p>
 
       {showForm && (

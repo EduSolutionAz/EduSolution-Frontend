@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import ImageUploadField from './ImageUploadField';
-import { addUniversity, deleteUniversity, getUniversitiesByCountry, getUniversityDetails, updateUniversity } from '../../services/contentApi';
+import { addUniversity, deleteUniversity, getUniversitiesByCountry, getUniversityEntity, updateUniversity } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
-import { useTopCountries } from '../../services/contentHooks';
-import { mapTopCountry } from '../../services/mappers';
+import { useAllCountries } from '../../services/contentHooks';
 import { dataUrlToFile } from '../../utils/imageFile';
 import { UNIVERSITY_TYPES, getUniversityTypeLabel } from '../../utils/format';
 import {
@@ -31,8 +30,8 @@ const EMPTY_FORM = {
 };
 
 export default function UniversitiesManager() {
-  const { data, loading: loadingCountries } = useTopCountries();
-  const countries = (data || []).map(mapTopCountry).filter(Boolean);
+  const { data, loading: loadingCountries } = useAllCountries();
+  const countries = data || [];
 
   const [selectedCountry, setSelectedCountry] = useState('');
   const [universities, setUniversities] = useState([]);
@@ -109,35 +108,28 @@ const REQUIRED_LABELS = {
 
     let detail = null;
     let loadNote = '';
-
-    // /university/university_entity is documented as GET with a requestBody,
-    // which no HTTP client can send, so it answers 500. The public details
-    // endpoint carries the same text fields, so it is used instead.
     try {
-      const { data } = await getUniversityDetails(university.universityName);
-      detail = data || null;
+      detail = await getUniversityEntity(university.universityName);
       if (!detail) loadNote = 'Server boş cavab qaytardı';
     } catch (err) {
       loadNote = describeFailure(err, 'Məlumat yüklənmədi');
     }
 
     setForm({
-      universityName: detail?.title || university.universityName,
-      countryName: activeCountry,
-      universityType: 'PUBLIC',
-      shortDescription: '',
-      universityLogo: detail?.photo_url || '',
-      fee: '',
-      city: '',
+      universityName: detail?.universityName || university.universityName,
+      countryName: detail?.countryName || activeCountry,
+      universityType: detail?.universityType || 'PUBLIC',
+      shortDescription: detail?.shortDescription || '',
+      universityLogo: detail?.universityLogo || '',
+      fee: String(detail?.fee ?? ''),
+      city: detail?.city || '',
       content: detail?.content || '',
-      area: '',
-      isPartner: false,
+      area: detail?.area || '',
+      isPartner: Boolean(detail?.isPartner),
     });
     setStatus({
-      state: 'error',
-      message: loadNote
-        ? `Redaktə məlumatı: ${loadNote}`
-        : 'Qiymət, şəhər və area serverdən gəlmir (university_entity endpoint-i səhv dizayn edilib) — əllə doldurmalı olacaq.',
+      state: loadNote ? 'error' : 'idle',
+      message: loadNote ? `Redaktə məlumatı: ${loadNote}` : '',
     });
   };
 

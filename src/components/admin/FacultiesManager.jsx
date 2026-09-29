@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { addFaculty, deleteFaculty, getFaculties } from '../../services/contentApi';
-import { useTopCountries } from '../../services/contentHooks';
-import { mapFaculties, mapTopCountry } from '../../services/mappers';
+import { useAllCountries } from '../../services/contentHooks';
+import { mapFaculties } from '../../services/mappers';
 import { BTN_ACCENT, BTN_DELETE, FIELD_INPUT, FIELD_LABEL, SECTION_TITLE } from './fields';
 
 export default function FacultiesManager() {
-  const { data, loading: loadingCountries } = useTopCountries();
-  const countries = (data || []).map(mapTopCountry).filter(Boolean);
+  const { data, loading: loadingCountries } = useAllCountries();
+  const countries = data || [];
 
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedUniversity, setSelectedUniversity] = useState('');

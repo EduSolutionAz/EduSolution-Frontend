@@ -52,6 +52,39 @@ export function mapTopCountry(dto) {
 }
 
 /**
+ * /country/all -> [{ country_name, university_count, is_visa_help,
+ * is_dormitory_help }]. Different field names from /country/top_countries.
+ */
+export function mapAllCountry(dto) {
+  const name = text(dto?.country_name);
+  if (!name) return null;
+
+  const features = [];
+  if (dto.is_visa_help) features.push('Visa Help');
+  if (dto.is_dormitory_help) features.push('Dormitories');
+
+  return {
+    slug: slugify(name),
+    name,
+    flag: '',
+    heroImage: '',
+    heroAlt: name,
+    description: '',
+    areasText: '',
+    universities: [],
+    card: {
+      universityCount: Number(dto.university_count) || 0,
+      tuitionFee: 0,
+      features,
+    },
+    countryBgUrl: '',
+    visaHelp: Boolean(dto.is_visa_help),
+    dormitoryHelp: Boolean(dto.is_dormitory_help),
+    isTopList: false,
+  };
+}
+
+/**
  * Attaches flag URLs from /country/country_logos onto already-mapped
  * countries, matching on slug.
  */
