@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { addFaculty, deleteFaculty, getFaculties } from '../../services/contentApi';
 import { useAllCountries } from '../../services/contentHooks';
 import { mapFaculties } from '../../services/mappers';
+import UniversityPicker from './UniversityPicker';
 import { BTN_ACCENT, BTN_DELETE, FIELD_INPUT, FIELD_LABEL, SECTION_TITLE } from './fields';
 
 export default function FacultiesManager() {
@@ -123,24 +124,14 @@ export default function FacultiesManager() {
         </div>
 
         <div>
-          <label className={FIELD_LABEL} htmlFor="fac-university">
-            Universitet adı
-          </label>
-          <input
-            id="fac-university"
-            type="text"
-            autoComplete="off"
+          <UniversityPicker
             value={selectedUniversity}
-            onChange={(e) => setSelectedUniversity(e.target.value)}
-            placeholder="Universitetin tam adını yazın"
-            className={FIELD_INPUT}
+            onChange={setSelectedUniversity}
+            countryName={activeCountry}
+            disabled={loadingCountries}
           />
         </div>
       </div>
-
-      <p className="text-[12px] text-[#323643]/60">
-        Universitet seçmək üçün dropdown yoxdur — adı yazıb fakultələri yükləyə bilərsiniz.
-      </p>
 
       {error && (
         <p role="alert" className="text-red-600 text-[12px]">
