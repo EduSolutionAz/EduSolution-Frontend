@@ -4,13 +4,13 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import UniversitiesList from '../components/UniversitiesList';
 import AverageCosts from '../components/AverageCosts';
-import { useCountry, useCountryEntity, useCountryLogos, useTopCountries } from '../services/contentHooks';
+import { useAllCountries, useCountry, useCountryEntity, useCountryLogos } from '../services/contentHooks';
 import {
+  mapAllCountry,
   mapCountry,
   mapCountryEntity,
   mapCountryFromSummary,
   mapCountryLogos,
-  mapTopCountry,
 } from '../services/mappers';
 
 function Loading() {
@@ -38,10 +38,13 @@ export default function CountryPage() {
   const { data: logoItems } = useCountryLogos();
   const flagMap = mapCountryLogos(logoItems);
 
-  const { data: countries, loading: loadingList } = useTopCountries();
-  const countryList = (countries || []).map(mapTopCountry).filter(Boolean);
+  // The name has to come from the full list: /country/top_countries only
+  // returns six, so any other country would resolve to an empty name and
+  // never request its details.
+  const { data: allCountries, loading: loadingList } = useAllCountries();
+  const countryList = (allCountries || []).map(mapAllCountry).filter(Boolean);
   const summary = countryList.find((c) => c.slug === slug) || null;
-  const countryName = summary?.name || '';
+  const countryName = summary?.name || slug || '';
 
   const { data, loading } = useCountry(countryName);
   const detail = data ? mapCountry(data) : null;
@@ -130,7 +133,7 @@ export default function CountryPage() {
           </div>
 
           {/* Hero image */}
-          <div className="w-full overflow-hidden rounded-[2px] shadow-sm mb-5 sm:mb-6 bg-[#e6dada]">
+          <div className="w-full overflow-hidden rounded-[2px] shadow-sm mb-5 sm:mb-6 bg-[#d8cccc]">
             {country.heroImage && brokenSrc !== country.heroImage ? (
               <img
                 src={country.heroImage}
@@ -140,8 +143,13 @@ export default function CountryPage() {
                 onError={() => setBrokenSrc(country.heroImage)}
               />
             ) : (
-              <div className="w-full h-[190px] sm:h-[360px] flex items-center justify-center text-[#2f3f80]/40 text-[13px]">
-                Şəkil yoxdur
+              <div className="w-full h-[190px] sm:h-[360px] flex flex-col items-center justify-center gap-2 text-[#2f3f80]/50 text-[13px]">
+                <svg width="34" height="34" fill="none" stroke="currentColor" strokeWidth="1.4" viewBox="0 0 24 24">
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path strokeLinecap="round" d="M3 16l5-5 4 4 3-3 6 6" />
+                  <circle cx="9" cy="10" r="1.4" />
+                </svg>
+                <span>{country.name} üçün şəkil yüklənmədi</span>
               </div>
             )}
           </div>
