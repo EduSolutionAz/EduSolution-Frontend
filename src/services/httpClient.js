@@ -167,6 +167,9 @@ export async function request(path, options = {}) {
     });
   }
 
+  const verb = method.toUpperCase();
+  const bodyNotAllowed = verb === 'GET' || verb === 'HEAD';
+
   const headers = {};
   if (auth) {
     const authorization = buildAuthHeader({ tokenKey, basic });
@@ -175,10 +178,25 @@ export async function request(path, options = {}) {
 
   const init = { method, headers, signal };
   if (formData) {
+    if (bodyNotAllowed) {
+      throw new ApiError(`${verb} sorğusunda body göndərilmə bilməz`, {
+        code: 'BAD_REQUEST',
+      });
+    }
     init.body = formData;
-  } else if (body !== undefined) {
-    headers['Content-Type'] = 'application/json';
-    init.body = JSON.stringify(body);
+  } else if (body !== undefined && body !== null) {
+    if (bodyNotAllowed) {
+      // Fetch throws a TypeError for GET/HEAD with a body. Some endpoints are
+      // documented with a requestBody on a GET, so the values are moved into
+      // the query string instead of crashing the request.
+      Object.entries(body).forEach(([key, value]) => {
+        if (value === undefined || value === null || value === '') return;
+        url.searchParams.set(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
+      });
+    } else {
+      headers['Content-Type'] = 'application/json';
+      init.body = JSON.stringify(body);
+    }
   }
 
   const controller = new AbortController();
@@ -192,6 +210,11 @@ export async function request(path, options = {}) {
     clearTimeout(timer);
     if (error.name === 'AbortError') {
       throw new ApiError('Sorğu vaxtında cavab almadı', { code: 'TIMEOUT' });
+    }
+    if (error instanceof TypeError) {
+      throw new ApiError(`Sorğu göndərilmədi (TypeError): ${error.message}`, {
+        code: 'CLIENT',
+      });
     }
     throw new ApiError('Serverə qoşulma mümkün olmadı — internet bağlantısı və ya CORS', {
       code: 'NETWORK',
