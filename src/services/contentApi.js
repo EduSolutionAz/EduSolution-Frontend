@@ -116,6 +116,29 @@ export async function updateUniversity(payload, { tokenKey = ADMIN_TOKEN_KEY } =
   return data;
 }
 
+/**
+ * Full university record for prefilling the edit form.
+ * Authenticated and takes the name in the body, not the path.
+ */
+export async function getUniversityEntity(universityName, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request('/university/university_entity', {
+    method: 'GET',
+    tokenKey,
+    body: { university_name: universityName },
+  });
+  return data;
+}
+
+/** Full country record for prefilling the edit form. */
+export async function getCountryEntity(countryName, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request('/country/country_entity', {
+    method: 'GET',
+    tokenKey,
+    body: { country_name: countryName },
+  });
+  return data;
+}
+
 export async function getFaculties({ universityName }, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
   const { data } = await request('/faculty/get_faculties', {
     method: 'GET',

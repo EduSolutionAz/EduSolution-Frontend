@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
-import { addCountry, deleteCountry, updateCountry } from '../../services/contentApi';
+import { addCountry, deleteCountry, getCountryEntity, updateCountry } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
 import { useTopCountries } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
@@ -77,26 +77,37 @@ function missingRequiredFields(form) {
     setStatus({ state: 'idle', message: '' });
   };
 
-  const handleEdit = (country) => {
-    setForm({
-      name: country.name,
-      flag: '',
-      universityCount: String(country.card.universityCount || ''),
-      tuitionFee: String(country.card.tuitionFee || ''),
-      rentalFee: '',
-      features: [
-        ...(country.card.features.includes('Visa Help') ? ['isVisaHelp'] : []),
-        ...(country.card.features.includes('Dormitories') ? ['isDormitoryHelp'] : []),
-        ...(country.visaHelp || country.dormitoryHelp ? ['isTopList'] : []),
-      ],
-      heroImage: country.heroImage,
-      description: '',
-      areasText: '',
-      icon: country.name,
-    });
+  const handleEdit = async (country) => {
+    setStatus({ state: 'loading', message: `${country.name} yüklənir...` });
     setEditingName(country.name);
-    setStatus({ state: 'idle', message: '' });
     setShowForm(true);
+
+    let detail = null;
+    try {
+      detail = await getCountryEntity(country.name);
+    } catch {
+      detail = null;
+    }
+
+    setForm({
+      name: detail?.countryName || country.name,
+      flag: detail?.flagImage || '',
+      heroImage: detail?.countryImage || country.heroImage || '',
+      universityCount: String(detail?.universityCount ?? country.card.universityCount ?? ''),
+      tuitionFee: String(detail?.tuitionFee ?? country.card.tuitionFee ?? ''),
+      rentalFee: String(detail?.rentalFee ?? ''),
+      features: [
+        ...(detail ? [] : country.card.features.includes('Visa Help') ? ['isVisaHelp'] : []),
+        ...(detail ? [] : country.card.features.includes('Dormitories') ? ['isDormitoryHelp'] : []),
+        ...(detail ? (detail.isVisaHelp ? ['isVisaHelp'] : []) : country.visaHelp || country.dormitoryHelp ? ['isTopList'] : []),
+        ...(detail ? (detail.isDormitoryHelp ? ['isDormitoryHelp'] : []) : []),
+        ...(detail ? (detail.isTopList ? ['isTopList'] : []) : []),
+      ],
+      description: detail?.content || '',
+      areasText: detail?.area || '',
+      icon: detail?.icon || country.name,
+    });
+    setStatus({ state: 'idle', message: '' });
   };
 
   const handleSubmit = async (e) => {
@@ -122,9 +133,13 @@ function missingRequiredFields(form) {
       ]);
 
       if (!flagImage || !countryImage) {
+        // The entity endpoint returns image URLs, which cannot be re-uploaded
+        // as files, so editing requires picking both images again.
         setStatus({
           state: 'error',
-          message: 'Bayraq və hero şəkil faylları məcburidir.',
+          message: isEditing
+            ? 'Redaktə zamanı bayraq və hero şəkli yenidən seçilməlidir — server məlumatı URL qaytarır, fayl deyil.'
+            : 'Bayraq və hero şəkil faylları məcburidir.',
         });
         setIsSaving(false);
         return;

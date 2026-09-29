@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import ImageUploadField from './ImageUploadField';
-import { addUniversity, deleteUniversity, getUniversitiesByCountry, updateUniversity } from '../../services/contentApi';
+import { addUniversity, deleteUniversity, getUniversityEntity, getUniversitiesByCountry, updateUniversity } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
 import { useTopCountries } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
@@ -102,22 +102,31 @@ const REQUIRED_LABELS = {
     setStatus({ state: 'idle', message: '' });
   };
 
-  const handleEdit = (university) => {
-    setForm({
-      universityName: university.universityName,
-      countryName: activeCountry,
-      universityType: 'PUBLIC',
-      shortDescription: '',
-      universityLogo: '',
-      city: '',
-      content: '',
-      area: '',
-      isPartner: false,
-      fee: '',
-    });
+  const handleEdit = async (university) => {
+    setStatus({ state: 'loading', message: `${university.universityName} yüklənir...` });
     setEditingName(university.universityName);
-    setStatus({ state: 'idle', message: '' });
     setShowForm(true);
+
+    let detail = null;
+    try {
+      detail = await getUniversityEntity(university.universityName);
+    } catch {
+      detail = null;
+    }
+
+    setForm({
+      universityName: detail?.universityName || university.universityName,
+      countryName: detail?.countryName || activeCountry,
+      universityType: detail?.universityType || 'PUBLIC',
+      shortDescription: detail?.shortDescription || '',
+      universityLogo: detail?.universityLogo || '',
+      fee: String(detail?.fee ?? ''),
+      city: detail?.city || '',
+      content: detail?.content || '',
+      area: detail?.area || '',
+      isPartner: Boolean(detail?.isPartner),
+    });
+    setStatus({ state: 'idle', message: '' });
   };
 
   const handleSubmit = async (e) => {
@@ -141,7 +150,12 @@ const REQUIRED_LABELS = {
 
       const logo = await dataUrlToFile(form.universityLogo, 'logo');
       if (!logo) {
-        setStatus({ state: 'error', message: 'Universitet loqosu faylı məcburidir.' });
+        setStatus({
+          state: 'error',
+          message: isEditing
+            ? 'Redaktə zamanı loqo yenidən seçilməlidir — server məlumatı URL qaytarır, fayl deyil.'
+            : 'Universitet loqosu faylı məcburidir.',
+        });
         setIsSaving(false);
         return;
       }
