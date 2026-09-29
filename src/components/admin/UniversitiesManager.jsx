@@ -108,10 +108,21 @@ const REQUIRED_LABELS = {
     setShowForm(true);
 
     let detail = null;
+    let loadNote = '';
     try {
       detail = await getUniversityEntity(university.universityName);
-    } catch {
-      detail = null;
+      if (detail === null || detail === undefined) {
+        loadNote = 'Server boş cavab qaytardı (200, boş body)';
+      } else {
+        const missing = ['countryName', 'universityType', 'shortDescription', 'fee', 'city', 'content', 'area']
+          .filter((key) => detail[key] === undefined || detail[key] === null);
+        loadNote =
+          missing.length > 0
+            ? `Server cavabında yoxdur: ${missing.join(', ')}`
+            : 'Məlumat tam yükləndi';
+      }
+    } catch (err) {
+      loadNote = describeFailure(err, 'Entity sorğusu uğursuz oldu');
     }
 
     setForm({
@@ -126,7 +137,10 @@ const REQUIRED_LABELS = {
       area: detail?.area || '',
       isPartner: Boolean(detail?.isPartner),
     });
-    setStatus({ state: 'idle', message: '' });
+    setStatus({
+      state: loadNote.startsWith('Məlumat tam') ? 'idle' : 'error',
+      message: loadNote === 'Məlumat tam yükləndi' ? '' : `Redaktə məlumatı: ${loadNote}`,
+    });
   };
 
   const handleSubmit = async (e) => {

@@ -83,10 +83,21 @@ function missingRequiredFields(form) {
     setShowForm(true);
 
     let detail = null;
+    let loadNote = '';
     try {
       detail = await getCountryEntity(country.name);
-    } catch {
-      detail = null;
+      if (detail === null || detail === undefined) {
+        loadNote = 'Server boş cavab qaytardı (200, boş body)';
+      } else {
+        const missing = ['countryName', 'content', 'area', 'icon', 'tuitionFee', 'rentalFee']
+          .filter((key) => detail[key] === undefined || detail[key] === null);
+        loadNote =
+          missing.length > 0
+            ? `Server cavabında yoxdur: ${missing.join(', ')}`
+            : 'Məlumat tam yükləndi';
+      }
+    } catch (err) {
+      loadNote = describeFailure(err, 'Entity sorğusu uğursuz oldu');
     }
 
     setForm({
@@ -107,7 +118,10 @@ function missingRequiredFields(form) {
       areasText: detail?.area || '',
       icon: detail?.icon || country.name,
     });
-    setStatus({ state: 'idle', message: '' });
+    setStatus({
+      state: loadNote.startsWith('Məlumat tam') ? 'idle' : 'error',
+      message: loadNote === 'Məlumat tam yükləndi' ? '' : `Redaktə məlumatı: ${loadNote}`,
+    });
   };
 
   const handleSubmit = async (e) => {
