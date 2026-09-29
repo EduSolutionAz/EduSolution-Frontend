@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import ImageUploadField from './ImageUploadField';
-import { addUniversity, deleteUniversity, getUniversityEntity, getUniversitiesByCountry, updateUniversity } from '../../services/contentApi';
+import { addUniversity, deleteUniversity, getUniversitiesByCountry, getUniversityDetails, updateUniversity } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
 import { useTopCountries } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
@@ -109,37 +109,35 @@ const REQUIRED_LABELS = {
 
     let detail = null;
     let loadNote = '';
+
+    // /university/university_entity is documented as GET with a requestBody,
+    // which no HTTP client can send, so it answers 500. The public details
+    // endpoint carries the same text fields, so it is used instead.
     try {
-      detail = await getUniversityEntity(university.universityName);
-      if (detail === null || detail === undefined) {
-        loadNote = 'Server boş cavab qaytardı (200, boş body)';
-      } else {
-        const missing = ['countryName', 'universityType', 'shortDescription', 'fee', 'city', 'content', 'area']
-          .filter((key) => detail[key] === undefined || detail[key] === null);
-        loadNote =
-          missing.length > 0
-            ? `Server cavabında yoxdur: ${missing.join(', ')}`
-            : 'Məlumat tam yükləndi';
-      }
+      const { data } = await getUniversityDetails(university.universityName);
+      detail = data || null;
+      if (!detail) loadNote = 'Server boş cavab qaytardı';
     } catch (err) {
-      loadNote = describeFailure(err, 'Entity sorğusu uğursuz oldu');
+      loadNote = describeFailure(err, 'Məlumat yüklənmədi');
     }
 
     setForm({
-      universityName: detail?.universityName || university.universityName,
-      countryName: detail?.countryName || activeCountry,
-      universityType: detail?.universityType || 'PUBLIC',
-      shortDescription: detail?.shortDescription || '',
-      universityLogo: detail?.universityLogo || '',
-      fee: String(detail?.fee ?? ''),
-      city: detail?.city || '',
+      universityName: detail?.title || university.universityName,
+      countryName: activeCountry,
+      universityType: 'PUBLIC',
+      shortDescription: '',
+      universityLogo: detail?.photo_url || '',
+      fee: '',
+      city: '',
       content: detail?.content || '',
-      area: detail?.area || '',
-      isPartner: Boolean(detail?.isPartner),
+      area: '',
+      isPartner: false,
     });
     setStatus({
-      state: loadNote.startsWith('Məlumat tam') ? 'idle' : 'error',
-      message: loadNote === 'Məlumat tam yükləndi' ? '' : `Redaktə məlumatı: ${loadNote}`,
+      state: 'error',
+      message: loadNote
+        ? `Redaktə məlumatı: ${loadNote}`
+        : 'Qiymət, şəhər və area serverdən gəlmir (university_entity endpoint-i səhv dizayn edilib) — əllə doldurmalı olacaq.',
     });
   };
 

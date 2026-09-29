@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
-import { addCountry, deleteCountry, getCountryEntity, updateCountry } from '../../services/contentApi';
+import { addCountry, deleteCountry, getCountry, updateCountry } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
 import { useTopCountries } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
@@ -84,43 +84,41 @@ function missingRequiredFields(form) {
 
     let detail = null;
     let loadNote = '';
+
+    // /country/country_entity is documented as GET with a requestBody, which no
+    // HTTP client can send, so it answers 500. The public detail endpoint
+    // carries the same text fields, so it is used instead.
     try {
-      detail = await getCountryEntity(country.name);
-      if (detail === null || detail === undefined) {
-        loadNote = 'Server boş cavab qaytardı (200, boş body)';
-      } else {
-        const missing = ['countryName', 'content', 'area', 'icon', 'tuitionFee', 'rentalFee']
-          .filter((key) => detail[key] === undefined || detail[key] === null);
-        loadNote =
-          missing.length > 0
-            ? `Server cavabında yoxdur: ${missing.join(', ')}`
-            : 'Məlumat tam yükləndi';
+      const { data } = await getCountry(country.name);
+      detail = data || null;
+      if (!detail) {
+        loadNote = 'Server boş cavab qaytardı';
       }
     } catch (err) {
-      loadNote = describeFailure(err, 'Entity sorğusu uğursuz oldu');
+      loadNote = describeFailure(err, 'Məlumat yüklənmədi');
     }
 
     setForm({
-      name: detail?.countryName || country.name,
-      flag: detail?.flagImage || '',
-      heroImage: detail?.countryImage || country.heroImage || '',
-      universityCount: String(detail?.universityCount ?? country.card.universityCount ?? ''),
-      tuitionFee: String(detail?.tuitionFee ?? country.card.tuitionFee ?? ''),
-      rentalFee: String(detail?.rentalFee ?? ''),
+      name: detail?.title || country.name,
+      flag: '',
+      heroImage: detail?.photo_url || country.heroImage || '',
+      universityCount: String(country.card.universityCount ?? ''),
+      tuitionFee: String(country.card.tuitionFee ?? ''),
+      rentalFee: '',
       features: [
-        ...(detail ? [] : country.card.features.includes('Visa Help') ? ['isVisaHelp'] : []),
-        ...(detail ? [] : country.card.features.includes('Dormitories') ? ['isDormitoryHelp'] : []),
-        ...(detail ? (detail.isVisaHelp ? ['isVisaHelp'] : []) : country.visaHelp || country.dormitoryHelp ? ['isTopList'] : []),
-        ...(detail ? (detail.isDormitoryHelp ? ['isDormitoryHelp'] : []) : []),
-        ...(detail ? (detail.isTopList ? ['isTopList'] : []) : []),
+        ...(country.card.features.includes('Visa Help') ? ['isVisaHelp'] : []),
+        ...(country.card.features.includes('Dormitories') ? ['isDormitoryHelp'] : []),
+        ...(country.visaHelp || country.dormitoryHelp ? ['isTopList'] : []),
       ],
       description: detail?.content || '',
-      areasText: detail?.area || '',
-      icon: detail?.icon || country.name,
+      areasText: detail?.areas || '',
+      icon: country.name,
     });
     setStatus({
-      state: loadNote.startsWith('Məlumat tam') ? 'idle' : 'error',
-      message: loadNote === 'Məlumat tam yükləndi' ? '' : `Redaktə məlumatı: ${loadNote}`,
+      state: 'error',
+      message: loadNote
+        ? `Redaktə məlumatı: ${loadNote}`
+        : 'Qiymət və bayraq serverdən gəlmir (country_entity endpoint-i səhv dizayn edilib) — əllə doldurmalı olacaq.',
     });
   };
 
