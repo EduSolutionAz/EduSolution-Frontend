@@ -3,7 +3,7 @@ import { formatUsd } from '../utils/format';
 export default function AverageCosts({ tuitionFee, costs, countryName = 'Germany' }) {
   return (
     <section className="w-full">
-      <h2 className="text-center text-[#2f3f80] font-normal text-[18px] sm:text-[22px] tracking-wide mb-4 sm:mb-5">
+      <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-4 sm:mb-5">
         Average Costs for {countryName}
       </h2>
 

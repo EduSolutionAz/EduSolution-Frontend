@@ -42,7 +42,7 @@ export default function UniversitiesList({
 
   return (
     <section className="w-full">
-      <h2 className="text-center text-[#2f3f80] font-normal text-[20px] sm:text-[26px] tracking-wide mb-5 sm:mb-6">
+      <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[21px] sm:text-[28px] tracking-wide mb-5 sm:mb-6">
         Universities in {countryName}
       </h2>
 

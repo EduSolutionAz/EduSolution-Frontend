@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
-import CountryFlag from '../CountryFlag';
 import { useCountriesWithUniversities } from '../../services/contentHooks';
-import { formatUniversityCount, formatUsd } from '../../utils/format';
+import { formatUniversityCount, formatUsd, universityInitials } from '../../utils/format';
 
 const FLAG_MAP = {
   germany: 'de',
@@ -10,6 +9,7 @@ const FLAG_MAP = {
   latvia: 'lv',
   italy: 'it',
   spain: 'es',
+  'czech-republic': 'cz',
   'united-kingdom': 'gb',
   america: 'us',
 };
@@ -49,34 +49,33 @@ export default function WorkingWith() {
                     loading="lazy"
                   />
                 )}
-                <div className="absolute inset-0 bg-[#0b1140]/40 group-hover:bg-[#0b1140]/50 transition" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/35 to-black/20 group-hover:from-black/80 group-hover:via-black/45 transition" />
               </div>
 
               {/* content */}
               <div className="relative z-10 flex flex-col h-full">
-                <h3 className="text-white font-accent font-semibold text-[12px] sm:text-[13px] text-center tracking-wide drop-shadow">
+                <h3 className="text-white font-heading font-bold text-[13px] sm:text-[15px] text-center tracking-wide drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                   {c.name}
                 </h3>
 
-                <ul className="mt-1.5 space-y-0.5 text-white/95 text-[10px] leading-[1.35] font-light w-fit mx-auto text-left">
+                <ul className="mt-1.5 space-y-0.5 text-white text-[10px] leading-[1.4] font-semibold w-fit mx-auto text-left drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
                   <li className="flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-white/90 shrink-0" />
+                    <span className="w-1 h-1 rounded-full bg-white shrink-0" />
                     {formatUniversityCount(c.card?.universityCount)}
                   </li>
                   <li className="flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-white/90 shrink-0" />
+                    <span className="w-1 h-1 rounded-full bg-white shrink-0" />
                     {formatUsd(c.card?.tuitionFee)}
                   </li>
                   {(c.card?.features || []).map((f) => (
                     <li key={f} className="flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-white/90 shrink-0" />
+                      <span className="w-1 h-1 rounded-full bg-white shrink-0" />
                       {f}
                     </li>
                   ))}
                 </ul>
 
-                <span className="mt-auto pt-2 text-white/90 text-[10px] font-accent font-medium underline underline-offset-2 decoration-white/40 group-hover:decoration-white text-center block">
+                <span className="mt-auto pt-2 text-white text-[10px] font-accent font-bold underline underline-offset-2 decoration-white/60 group-hover:decoration-white text-center block drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
                   learn more
                 </span>
               </div>
@@ -86,36 +85,37 @@ export default function WorkingWith() {
 
         {/* Working With title + flags */}
         <div className="mt-8 sm:mt-10 text-center">
-          <h2 className="text-[#1a2e5a] font-heading font-bold text-[18px] sm:text-[20px] tracking-wide">Working With</h2>
+          <h2 className="text-[#1a2e5a] font-heading font-bold text-[19px] sm:text-[22px] tracking-wide">Working With</h2>
           <div className="mt-3 flex items-center justify-center gap-2 sm:gap-2.5 flex-wrap">
             {countries.map((c) => {
               const code = FLAG_MAP[c.slug];
+              const apiFlag = c.flag;
+
               return (
                 <div
                   key={`flag-${c.slug}`}
-                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.15)] shrink-0 bg-white"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-white shadow-[0_2px_8px_rgba(0,0,0,0.15)] shrink-0 bg-[#1a2e5a]"
                   title={c.name}
                 >
-                  {code ? (
+                  {apiFlag || code ? (
                     <img
-                      src={`https://flagcdn.com/w80/${code}.png`}
+                      src={apiFlag || `https://flagcdn.com/w80/${code}.png`}
                       alt={c.name}
                       className="w-full h-full object-cover"
                       loading="lazy"
                       onError={(e) => {
-                        e.currentTarget.replaceWith(
-                          <CountryFlag
-                            country={c}
-                            className="w-full h-full text-[14px] flex items-center justify-center"
-                          />,
-                        );
+                        e.currentTarget.style.display = 'none';
                       }}
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <CountryFlag country={c} className="text-[15px]" />
-                    </div>
-                  )}
+                  ) : null}
+
+                  <div
+                    className={`w-full h-full flex items-center justify-center text-white font-heading font-bold text-[13px] leading-none ${
+                      apiFlag || code ? 'hidden' : ''
+                    }`}
+                  >
+                    {universityInitials(c.name)}
+                  </div>
                 </div>
               );
             })}

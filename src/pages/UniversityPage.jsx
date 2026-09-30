@@ -146,7 +146,7 @@ return (
 
           {university.content && (
             <section className="mb-8 sm:mb-10">
-              <h2 className="text-center text-[#2f3f80] text-[18px] sm:text-[22px] font-normal tracking-wide mb-3">
+              <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-3">
                 About {name}
               </h2>
               <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.8] sm:leading-7 whitespace-pre-line break-words [overflow-wrap:anywhere]">
@@ -157,7 +157,7 @@ return (
 
           {university.area && (
             <section className="mb-8 sm:mb-10 text-center">
-              <h2 className="text-center text-[#2f3f80] text-[18px] sm:text-[22px] font-normal tracking-wide mb-3">
+              <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-3">
                 Area
               </h2>
               <p className="text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6">
@@ -168,7 +168,7 @@ return (
 
           {university.faculties.length > 0 && (
             <section>
-              <h2 className="text-center text-[#2f3f80] text-[18px] sm:text-[22px] font-normal tracking-wide mb-4">
+              <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-4">
                 Faculties
               </h2>
               <ul className="flex flex-wrap justify-center gap-2" role="list">

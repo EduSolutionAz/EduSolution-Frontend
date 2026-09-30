@@ -162,9 +162,9 @@ export default function CountryPage() {
                 loading="lazy"
               />
             )}
-            <h1 className="text-center text-[#2f3f80] font-bold text-[22px] sm:text-[28px] tracking-wide">
-              {country.name}
-            </h1>
+<h1 className="text-center text-[#2f3f80] font-heading font-bold text-[24px] sm:text-[32px] tracking-wide">
+                {country.name}
+              </h1>
             {country.icon && <span className="text-[20px] leading-none">{country.icon}</span>}
           </div>
 
@@ -227,8 +227,8 @@ export default function CountryPage() {
           {/* Areas */}
           {country.areasText && (
             <section>
-              <h2 className="text-center text-[#2f3f80] font-normal text-[18px] sm:text-[22px] tracking-wide mb-3">
-                Areas in {country.name}
+<h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-3">
+                Universities in {country.name}
               </h2>
               <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6 break-words [overflow-wrap:anywhere] whitespace-pre-line">
                 {country.areasText}
