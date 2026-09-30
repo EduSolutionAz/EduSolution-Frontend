@@ -82,16 +82,21 @@ export function clearAdminToken() {
 }
 
 /**
- * Called when the backend rejects a write. Drops the stale session so the
- * guard stops treating it as valid and the admin is asked to sign in again,
- * instead of failing every request while the panel still looks open.
+ * Called when the backend rejects a request. Only a 401 is treated as proof
+ * that the session is dead: this API answers 403 when the header is simply
+ * absent, so clearing on 403 would turn a recoverable state into a loop.
  */
-export function handleAuthFailure() {
-  clearAdminToken();
+export function handleAuthFailure(error) {
+  if (error?.status === 401) clearAdminToken();
 }
 
 export function isAuthFailure(error) {
   return error?.status === 401 || error?.status === 403;
+}
+
+/** Local guard so a missing token is reported before the request is sent. */
+export function hasAdminToken() {
+  return Boolean(readToken(ADMIN_TOKEN_KEY));
 }
 
 export function clearUserToken() {

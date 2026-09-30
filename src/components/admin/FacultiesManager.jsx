@@ -77,7 +77,7 @@ export default function FacultiesManager() {
           ? 'Admin sessiyası etibarsızdır. Yenidən daxil olun.'
           : err?.message || 'Fakultə əlavə edilmədi.',
       );
-      if (isAuthFailure(err)) handleAuthFailure();
+      if (isAuthFailure(err)) handleAuthFailure(err);
     } finally {
       setIsSaving(false);
     }
@@ -101,7 +101,7 @@ export default function FacultiesManager() {
           ? 'Admin sessiyası etibarsızdır. Yenidən daxil olun.'
           : err?.message || 'Fakultə silinmədi.',
       );
-      if (isAuthFailure(err)) handleAuthFailure();
+      if (isAuthFailure(err)) handleAuthFailure(err);
     }
   };
 

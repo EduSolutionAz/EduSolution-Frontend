@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addUniversity, deleteUniversity, getUniversitiesByCountry, getUniversityEntity, updateUniversity } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
-import { handleAuthFailure, isAuthFailure } from '../../services/session';
+import { handleAuthFailure, hasAdminToken, isAuthFailure } from '../../services/session';
 import { useAllCountries } from '../../services/contentHooks';
 import { resolveImageFile } from '../../utils/imageFile';
 import { UNIVERSITY_TYPES, getUniversityTypeLabel } from '../../utils/format';
@@ -136,6 +136,17 @@ const REQUIRED_LABELS = {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!hasAdminToken()) {
+      setStatus({
+        state: 'error',
+        message:
+          'Admin tokeni brauzerdə yoxdur, ona görə sorğu göndərilmədi. ' +
+          'Əvvəlcə /admin/login səhifəsindən daxil olun.',
+      });
+      return;
+    }
+
     const countryName = form.countryName || activeCountry;
     if (!form.universityName.trim() || !countryName) return;
 
@@ -221,10 +232,12 @@ const REQUIRED_LABELS = {
       });
     } catch (err) {
       if (isAuthFailure(err)) {
-        handleAuthFailure();
+        handleAuthFailure(err);
         setStatus({
           state: 'error',
-          message: `Admin sessiyası etibarsızdır. Yenidən daxil olun — ${describeFailure(err, '')}`,
+          message: hasAdminToken()
+            ? `Sorğu rədd edildi (${err?.status}). Tokeni yoxlayın və ya yenidən daxil olun.`
+            : 'Admin tokeni brauzerdə yoxdur. /admin/login səhifəsindən yenidən daxil olun.',
         });
       } else {
         setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });

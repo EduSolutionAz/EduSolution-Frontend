@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addCountry, deleteCountry, getAllCountries, getCountryEntity, updateCountry } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
-import { handleAuthFailure, isAuthFailure } from '../../services/session';
+import { handleAuthFailure, hasAdminToken, isAuthFailure } from '../../services/session';
 import { useAllCountries } from '../../services/contentHooks';
 import { resolveImageFile } from '../../utils/imageFile';
 import { FEATURE_OPTIONS, formatUniversityCount, formatUsd } from '../../utils/format';
@@ -120,6 +120,16 @@ function missingRequiredFields(form) {
     e.preventDefault();
     if (!form.name.trim()) return;
 
+    if (!hasAdminToken()) {
+      setStatus({
+        state: 'error',
+        message:
+          'Admin tokeni brauzerdə yoxdur, ona görə sorğu göndərilmədi. ' +
+          'Əvvəlcə /admin/login səhifəsindən daxil olun.',
+      });
+      return;
+    }
+
     const missing = missingRequiredFields(form);
     if (missing.length > 0) {
       setStatus({
@@ -225,12 +235,12 @@ function missingRequiredFields(form) {
       setRawResponse(err?.body ? JSON.stringify(err.body, null, 2) : 'Server cavab body-sı yoxdur.');
 
       if (isAuthFailure(err)) {
-        handleAuthFailure();
+        handleAuthFailure(err);
         setStatus({
           state: 'error',
-          message:
-            'Admin sessiyası etibarsızdır. Yenidən daxil olun — ' +
-            describeFailure(err, ''),
+          message: hasAdminToken()
+            ? `Sorğu rədd edildi (${err?.status}). Tokeni yoxlayın və ya yenidən daxil olun.`
+            : 'Admin tokeni brauzerdə yoxdur. /admin/login səhifəsindən yenidən daxil olun.',
         });
       }
     } finally {
