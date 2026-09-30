@@ -4,7 +4,7 @@ import { addCountry, deleteCountry, getAllCountries, getCountryEntity, updateCou
 import { describeFailure } from '../../services/httpClient';
 import { handleAuthFailure, isAuthFailure } from '../../services/session';
 import { useAllCountries } from '../../services/contentHooks';
-import { dataUrlToFile } from '../../utils/imageFile';
+import { resolveImageFile } from '../../utils/imageFile';
 import { FEATURE_OPTIONS, formatUniversityCount, formatUsd } from '../../utils/format';
 import {
   BTN_ACCENT,
@@ -134,23 +134,31 @@ function missingRequiredFields(form) {
     setRawResponse('');
 
     try {
-      const [flagImage, countryImage] = await Promise.all([
-        dataUrlToFile(form.flag, 'flag'),
-        dataUrlToFile(form.heroImage, 'country'),
+      const [flag, country] = await Promise.all([
+        resolveImageFile(form.flag, 'flag'),
+        resolveImageFile(form.heroImage, 'country'),
       ]);
 
-      if (!flagImage || !countryImage) {
-        // The entity endpoint returns image URLs, which cannot be re-uploaded
-        // as files, so editing requires picking both images again.
+      if (!flag.file || !country.file) {
+        const missing = [
+          ...(flag.file ? [] : ['Bayraq']),
+          ...(country.file ? [] : ['Hero şəkil']),
+        ].join(' və ');
+
         setStatus({
           state: 'error',
-          message: isEditing
-            ? 'Redaktə zamanı bayraq və hero şəkli yenidən seçilməlidir — server məlumatı URL qaytarır, fayl deyil.'
-            : 'Bayraq və hero şəkil faylları məcburidir.',
+          message:
+            `${missing} fayl kimi göndərilə bilmədi. ` +
+            (isEditing
+              ? 'Redaktə zamanı hər iki şəkli seçməlisiniz, çünki server URL qaytarır və həmin URL-i fayla çevirmək mümkün olmadı.'
+              : 'Hər iki fayl seçilməlidir.'),
         });
         setIsSaving(false);
         return;
       }
+
+      const { file: flagImage } = flag;
+      const { file: countryImage } = country;
 
       const result = isEditing
         ? await updateCountry({
@@ -401,11 +409,19 @@ function missingRequiredFields(form) {
             <textarea id="country-areas" name="areasText" value={form.areasText} onChange={handleChange} rows={2} className={FIELD_TEXTAREA} />
           </div>
 
-          {status.message && (
-            <p role="alert" className="sm:col-span-2 text-[12px] text-red-600">
-              {status.message}
-            </p>
-          )}
+      {status.message && (
+        <p role="alert" className="sm:col-span-2 text-[12px] text-red-600">
+          {status.message}
+        </p>
+      )}
+
+      {isEditing && (
+        <p className="sm:col-span-2 text-[11px] text-[#323643]/60 -mt-2">
+          <strong className="text-[#323643]">Qeyd:</strong> backend redaktə zamanı hər iki şəkli
+          (bayraq və hero) fayl tələb edir. Serverdən gələn URL avtomatik fayla çevrilir; əgər
+          mümkün olmasa, hər ikisini əl ilə seçmək lazımdır.
+        </p>
+      )}
 
           {rawResponse && (
             <div className="sm:col-span-2">

@@ -4,7 +4,7 @@ import { addUniversity, deleteUniversity, getUniversitiesByCountry, getUniversit
 import { describeFailure } from '../../services/httpClient';
 import { handleAuthFailure, isAuthFailure } from '../../services/session';
 import { useAllCountries } from '../../services/contentHooks';
-import { dataUrlToFile } from '../../utils/imageFile';
+import { resolveImageFile } from '../../utils/imageFile';
 import { UNIVERSITY_TYPES, getUniversityTypeLabel } from '../../utils/format';
 import {
   BTN_ACCENT,
@@ -153,13 +153,17 @@ const REQUIRED_LABELS = {
         return;
       }
 
-      const logo = await dataUrlToFile(form.universityLogo, 'logo');
+      const { file: logo, reason: logoReason } = await resolveImageFile(
+        form.universityLogo,
+        'logo',
+      );
       if (!logo) {
         setStatus({
           state: 'error',
-          message: isEditing
-            ? 'Redaktə zamanı loqo yenidən seçilməlidir — server məlumatı URL qaytarır, fayl deyil.'
-            : 'Universitet loqosu faylı məcburidir.',
+          message:
+            logoReason === 'fetch-blocked'
+              ? 'Universitet loqosu serverdən yüklənə bilmədi (CORS). Loqonu əl ilə seçməlisiniz.'
+              : 'Universitet loqosu faylı məcburidir.',
         });
         setIsSaving(false);
         return;
