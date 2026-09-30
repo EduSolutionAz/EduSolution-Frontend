@@ -42,6 +42,7 @@ export default function UniversitiesManager() {
   const [editingName, setEditingName] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
   const [status, setStatus] = useState({ state: 'idle', message: '' });
+  const [rawResponse, setRawResponse] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   const isEditing = Boolean(editingName);
@@ -100,6 +101,7 @@ const REQUIRED_LABELS = {
     setEditingName('');
     setForm(EMPTY_FORM);
     setStatus({ state: 'idle', message: '' });
+    setRawResponse('');
   };
 
   const handleEdit = async (university) => {
@@ -152,6 +154,7 @@ const REQUIRED_LABELS = {
 
     setIsSaving(true);
     setStatus({ state: 'loading', message: '' });
+    setRawResponse('');
 
     try {
       const missing = Object.entries(REQUIRED_LABELS)
@@ -231,13 +234,27 @@ const REQUIRED_LABELS = {
             : `${isEditing ? 'Yenilənmədi' : 'Universitet əlavə edilmədi'} və siyahıda da görünmür. Server cavabı: ${JSON.stringify(result)}`,
       });
     } catch (err) {
+      const tokenPreview = (() => {
+        try {
+          const t = localStorage.getItem('eduSoliton_admin_token') || '';
+          return t ? `${t.slice(0, 12)}… (${t.length} simvol)` : 'YOXDUR';
+        } catch {
+          return 'oxunmadı';
+        }
+      })();
+      setRawResponse(
+        [`Endpoint: PATCH /university/update`, `Status: ${err?.status ?? '?'}`, `Token: ${tokenPreview}`, `Cavab body: ${err?.body ? JSON.stringify(err.body) : 'yoxdur (boş)'}`].join('\n'),
+      );
       if (isAuthFailure(err)) {
         handleAuthFailure(err);
         setStatus({
           state: 'error',
-          message: hasAdminToken()
-            ? `Sorğu rədd edildi (${err?.status}). Tokeni yoxlayın və ya yenidən daxil olun.`
-            : 'Admin tokeni brauzerdə yoxdur. /admin/login səhifəsindən yenidən daxil olun.',
+          message:
+            err?.status === 403
+              ? 'Backend PATCH-i qadağan etdi (403, boş cavab). Token-də UPDATE icazəsi yoxdur və ya backend-də bu endpoint admin roluna bağlı deyil. Yenidən login ol, alınmasa backend loguna bax.'
+              : hasAdminToken()
+                ? `Sorğu rədd edildi (${err?.status}). Tokeni yoxlayın və ya yenidən daxil olun.`
+                : 'Admin tokeni brauzerdə yoxdur. /admin/login səhifəsindən yenidən daxil olun.',
         });
       } else {
         setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });
@@ -441,7 +458,15 @@ const REQUIRED_LABELS = {
             </p>
           )}
 
-          <div className="sm:col-span-2 flex justify-end gap-2">
+          {rawResponse && (
+            <div className="sm:col-span-2">
+              <pre className="bg-[#0b1140] text-[#8ef6e4] text-[11px] rounded p-3 overflow-x-auto whitespace-pre-wrap break-all max-h-48">
+                {rawResponse}
+              </pre>
+            </div>
+          )}
+
+          <div className="sm:col-span-2 flex justify-end gap-2 flex-wrap">
             <button type="button" onClick={closeForm} className="px-4 py-1.5 text-[12px]">
               Ləğv et
             </button>

@@ -231,16 +231,34 @@ function missingRequiredFields(form) {
           : JSON.stringify(result, null, 2),
       );
     } catch (err) {
+      const tokenPreview = (() => {
+        try {
+          const t = localStorage.getItem('eduSoliton_admin_token') || '';
+          return t ? `${t.slice(0, 12)}… (${t.length} simvol)` : 'YOXDUR';
+        } catch {
+          return 'oxunmadı';
+        }
+      })();
+      const debug = [
+        `Endpoint: PATCH /country/update`,
+        `Status: ${err?.status ?? '?'}`,
+        `Token: ${tokenPreview}`,
+        `Ölkə: ${form.name.trim()}`,
+        `Cavab body: ${err?.body ? JSON.stringify(err.body) : 'yoxdur (boş)'}`,
+      ].join('\n');
       setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });
-      setRawResponse(err?.body ? JSON.stringify(err.body, null, 2) : 'Server cavab body-sı yoxdur.');
+      setRawResponse(debug);
 
       if (isAuthFailure(err)) {
         handleAuthFailure(err);
         setStatus({
           state: 'error',
-          message: hasAdminToken()
-            ? `Sorğu rədd edildi (${err?.status}). Tokeni yoxlayın və ya yenidən daxil olun.`
-            : 'Admin tokeni brauzerdə yoxdur. /admin/login səhifəsindən yenidən daxil olun.',
+          message:
+            err?.status === 403
+              ? 'Backend PATCH-i qadağan etdi (403, boş cavab). Adətən səbəb: token-də UPDATE icazəsi yoxdur və ya backend-də bu endpoint admin roluna bağlı deyil. Yenidən login ol, alınmasa backend loguna bax. Detallar aşağıda.'
+              : hasAdminToken()
+                ? `Sorğu rədd edildi (${err?.status}). Tokeni yoxlayın və ya yenidən daxil olun.`
+                : 'Admin tokeni brauzerdə yoxdur. /admin/login səhifəsindən yenidən daxil olun.',
         });
       }
     } finally {
@@ -451,7 +469,7 @@ function missingRequiredFields(form) {
             </div>
           )}
 
-          <div className="sm:col-span-2 flex justify-end gap-2">
+          <div className="sm:col-span-2 flex justify-end gap-2 flex-wrap">
             <button type="button" onClick={closeForm} className="px-4 py-1.5 text-[12px]">
               Ləğv et
             </button>

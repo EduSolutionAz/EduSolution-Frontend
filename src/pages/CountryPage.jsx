@@ -4,13 +4,14 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import UniversitiesList from '../components/UniversitiesList';
 import AverageCosts from '../components/AverageCosts';
-import { useAllCountries, useCountry, useCountryEntity, useCountryLogos } from '../services/contentHooks';
+import { useAllCountries, useCountry, useCountryEntity, useCountryLogos, useTopCountries } from '../services/contentHooks';
 import {
   mapAllCountry,
   mapCountry,
   mapCountryEntity,
   mapCountryFromSummary,
   mapCountryLogos,
+  mapTopCountry,
 } from '../services/mappers';
 
 import { gradientFor, universityInitials } from '../utils/format';
@@ -25,12 +26,21 @@ function Loading() {
 
 function PageShell({ children }) {
   return (
-    <div className="min-h-screen flex flex-col bg-[#f6eeee] font-sans">
+    <div className="min-h-screen flex flex-col bg-[#f6eeee] font-sans overflow-x-hidden">
       <Header />
       {children}
       <Footer />
     </div>
   );
+}
+
+function slugToGuess(slug) {
+  try {
+    const decoded = decodeURIComponent(slug || '');
+    return decoded.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  } catch {
+    return String(slug || '').replace(/[-_]+/g, ' ').trim();
+  }
 }
 
 export default function CountryPage() {
@@ -40,13 +50,31 @@ export default function CountryPage() {
   const { data: logoItems } = useCountryLogos();
   const flagMap = mapCountryLogos(logoItems);
 
-  // The name has to come from the full list: /country/top_countries only
-  // returns six, so any other country would resolve to an empty name and
-  // never request its details.
+  // Ana ekran /country/top_countries-dən gəlir, bura isə /country/all-dən
+  // axtarırdı. Backend-də yeni ölkə top-da görünüb all-da görünməyəndə
+  // "tapılmadı" çıxırdı. Ona görə hər iki siyahını birləşdirib axtarırıq.
   const { data: allCountries, loading: loadingList } = useAllCountries();
-  const countryList = (allCountries || []).map(mapAllCountry).filter(Boolean);
-  const summary = countryList.find((c) => c.slug === slug) || null;
-  const countryName = summary?.name || slug || '';
+  const { data: topRaw, loading: loadingTop } = useTopCountries();
+  const allList = (allCountries || []).map(mapAllCountry).filter(Boolean);
+  const topList = (topRaw || []).map(mapTopCountry).filter(Boolean);
+  const mergedBySlug = new Map();
+  [...allList, ...topList].forEach((c) => {
+    if (!mergedBySlug.has(c.slug)) mergedBySlug.set(c.slug, c);
+  });
+  const countryList = [...mergedBySlug.values()];
+  const normalizedSlug = String(slug || '').toLowerCase();
+  const guess = slugToGuess(slug);
+  const summary =
+    countryList.find(
+      (c) =>
+        c.slug === normalizedSlug ||
+        c.name.toLowerCase() === normalizedSlug ||
+        c.name.toLowerCase() === guess.toLowerCase(),
+    ) || null;
+  // Əgər summary tapılmasa, slug-ı birbaşa backend-ə göndərmək işləməz,
+  // çünki backend real ad gözləyir ("yeni-olke" yox, "Yeni Olke").
+  // Ona görə slug-ı boşluqlu tahminə çevirib onu sorğulayırıq.
+  const countryName = summary?.name || guess || slug || '';
 
   const { data, loading } = useCountry(countryName);
   const detail = data ? mapCountry(data) : null;
@@ -67,7 +95,7 @@ export default function CountryPage() {
 
   const flag = (country && flagMap[country.slug]) || (entity && entity.flag) || '';
 
-  if (loadingList || (loading && countryName)) {
+  if (loadingList || loadingTop || (loading && countryName)) {
     return (
       <PageShell>
         <Loading />
@@ -78,9 +106,15 @@ export default function CountryPage() {
   if (!country) {
     return (
       <PageShell>
-        <main className="flex-1 flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-          <h1 className="text-2xl font-bold text-[#080d4a]">Ölkə tapılmadı</h1>
-          <p className="text-sm text-[#080d4a]/70">"{slug}" adlı ölkə mövcud deyil.</p>
+<main className="flex-1 w-full min-w-0 overflow-hidden flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+            <h1 className="text-2xl font-bold text-[#080d4a]">Ölkə tapılmadı</h1>
+            <p className="text-sm text-[#080d4a]/70 break-words [overflow-wrap:anywhere]">"{slug}" adlı ölkə mövcud deyil.</p>
+          <p className="text-[11px] text-[#080d4a]/50 max-w-[520px]">
+            Axtarılan: slug="{slug}", tahmin="{countryName}". Siyahıda {countryList.length} ölkə var.
+            Əgər yeni yaratmısansa: 1) /admin-də siyahıda görünür? 2) Adı olduğu kimi yaz
+            (məs: "Cənubi Koreya" üçün /country/cenubi-koreya). 3) Brauzerdə Network-də
+            GET /country/all cavabında country_name varmı yoxla.
+          </p>
 
           {countryList.length > 0 ? (
             <div className="mt-2 flex flex-wrap justify-center gap-2">
@@ -110,14 +144,14 @@ export default function CountryPage() {
   return (
     <PageShell>
       <main
-        className="flex-1"
+        className="flex-1 w-full min-w-0 overflow-hidden"
         style={{
           backgroundImage: `linear-gradient(rgba(246,238,238,0.94), rgba(246,238,238,0.94)), url('/assets/topographic.png')`,
           backgroundRepeat: 'repeat',
           backgroundSize: '650px auto',
         }}
       >
-        <div className="max-w-[900px] mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16">
+        <div className="max-w-[900px] mx-auto w-full min-w-0 px-4 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16 overflow-hidden">
           {/* Title */}
           <div className="flex items-center justify-center gap-2.5 mb-4 sm:mb-5">
             {flag && (
@@ -163,7 +197,7 @@ export default function CountryPage() {
 
           {/* Description */}
           {country.description ? (
-            <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6 mb-8 sm:mb-10">
+            <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6 mb-8 sm:mb-10 break-words [overflow-wrap:anywhere] whitespace-pre-line">
               {country.description}
             </p>
           ) : (
@@ -196,7 +230,7 @@ export default function CountryPage() {
               <h2 className="text-center text-[#2f3f80] font-normal text-[18px] sm:text-[22px] tracking-wide mb-3">
                 Areas in {country.name}
               </h2>
-              <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6">
+              <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6 break-words [overflow-wrap:anywhere] whitespace-pre-line">
                 {country.areasText}
               </p>
             </section>

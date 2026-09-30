@@ -82,12 +82,11 @@ export default function UniversityPage() {
 
   const name = university.universityName;
 
-  return (
+return (
     <div className="min-h-screen flex flex-col bg-[#f6eeee] font-sans overflow-x-hidden">
       <Header />
-
-      <main className="flex-1" style={PAGE_BACKGROUND}>
-        <div className="max-w-[900px] mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16">
+      <main className="flex-1 w-full min-w-0 overflow-hidden" style={PAGE_BACKGROUND}>
+        <div className="max-w-[900px] mx-auto w-full min-w-0 px-4 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16 overflow-hidden">
           <nav className="flex items-center gap-2 text-[11px] sm:text-[12px] text-[#2f3f80]/70 mb-4 sm:mb-5">
             <Link to="/" className="hover:underline">
               Home
@@ -150,7 +149,7 @@ export default function UniversityPage() {
               <h2 className="text-center text-[#2f3f80] text-[18px] sm:text-[22px] font-normal tracking-wide mb-3">
                 About {name}
               </h2>
-              <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.8] sm:leading-7 whitespace-pre-line">
+              <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.8] sm:leading-7 whitespace-pre-line break-words [overflow-wrap:anywhere]">
                 {university.content}
               </p>
             </section>
@@ -176,7 +175,7 @@ export default function UniversityPage() {
                 {university.faculties.map((faculty) => (
                   <li
                     key={faculty.id}
-                    className="bg-white rounded-full shadow-sm px-4 py-1.5 text-[11px] sm:text-[12px] text-[#2f3f80]"
+                    className="bg-white rounded-full shadow-sm px-4 py-1.5 text-[11px] sm:text-[12px] text-[#2f3f80] max-w-full break-words [overflow-wrap:anywhere]"
                   >
                     {faculty.name}
                   </li>

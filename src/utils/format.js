@@ -51,9 +51,12 @@ export function isImageFlag(flag) {
 
 const SLUG_MAP = {
   ğ: 'g',
+  Ğ: 'g',
   ı: 'i',
+  I: 'i',
   İ: 'i',
   ə: 'e',
+  Ə: 'e',
   ý: 'y',
   Ý: 'y',
 };
