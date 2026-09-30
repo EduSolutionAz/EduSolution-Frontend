@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addUniversity, deleteUniversity, getUniversitiesByCountry, getUniversityEntity, updateUniversity } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
+import { handleAuthFailure, isAuthFailure } from '../../services/session';
 import { useAllCountries } from '../../services/contentHooks';
 import { dataUrlToFile } from '../../utils/imageFile';
 import { UNIVERSITY_TYPES, getUniversityTypeLabel } from '../../utils/format';
@@ -215,7 +216,15 @@ const REQUIRED_LABELS = {
             : `${isEditing ? 'Yenilənmədi' : 'Universitet əlavə edilmədi'} və siyahıda da görünmür. Server cavabı: ${JSON.stringify(result)}`,
       });
     } catch (err) {
-      setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });
+      if (isAuthFailure(err)) {
+        handleAuthFailure();
+        setStatus({
+          state: 'error',
+          message: `Admin sessiyası etibarsızdır. Yenidən daxil olun — ${describeFailure(err, '')}`,
+        });
+      } else {
+        setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });
+      }
     } finally {
       setIsSaving(false);
     }

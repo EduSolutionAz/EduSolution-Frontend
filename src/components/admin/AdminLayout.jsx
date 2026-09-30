@@ -15,7 +15,11 @@ function TokenStatus() {
   if (!token) {
     return (
       <p className="text-[10px] leading-[1.5] text-red-300">
-        Admin tokeni yoxdur. Bütün yazma sorğuları 401 qaytaracaq — yenidən daxil olun.
+        Admin tokeni yoxdur. Yazma sorğuları 403 qaytaracaq —{' '}
+        <a href="/admin/login" className="underline text-white/80">
+          daxil olun
+        </a>
+        .
       </p>
     );
   }

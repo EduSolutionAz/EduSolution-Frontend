@@ -81,6 +81,19 @@ export function clearAdminToken() {
   writeFlag(ADMIN_VERIFIED_KEY, null);
 }
 
+/**
+ * Called when the backend rejects a write. Drops the stale session so the
+ * guard stops treating it as valid and the admin is asked to sign in again,
+ * instead of failing every request while the panel still looks open.
+ */
+export function handleAuthFailure() {
+  clearAdminToken();
+}
+
+export function isAuthFailure(error) {
+  return error?.status === 401 || error?.status === 403;
+}
+
 export function clearUserToken() {
   writeToken(USER_TOKEN_KEY, USER_TOKEN_TTL_KEY, null);
 }

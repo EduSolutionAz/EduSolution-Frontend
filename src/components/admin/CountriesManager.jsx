@@ -2,6 +2,7 @@ import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addCountry, deleteCountry, getAllCountries, getCountryEntity, updateCountry } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
+import { handleAuthFailure, isAuthFailure } from '../../services/session';
 import { useAllCountries } from '../../services/contentHooks';
 import { dataUrlToFile } from '../../utils/imageFile';
 import { FEATURE_OPTIONS, formatUniversityCount, formatUsd } from '../../utils/format';
@@ -213,9 +214,17 @@ function missingRequiredFields(form) {
       );
     } catch (err) {
       setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });
-      setRawResponse(
-        err?.body ? JSON.stringify(err.body, null, 2) : 'Server cavab body-sı yoxdur.',
-      );
+      setRawResponse(err?.body ? JSON.stringify(err.body, null, 2) : 'Server cavab body-sı yoxdur.');
+
+      if (isAuthFailure(err)) {
+        handleAuthFailure();
+        setStatus({
+          state: 'error',
+          message:
+            'Admin sessiyası etibarsızdır. Yenidən daxil olun — ' +
+            describeFailure(err, ''),
+        });
+      }
     } finally {
       setIsSaving(false);
     }
