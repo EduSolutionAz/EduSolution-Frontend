@@ -1,6 +1,5 @@
-import { useMemo } from "react";
 import { heroStats } from "../../data/home";
-import { useCountriesWithUniversities } from "../../services/contentHooks";
+import { useAllUniversities } from "../../services/contentHooks";
 
 const SOCIAL_LINKS = [
   { key: "linkedin", label: "LinkedIn", url: "", icon: (
@@ -58,12 +57,11 @@ const ICONS = {
 };
 
 export default function Hero() {
-  const { data: countries } = useCountriesWithUniversities();
+  // Counted from /university/all, since the country payloads do not carry a
+  // university list.
+  const { data: universities } = useAllUniversities();
 
-  const partnerCount = useMemo(
-    () => (countries || []).reduce((sum, country) => sum + (country.universities || []).length, 0),
-    [countries],
-  );
+  const partnerCount = universities?.length || 0;
 
   const stats = heroStats.map((stat) =>
     stat.label === "Partner University" ? { ...stat, value: String(partnerCount) } : stat,
