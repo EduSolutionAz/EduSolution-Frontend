@@ -13,6 +13,8 @@ import {
   mapCountryLogos,
 } from '../services/mappers';
 
+import { gradientFor, universityInitials } from '../utils/format';
+
 function Loading() {
   return (
     <div className="flex-1 flex items-center justify-center py-24 text-[#2f3f80]/60 text-[13px]">
@@ -133,7 +135,12 @@ export default function CountryPage() {
           </div>
 
           {/* Hero image */}
-          <div className="w-full overflow-hidden rounded-[2px] shadow-sm mb-5 sm:mb-6 bg-[#d8cccc]">
+          <div
+            className="w-full overflow-hidden rounded-[2px] shadow-sm mb-5 sm:mb-6"
+            style={country.heroImage && brokenSrc !== country.heroImage
+              ? { backgroundColor: '#d8cccc' }
+              : { background: gradientFor(country.name) }}
+          >
             {country.heroImage && brokenSrc !== country.heroImage ? (
               <img
                 src={country.heroImage}
@@ -143,13 +150,13 @@ export default function CountryPage() {
                 onError={() => setBrokenSrc(country.heroImage)}
               />
             ) : (
-              <div className="w-full h-[190px] sm:h-[360px] flex flex-col items-center justify-center gap-2 text-[#2f3f80]/50 text-[13px]">
-                <svg width="34" height="34" fill="none" stroke="currentColor" strokeWidth="1.4" viewBox="0 0 24 24">
-                  <rect x="3" y="5" width="18" height="14" rx="2" />
-                  <path strokeLinecap="round" d="M3 16l5-5 4 4 3-3 6 6" />
-                  <circle cx="9" cy="10" r="1.4" />
-                </svg>
-                <span>{country.name} üçün şəkil yüklənmədi</span>
+              <div className="w-full h-[190px] sm:h-[360px] flex flex-col items-center justify-center gap-3 px-6 text-center">
+                <span className="text-white/85 font-heading font-bold text-[40px] sm:text-[56px] leading-none">
+                  {universityInitials(country.name) || country.name.slice(0, 2).toUpperCase()}
+                </span>
+                <span className="text-white/70 text-[12px] sm:text-[14px] tracking-wide">
+                  {country.name}
+                </span>
               </div>
             )}
           </div>
