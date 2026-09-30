@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminLogin } from '../services/authApi';
 import { markAdminVerified } from '../services/session';
+import { ADMIN_TOKEN_KEY } from '../config/api';
+import { readToken } from '../services/httpClient';
 
 const INPUT =
   'w-full h-[42px] bg-white/95 border border-white/30 rounded px-4 text-[13px] text-[#080d4a] outline-none focus:border-[#26aec4] transition';
@@ -10,6 +12,7 @@ export default function AdminLoginPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
+  const [report, setReport] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
@@ -21,12 +24,21 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
+    setReport('');
 
     try {
       const data = await adminLogin({
         username: form.username.trim(),
         password: form.password,
       });
+
+      const stored = readToken(ADMIN_TOKEN_KEY);
+      setReport(
+        [
+          `Server cavabı: ${data === null ? 'boş (200, content-length 0)' : JSON.stringify(data)}`,
+          `localStorage-də saxlanan token: ${stored ? `${stored.slice(0, 16)}… (${stored.length} simvol)` : 'YOXDUR'}`,
+        ].join('\n'),
+      );
 
       if (!data?.token) {
         setError('Server giriş cavabında token qaytarmadı. Admin hesabını yoxlayın.');
@@ -36,6 +48,15 @@ export default function AdminLoginPage() {
       markAdminVerified();
       navigate('/admin', { replace: true });
     } catch (err) {
+      setReport(
+        [
+          `Status: [${err?.status ?? '?'}] ${err?.code ?? ''}`,
+          `Mesaj: ${err?.message ?? 'naməlum'}`,
+          `Cavab body: ${err?.body ? JSON.stringify(err.body) : 'yoxdur'}`,
+          `localStorage token: ${readToken(ADMIN_TOKEN_KEY) ? 'var' : 'yoxdur'}`,
+        ].join('\n'),
+      );
+
       if (err?.status === 401 || err?.status === 403) {
         setError(
           'İstifadəçi adı və ya şifrə yanlışdır. Şifrə 9-30 simvol olmalı, içində böyük hərf, kiçik hərf, rəqəm və . , # ? / simvollarından biri olmalıdır.',
@@ -101,6 +122,12 @@ export default function AdminLoginPage() {
             <p role="alert" className="text-red-300 text-[12px]">
               {error}
             </p>
+          )}
+
+          {report && (
+            <pre className="bg-black/40 text-[#8ef6e4] text-[10px] rounded p-2.5 overflow-x-auto whitespace-pre-wrap break-all">
+              {report}
+            </pre>
           )}
 
           <button
