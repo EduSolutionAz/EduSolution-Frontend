@@ -5,6 +5,7 @@ import { useCountriesWithUniversities, useAllUniversities } from '../services/co
 import { slugify } from '../utils/format';
 
 const NAV_LINKS = [
+  { to: '/spin', label: 'Spin' },
   { href: '#services', label: 'Visa Help' },
   { href: '#study', label: 'Study Abroad' },
   { href: '#about', label: 'About Us' },

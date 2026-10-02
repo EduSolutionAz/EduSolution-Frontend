@@ -16,6 +16,7 @@ import RequireAdmin from './components/admin/RequireAdmin';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminAdminsPage from './pages/AdminAdminsPage';
 import CommentPage from './pages/CommentPage';
+import SpinPage from './pages/SpinPage';
 
 function NotFound() {
   return (
@@ -40,6 +41,7 @@ function App() {
          <Route path="/country/:slug/university/:id" element={<UniversityPage />} />
          <Route path="/countries/:slug" element={<CountryPage />} />
          <Route path="/comment/:id" element={<CommentPage />} />
+         <Route path="/spin" element={<SpinPage />} />
          <Route path="/germany" element={<Navigate to="/country/germany" replace />} />
 
          <Route path="/admin/login" element={<AdminLoginPage />} />
