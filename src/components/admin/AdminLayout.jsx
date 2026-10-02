@@ -50,7 +50,7 @@ export default function AdminLayout() {
 
   const handleLogout = () => {
     clearAdminToken();
-    navigate('/admin/login', { replace: true });
+    navigate('/', { replace: true });
   };
 
   return (
