@@ -1,12 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminLogin } from '../services/authApi';
-import { markAdminVerified } from '../services/session';
+import { markAdminVerified, clearAdminToken } from '../services/session';
 import { ADMIN_TOKEN_KEY } from '../config/api';
 import { readToken } from '../services/httpClient';
 
 const INPUT =
   'w-full h-[42px] bg-white/95 border border-white/30 rounded px-4 text-[13px] text-[#080d4a] outline-none focus:border-[#26aec4] transition';
+
+// Leaving the login screen also ends any stored session, so the next visit
+// to /admin asks for the credentials again.
+const handleLeaveSite = () => {
+  clearAdminToken();
+  navigate('/', { replace: true });
+};
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
@@ -138,12 +145,13 @@ export default function AdminLoginPage() {
             {isSubmitting ? 'Daxil olunur...' : 'Daxil ol'}
           </button>
 
-          <a
-            href="/"
-            className="block text-center text-white/50 text-[11px] hover:text-white transition-colors"
+          <button
+            type="button"
+            onClick={handleLeaveSite}
+            className="block w-full text-center text-white/50 text-[11px] hover:text-white transition-colors"
           >
             ← Ana səhifəyə qayıt
-          </a>
+          </button>
         </form>
       </div>
     </div>

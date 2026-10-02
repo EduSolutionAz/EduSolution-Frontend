@@ -105,13 +105,6 @@ export default function AdminLayout() {
           >
             Çıxış
           </button>
-
-          <a
-            href="/"
-            className="flex items-center gap-2 text-[12px] text-white/70 hover:text-white transition-colors"
-          >
-            ← Back to Site
-          </a>
         </div>
       </aside>
 
