@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addUniversity, deleteUniversity, getUniversitiesByCountry, getUniversityEntity, updateUniversity } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
-import { handleAuthFailure, hasAdminToken, isAuthFailure } from '../../services/session';
+import { endAdminSession, hasAdminToken, isAuthFailure } from '../../services/session';
 import { useAllCountries } from '../../services/contentHooks';
 import { resolveImageFile } from '../../utils/imageFile';
 import { UNIVERSITY_TYPES, getUniversityTypeLabel } from '../../utils/format';
@@ -246,16 +246,7 @@ const REQUIRED_LABELS = {
         [`Endpoint: PATCH /university/update`, `Status: ${err?.status ?? '?'}`, `Token: ${tokenPreview}`, `Cavab body: ${err?.body ? JSON.stringify(err.body) : 'yoxdur (boş)'}`].join('\n'),
       );
       if (isAuthFailure(err)) {
-        handleAuthFailure(err);
-        setStatus({
-          state: 'error',
-          message:
-            err?.status === 403
-              ? 'Backend PATCH-i qadağan etdi (403, boş cavab). Token-də UPDATE icazəsi yoxdur və ya backend-də bu endpoint admin roluna bağlı deyil. Yenidən login ol, alınmasa backend loguna bax.'
-              : hasAdminToken()
-                ? `Sorğu rədd edildi (${err?.status}). Tokeni yoxlayın və ya yenidən daxil olun.`
-                : 'Admin tokeni brauzerdə yoxdur. /admin/login səhifəsindən yenidən daxil olun.',
-        });
+        endAdminSession();
       } else {
         setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });
       }

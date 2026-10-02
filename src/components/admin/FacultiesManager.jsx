@@ -3,7 +3,7 @@ import { addFaculty, deleteFaculty, getFaculties } from '../../services/contentA
 import { useAllCountries } from '../../services/contentHooks';
 import { mapFaculties } from '../../services/mappers';
 import UniversityPicker from './UniversityPicker';
-import { handleAuthFailure, isAuthFailure } from '../../services/session';
+import { endAdminSession, isAuthFailure } from '../../services/session';
 import { BTN_ACCENT, BTN_DELETE, FIELD_INPUT, FIELD_LABEL, SECTION_TITLE } from './fields';
 
 export default function FacultiesManager() {
@@ -77,7 +77,7 @@ export default function FacultiesManager() {
           ? 'Admin sessiyası etibarsızdır. Yenidən daxil olun.'
           : err?.message || 'Fakultə əlavə edilmədi.',
       );
-      if (isAuthFailure(err)) handleAuthFailure(err);
+      if (isAuthFailure(err)) endAdminSession();
     } finally {
       setIsSaving(false);
     }
@@ -101,7 +101,7 @@ export default function FacultiesManager() {
           ? 'Admin sessiyası etibarsızdır. Yenidən daxil olun.'
           : err?.message || 'Fakultə silinmədi.',
       );
-      if (isAuthFailure(err)) handleAuthFailure(err);
+      if (isAuthFailure(err)) endAdminSession();
     }
   };
 

@@ -44,13 +44,9 @@ export function isTokenExpired(ttlKey) {
 }
 
 /**
- * The admin area checks access once per browser session, then trusts the
- * result. Re-checking on every render used to bounce a signed-in admin back
- * to the login screen mid-task.
- *
- * The remembered flag is only honoured while a token still exists: a flag
- * left over from a cleared token would otherwise let the admin in while
- * every request went out unauthenticated and got 401.
+ * The admin area requires a stored token. When the backend rejects a
+ * request the session is ended and the login page is shown, so entering the
+ * panel always requires a sign-in that the backend has accepted.
  */
 export function canAccessAdmin() {
   const hasToken = Boolean(readToken(ADMIN_TOKEN_KEY));
@@ -82,12 +78,15 @@ export function clearAdminToken() {
 }
 
 /**
- * Called when the backend rejects a request. Only a 401 is treated as proof
- * that the session is dead: this API answers 403 when the header is simply
- * absent, so clearing on 403 would turn a recoverable state into a loop.
+ * Ends the admin session and sends the browser to the login page.
+ * Used when the backend rejects a request, so a stale token can never leave
+ * the panel open with every action failing.
  */
-export function handleAuthFailure(error) {
-  if (error?.status === 401) clearAdminToken();
+export function endAdminSession() {
+  clearAdminToken();
+  if (typeof window !== 'undefined') {
+    window.location.assign('/admin/login');
+  }
 }
 
 export function isAuthFailure(error) {

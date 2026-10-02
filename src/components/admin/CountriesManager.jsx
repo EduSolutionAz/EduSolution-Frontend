@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addCountry, deleteCountry, getAllCountries, getCountryEntity, updateCountry } from '../../services/contentApi';
 import { describeFailure } from '../../services/httpClient';
-import { handleAuthFailure, hasAdminToken, isAuthFailure } from '../../services/session';
+import { endAdminSession, hasAdminToken, isAuthFailure } from '../../services/session';
 import { useAllCountries } from '../../services/contentHooks';
 import { resolveImageFile } from '../../utils/imageFile';
 import { FEATURE_OPTIONS, formatUniversityCount, formatUsd } from '../../utils/format';
@@ -250,16 +250,7 @@ function missingRequiredFields(form) {
       setRawResponse(debug);
 
       if (isAuthFailure(err)) {
-        handleAuthFailure(err);
-        setStatus({
-          state: 'error',
-          message:
-            err?.status === 403
-              ? 'Backend PATCH-i qadağan etdi (403, boş cavab). Adətən səbəb: token-də UPDATE icazəsi yoxdur və ya backend-də bu endpoint admin roluna bağlı deyil. Yenidən login ol, alınmasa backend loguna bax. Detallar aşağıda.'
-              : hasAdminToken()
-                ? `Sorğu rədd edildi (${err?.status}). Tokeni yoxlayın və ya yenidən daxil olun.`
-                : 'Admin tokeni brauzerdə yoxdur. /admin/login səhifəsindən yenidən daxil olun.',
-        });
+        endAdminSession();
       }
     } finally {
       setIsSaving(false);
