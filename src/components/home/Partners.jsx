@@ -1,20 +1,58 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getUniversityLogos } from '../../services/contentApi';
 import { mapUniversityLogos } from '../../services/mappers';
 
-const FALLBACK_LOGOS = [
-  { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/budapest_metropolitan_university_logo.png', alt: 'Budapest Metropolitan University' },
-  { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/cyprus-science-university-logo.png', alt: 'Cyprus Science University' },
-  { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/medipol_university_logo.png', alt: 'Medipol University' },
-  { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/vistula_university_logo.png', alt: 'Vistula University' },
-  { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/vizja_logo.png', alt: 'VIZJA University' },
-  { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/ted.png', alt: 'TED University' },
-  { src: '/assets/wsb_logo_transparent.png', alt: 'WSB University' },
-  { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/world_peace_university_logo.png', alt: 'World Peace University' },
-];
+// ─── MOCK DATA (söndürülüb) ────────────────────────────────────────────
+// Data artıq API-dən gəlir. Lazım olsa SADƏCƏ bunu geri aç:
+// FALLBACK_LOGOS-ı ağrıdan setLogos üçün default etmək kifayətdir.
+// const FALLBACK_LOGOS = [
+//   { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/budapest_metropolitan_university_logo.png', alt: 'Budapest Metropolitan University' },
+//   { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/cyprus-science-university-logo.png', alt: 'Cyprus Science University' },
+//   { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/medipol_university_logo.png', alt: 'Medipol University' },
+//   { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/vistula_university_logo.png', alt: 'Vistula University' },
+//   { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/vizja_logo.png', alt: 'VIZJA University' },
+//   { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/ted.png', alt: 'TED University' },
+//   { src: '/assets/wsb_logo_transparent.png', alt: 'WSB University' },
+//   { src: 'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/world_peace_university_logo.png', alt: 'World Peace University' },
+// ];
+const FALLBACK_LOGOS = [];
+
+const DURATION = 22; // seconds — must match .marquee-track animation duration
+const STORAGE_KEY = 'edusolution_partners_marquee_time';
+
+// R2-dəkilərin ağ fonu lokal şəffaf PNG ilə əvəz edilib (public/assets/universities)
+const LOCAL_LOGO_MAP = {
+  'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/prague_technic_logo': '/assets/universities/prague_technic_logo.png',
+  'https://pub-61dff26e8b8b473ab8b89d3b5b489917.r2.dev/university-bucket/baku_state_university_logo': '/assets/universities/baku_state_university_logo.png',
+};
+
+function loadSavedTime() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const value = parseFloat(raw);
+    if (!Number.isFinite(value)) return 0;
+    return ((value % DURATION) + DURATION) % DURATION;
+  } catch {
+    return 0;
+  }
+}
+
+function saveTime(t) {
+  try {
+    localStorage.setItem(STORAGE_KEY, String(t));
+  } catch {
+    /* ignore */
+  }
+}
 
 export default function Partners() {
   const [logos, setLogos] = useState(FALLBACK_LOGOS);
+  const trackRef = useRef(null);
+  const timeRef = useRef(loadSavedTime());
+  const lastRef = useRef(Date.now());
+  const pausedRef = useRef(false);
+  const savedSecondRef = useRef(timeRef.current);
+  const delaySetRef = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -22,14 +60,48 @@ export default function Partners() {
       .then((data) => {
         if (!active) return;
         const fromApi = mapUniversityLogos(data);
-        setLogos(fromApi.length > 0 ? fromApi : FALLBACK_LOGOS);
+        const remapped = fromApi.map((logo) => ({
+          ...logo,
+          src: LOCAL_LOGO_MAP[logo.src] || logo.src,
+        }));
+        setLogos(remapped.length > 0 ? remapped : []);
       })
       .catch(() => {
-        /* keep fallback */
+        /* API xətası → boş qalır */
       });
     return () => {
       active = false;
     };
+  }, []);
+
+  // resume animation from saved position using negative animation-delay
+  useEffect(() => {
+    if (delaySetRef.current) return;
+    delaySetRef.current = true;
+    if (trackRef.current) {
+      trackRef.current.style.animationDelay = `-${timeRef.current}s`;
+    }
+  }, []);
+
+  // track time continuously so refresh resumes from where it left off
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      const now = Date.now();
+      if (!pausedRef.current) {
+        timeRef.current = (timeRef.current + (now - lastRef.current) / 1000) % DURATION;
+      }
+      lastRef.current = now;
+
+      // persist roughly once per second to reduce writes
+      if (Math.floor(timeRef.current) !== Math.floor(savedSecondRef.current)) {
+        savedSecondRef.current = timeRef.current;
+        saveTime(timeRef.current);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   return (
@@ -49,8 +121,21 @@ export default function Partners() {
       </div>
 
       {/* marquee wrapper - hover pauses animation - seamless loop */}
-      <div className="marquee-group relative overflow-x-hidden py-3" style={{ overflowY: 'visible' }}>
-        <div className="marquee-track flex items-center gap-8 sm:gap-10 w-max py-2">
+      <div
+        className="marquee-group relative overflow-x-hidden py-3"
+        style={{ overflowY: 'visible' }}
+        onMouseEnter={() => {
+          pausedRef.current = true;
+        }}
+        onMouseLeave={() => {
+          lastRef.current = Date.now();
+          pausedRef.current = false;
+        }}
+      >
+        <div
+          ref={trackRef}
+          className="marquee-track flex items-center gap-8 sm:gap-10 w-max py-2"
+        >
           {[...logos, ...logos, ...logos, ...logos].map((p, i) => (
             <img
               key={`${p.src}-${i}`}

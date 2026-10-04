@@ -36,6 +36,36 @@ function segmentPath(cx, cy, r, startAngle) {
   ].join(' ');
 }
 
+// Sözü qonşu seqmentlərə daşmayan qısa sətirlərə bölür (sektora radius boyu yazılır)
+function wrapLabel(label, maxLine = 9) {
+  const words = label.split(' ').filter(Boolean);
+  const lines = [];
+  let current = '';
+  for (const w of words) {
+    const candidate = current ? `${current} ${w}` : w;
+    if (candidate.length <= maxLine || !current) {
+      current = candidate;
+    } else {
+      lines.push(current);
+      current = w;
+    }
+  }
+  if (current) lines.push(current);
+  // çox uzun sözü yalnız həddən çox uzunsa böl
+  return lines
+    .flatMap((line) => {
+      if (line.length <= 12) return [line];
+      const parts = [];
+      let rest = line;
+      while (rest.length > 12) {
+        parts.push(rest.slice(0, 12));
+        rest = rest.slice(12);
+      }
+      return rest ? [...parts, rest] : parts;
+    })
+    .slice(0, 3);
+}
+
 export default function SpinPage() {
   const wheelRef = useRef(null);
   const rotationRef = useRef(0);
@@ -110,27 +140,34 @@ export default function SpinPage() {
               <svg viewBox="0 0 240 240" className="w-full h-full" role="img" aria-label="Fırlatma çarxı">
                 <circle cx="120" cy="120" r="118" fill="#ffffff" stroke="#1a2e5a" strokeWidth="3" />
 
-                {SEGMENTS.map((segment, i) => (
-                  <g key={segment.label}>
-                    <path
-                      d={segmentPath(120, 120, 116, i * ARC)}
-                      fill={segment.color}
-                      stroke="#ffffff"
-                      strokeWidth="1"
-                    />
-                    <text
-                      fill="#ffffff"
-                      fontSize="8.5"
-                      fontWeight="700"
-                      textAnchor="middle"
-                      transform={`rotate(${i * ARC + ARC / 2} 120 120)`}
-                    >
-                      <tspan x="120" y="56">
-                        {segment.label.length > 15 ? `${segment.label.slice(0, 14)}…` : segment.label}
-                      </tspan>
-                    </text>
-                  </g>
-                ))}
+                {SEGMENTS.map((segment, i) => {
+                  const lines = wrapLabel(segment.label);
+                  const lineH = 9;
+                  const startY = 48 - ((lines.length - 1) * lineH) / 2;
+                  return (
+                    <g key={segment.label}>
+                      <path
+                        d={segmentPath(120, 120, 116, i * ARC)}
+                        fill={segment.color}
+                        stroke="#ffffff"
+                        strokeWidth="1"
+                      />
+                      <text
+                        fill="#ffffff"
+                        fontSize="9"
+                        fontWeight="700"
+                        textAnchor="middle"
+                        transform={`rotate(${i * ARC + ARC / 2} 120 120)`}
+                      >
+                        {lines.map((line, li) => (
+                          <tspan key={li} x="120" y={startY + li * lineH}>
+                            {line}
+                          </tspan>
+                        ))}
+                      </text>
+                    </g>
+                  );
+                })}
 
                 <circle cx="120" cy="120" r="26" fill="#ffffff" stroke="#1a2e5a" strokeWidth="3" />
                 <circle cx="120" cy="120" r="7" fill="#26aec4" />
@@ -148,16 +185,42 @@ export default function SpinPage() {
           >
             {spinning ? 'Fırladılır...' : 'Firlat'}
           </button>
-
-          <div className="h-6 text-center">
-            {result && !spinning && (
-              <p className="text-[15px] sm:text-[17px] font-semibold text-[#1a2e5a]">
-                Nəticə: <span className="text-[#1a8a99]">{result.label}</span>
-              </p>
-            )}
-          </div>
         </div>
       </main>
+
+      {result && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4"
+          onClick={() => setResult(null)}
+        >
+          <div
+            className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-[#26aec4]/15 flex items-center justify-center">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="#1a2e5a" aria-hidden="true">
+                <path d="M12 2l2.4 6.6L21 8l-5.2 4.6L17.6 20 12 16.4 6.4 20l1.8-7.4L3 8l6.6-1.4z" />
+              </svg>
+            </div>
+            <h3 className="text-[#1a2e5a] font-heading font-bold text-[20px] sm:text-[22px] tracking-wide mb-1">
+              Təbriklər!
+            </h3>
+            <p className="text-[14px] text-[#323643]/70 mb-4">
+              Çarxda sizə çıxdı:
+            </p>
+            <p className="text-[#1a8a99] font-bold text-[22px] sm:text-[24px] mb-7">
+              {result.label}
+            </p>
+            <button
+              type="button"
+              onClick={() => setResult(null)}
+              className="w-[150px] h-[48px] rounded-full bg-[#080d4a] text-white font-heading font-bold text-[16px] tracking-wide hover:bg-[#1a2e5a] transition-all cursor-pointer"
+            >
+              Bağla
+            </button>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

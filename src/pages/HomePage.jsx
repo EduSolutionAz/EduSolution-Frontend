@@ -2,6 +2,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Hero from '../components/home/Hero';
 import AdBoard from '../components/home/AdBoard';
+import PromoBanner from '../components/home/PromoBanner';
 import CountrySearch from '../components/home/CountrySearch';
 import WorkingWith from '../components/home/WorkingWith';
 import Services from '../components/home/Services';
@@ -10,7 +11,6 @@ import WhyUs from '../components/home/WhyUs';
 import NumbersBand from '../components/home/NumbersBand';
 import Steps from '../components/home/Steps';
 import Testimonials from '../components/home/Testimonials';
-import WriteReviewSection from '../components/home/WriteReviewSection';
 import ContactSection from '../components/home/ContactSection';
 import HomeFaq from '../components/home/HomeFaq';
 
@@ -21,6 +21,7 @@ export default function HomePage() {
       <main className="flex-1">
         <Hero />
         <AdBoard />
+        <PromoBanner />
         <CountrySearch />
         <WorkingWith />
         <Services />
@@ -29,7 +30,6 @@ export default function HomePage() {
         <Steps />
         <NumbersBand />
         <Testimonials />
-        <WriteReviewSection />
         <ContactSection />
         <HomeFaq />
       </main>

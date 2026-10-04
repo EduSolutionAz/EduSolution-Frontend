@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { useCountriesWithUniversities } from '../../services/contentHooks';
 import { formatUniversityCount, formatUsd, universityInitials } from '../../utils/format';
 
@@ -86,7 +86,7 @@ export default function WorkingWith() {
         {/* Working With title + flags */}
         <div className="mt-8 sm:mt-10 text-center">
           <h2 className="text-[#1a2e5a] font-heading font-bold text-[19px] sm:text-[22px] tracking-wide">Working With</h2>
-          <div className="mt-3 flex items-center justify-center gap-2 sm:gap-2.5 flex-wrap">
+          <div className="mt-3 flex items-center justify-center gap-2 sm:gap-2.5 flex-wrap max-w-[152px] sm:max-w-[174px] mx-auto">
             {countries.map((c) => {
               const code = FLAG_MAP[c.slug];
               const apiFlag = c.flag;
