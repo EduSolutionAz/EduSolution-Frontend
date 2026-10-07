@@ -56,6 +56,12 @@ export function canAccessAdmin() {
     return false;
   }
 
+  // Tokenin öz TTL-ü keçibsə panelə girmək olmaz.
+  if (isTokenExpired(ADMIN_TOKEN_TTL_KEY)) {
+    writeFlag(ADMIN_VERIFIED_KEY, null);
+    return false;
+  }
+
   if (readFlag(ADMIN_VERIFIED_KEY) !== '1') markAdminVerified();
   return true;
 }

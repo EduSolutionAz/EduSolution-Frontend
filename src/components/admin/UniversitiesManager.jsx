@@ -5,7 +5,7 @@ import { describeFailure } from '../../services/httpClient';
 import { endAdminSession, hasAdminToken, isAuthFailure } from '../../services/session';
 import { useAllCountries } from '../../services/contentHooks';
 import { resolveImageFile } from '../../utils/imageFile';
-import { UNIVERSITY_TYPES, getUniversityTypeLabel } from '../../utils/format';
+import { UNIVERSITY_TYPES } from '../../utils/format';
 import {
   BTN_ACCENT,
   BTN_DELETE,
@@ -16,6 +16,16 @@ import {
   FIELD_TEXTAREA,
   SECTION_TITLE,
 } from './fields';
+
+// AddUniversityRequestDTO və UpdateUniversityRequestDTO bu mətn sahələrini
+// required (minLength 1) işarələyir.
+const REQUIRED_LABELS = {
+  universityName: 'Universitet adı',
+  shortDescription: 'Qısa təsvir',
+  city: 'Şəhər',
+  content: 'Content (uzun mətn)',
+  area: 'Area',
+};
 
 const EMPTY_FORM = {
   universityName: '',
@@ -40,6 +50,7 @@ export default function UniversitiesManager() {
 
   const [showForm, setShowForm] = useState(false);
   const [editingName, setEditingName] = useState('');
+  const [editingCountry, setEditingCountry] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
   const [status, setStatus] = useState({ state: 'idle', message: '' });
   const [rawResponse, setRawResponse] = useState('');
@@ -47,17 +58,13 @@ export default function UniversitiesManager() {
 
   const isEditing = Boolean(editingName);
 
-// AddUniversityRequestDTO and UpdateUniversityRequestDTO mark these text
-// fields as required with minLength 1.
-const REQUIRED_LABELS = {
-  universityName: 'Universitet adı',
-  shortDescription: 'Qısa təsvir',
-  city: 'Şəhər',
-  content: 'Content (uzun mətn)',
-  area: 'Area',
-};
+const activeCountry = selectedCountry || countries[0]?.name || '';
 
-  const activeCountry = selectedCountry || countries[0]?.name || '';
+  // PATCH /university/update universiteti (universityName + countryName) ilə
+  // tanıyır. Redaktə zamanı hədəf seçilmiş qeyddir, ona görə hər ikisi
+  // kilidlənir və göndərilən dəyərlər formadan deyil, bu sabitlərdən gəlir.
+  const targetUniversityName = isEditing ? editingName : form.universityName.trim();
+  const targetCountryName = isEditing ? editingCountry : (form.countryName || activeCountry);
 
   useEffect(() => {
     if (!activeCountry) {
@@ -76,7 +83,7 @@ const REQUIRED_LABELS = {
           list
             .map((entry) => (typeof entry === 'string' ? entry : entry?.university_name))
             .filter(Boolean)
-            .map((name) => ({ id: name, universityName: name })),
+            .map((name) => ({ id: name, universityName: name, countryName: activeCountry })),
         );
       })
       .catch(() => {
@@ -99,14 +106,18 @@ const REQUIRED_LABELS = {
   const closeForm = () => {
     setShowForm(false);
     setEditingName('');
+    setEditingCountry('');
     setForm(EMPTY_FORM);
     setStatus({ state: 'idle', message: '' });
     setRawResponse('');
   };
 
   const handleEdit = async (university) => {
+    const lockedCountry = university.countryName || activeCountry;
+
     setStatus({ state: 'loading', message: `${university.universityName} yüklənir...` });
     setEditingName(university.universityName);
+    setEditingCountry(lockedCountry);
     setShowForm(true);
 
     let detail = null;
@@ -120,7 +131,9 @@ const REQUIRED_LABELS = {
 
     setForm({
       universityName: detail?.universityName || university.universityName,
-      countryName: detail?.countryName || activeCountry,
+      // Redaktə zamanı ölkə kilidlənir, ona görə server cavabından deyil,
+      // seçilmiş qeydin ölkəsi göstərilir.
+      countryName: lockedCountry,
       universityType: detail?.universityType || 'PUBLIC',
       shortDescription: detail?.shortDescription || '',
       universityLogo: detail?.universityLogo || '',
@@ -149,8 +162,8 @@ const REQUIRED_LABELS = {
       return;
     }
 
-    const countryName = form.countryName || activeCountry;
-    if (!form.universityName.trim() || !countryName) return;
+    const countryName = targetCountryName;
+    if (!targetUniversityName || !countryName) return;
 
     setIsSaving(true);
     setStatus({ state: 'loading', message: '' });
@@ -184,7 +197,7 @@ const REQUIRED_LABELS = {
       }
 
       const payload = {
-        universityName: form.universityName.trim(),
+        universityName: targetUniversityName,
         countryName,
         universityType: form.universityType,
         shortDescription: form.shortDescription.trim(),
@@ -206,7 +219,7 @@ const REQUIRED_LABELS = {
       const saved = Array.isArray(fresh)
         && fresh.some((entry) =>
           (typeof entry === 'string' ? entry : entry?.university_name)
-            === form.universityName.trim(),
+            === targetUniversityName,
         );
 
       setSelectedCountry(countryName);
@@ -216,12 +229,12 @@ const REQUIRED_LABELS = {
         setUniversities(
           (fresh || []).map((entry) => {
             const name = typeof entry === 'string' ? entry : entry?.university_name;
-            return { id: name, universityName: name };
+            return { id: name, universityName: name, countryName };
           }),
         );
         setStatus({
           state: 'success',
-          message: `"${form.universityName.trim()}" ${isEditing ? 'yeniləndi' : 'əlavə edildi'} və siyahı yeniləndi.`,
+          message: `"${targetUniversityName}" ${isEditing ? 'yeniləndi' : 'əlavə edildi'} və siyahı yeniləndi.`,
         });
         return;
       }
@@ -266,7 +279,7 @@ const REQUIRED_LABELS = {
         setUniversities(
           fresh.map((entry) => {
             const name = typeof entry === 'string' ? entry : entry?.university_name;
-            return { id: name, universityName: name };
+            return { id: name, universityName: name, countryName: activeCountry };
           }),
         );
       } else {
@@ -289,7 +302,7 @@ const REQUIRED_LABELS = {
           Universitetlər
           {isEditing && (
             <span className="ml-2 align-middle text-[12px] font-accent font-medium text-[#26aec4]">
-              Redaktə: {form.universityName}
+              Redaktə: {targetUniversityName}
             </span>
           )}
         </h2>
@@ -331,9 +344,20 @@ const REQUIRED_LABELS = {
               value={form.universityName}
               onChange={handleChange}
               placeholder="Məsələn: Berlin Technical University"
-              className={FIELD_INPUT}
+              className={`${FIELD_INPUT} ${
+                isEditing ? 'bg-[#ececec] text-[#323643]/55 cursor-not-allowed' : ''
+              }`}
+              readOnly={isEditing}
+              tabIndex={isEditing ? -1 : undefined}
+              aria-readonly={isEditing || undefined}
+              title={isEditing ? 'Redaktə zamanı universitet adı dəyişdirilə bilməz' : undefined}
               required
             />
+            {isEditing && (
+              <p className="mt-1 text-[10px] text-[#323643]/50">
+                Ad dəyişdirilə bilməz — endpoint universiteti adı ilə tanıyır.
+              </p>
+            )}
           </div>
 
           <div>
@@ -343,7 +367,12 @@ const REQUIRED_LABELS = {
               name="countryName"
               value={form.countryName || activeCountry}
               onChange={handleChange}
-              className={FIELD_INPUT}
+              className={`${FIELD_INPUT} ${
+                isEditing ? 'bg-[#ececec] text-[#323643]/55 cursor-not-allowed' : ''
+              }`}
+              disabled={isEditing}
+              aria-readonly={isEditing || undefined}
+              title={isEditing ? 'Redaktə zamanı ölkə dəyişdirilə bilməz' : undefined}
               required
             >
               <option value="" disabled>Ölkə seçin</option>
@@ -444,7 +473,12 @@ const REQUIRED_LABELS = {
           </div>
 
           {status.message && (
-            <p role="alert" className="sm:col-span-2 text-[12px] text-red-600">
+            <p
+              role={status.state === 'error' ? 'alert' : 'status'}
+              className={`sm:col-span-2 text-[12px] ${
+                status.state === 'error' ? 'text-red-600' : 'text-[#1a8a99]'
+              }`}
+            >
               {status.message}
             </p>
           )}
@@ -479,7 +513,7 @@ const REQUIRED_LABELS = {
                   {university.universityName}
                 </span>
                 <span className="text-[#323643]/50 text-[11px]">
-                  {activeCountry} · {getUniversityTypeLabel('PUBLIC')}
+                  {activeCountry}
                 </span>
               </div>
               <div className="flex items-center gap-1 shrink-0">

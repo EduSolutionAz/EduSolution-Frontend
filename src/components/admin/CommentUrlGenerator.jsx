@@ -50,7 +50,9 @@ export default function CommentUrlGenerator() {
   const handleDeleteComment = async (item) => {
     if (!window.confirm(`"${item.name}" tərəfindən yazılan rəy silinsin?`)) return;
 
-    setDeleting(item.name);
+    // Rəy adı ilə identifikasiya olunur (backend name + comment ilə silir),
+    // ona görə "silinir" vəziyyəti də ad üzrə izlənir.
+    setDeleting(item.comment);
     try {
       const result = await deleteComment({ name: item.name, comment: item.comment });
       if (result?.is_deleted) {
@@ -172,9 +174,9 @@ export default function CommentUrlGenerator() {
       )}
 
       <ul className="space-y-2" role="list">
-        {comments.map((item, index) => (
+        {comments.map((item) => (
           <li
-            key={`${item.name}-${index}`}
+            key={`${item.name}-${item.comment}`}
             className="bg-white rounded-md shadow px-4 py-3 flex items-start justify-between gap-3"
           >
             <div className="min-w-0">
@@ -186,10 +188,10 @@ export default function CommentUrlGenerator() {
             <button
               type="button"
               onClick={() => handleDeleteComment(item)}
-              disabled={deleting === index}
+              disabled={deleting === item.comment}
               className="shrink-0 px-3 py-1 text-red-600 text-[11px] hover:bg-red-50 rounded transition disabled:opacity-50"
             >
-              {deleting === index ? 'Silinir...' : 'Sil'}
+              {deleting === item.comment ? 'Silinir...' : 'Sil'}
             </button>
           </li>
         ))}

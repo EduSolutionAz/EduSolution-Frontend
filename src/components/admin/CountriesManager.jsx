@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import ImageUploadField from './ImageUploadField';
 import { addCountry, deleteCountry, getAllCountries, getCountryEntity, updateCountry } from '../../services/contentApi';
+import { ADMIN_TOKEN_KEY } from '../../config/api';
 import { describeFailure } from '../../services/httpClient';
 import { endAdminSession, hasAdminToken, isAuthFailure } from '../../services/session';
 import { useAllCountries } from '../../services/contentHooks';
@@ -16,6 +17,21 @@ import {
   FIELD_TEXTAREA,
   SECTION_TITLE,
 } from './fields';
+
+// CountryAddRequestDTO və UpdateCountryRequestDTO bu sahələri required
+// (minLength 1) işarələyir, boş dəyər backend tərəfindən rədd edilir.
+const REQUIRED_LABELS = {
+  name: 'Ölkə adı',
+  icon: 'İkon (mətn)',
+  description: 'Təsvir',
+  areasText: 'Ərazilər mətni',
+};
+
+function missingRequiredFields(form) {
+  return Object.entries(REQUIRED_LABELS)
+    .filter(([key]) => !String(form[key] || '').trim())
+    .map(([, label]) => label);
+}
 
 const EMPTY_FORM = {
   name: '',
@@ -45,20 +61,10 @@ export default function CountriesManager() {
 
   const isEditing = Boolean(editingName);
 
-// CountryAddRequestDTO and UpdateCountryRequestDTO mark these as required
-// with minLength 1, so an empty value makes the backend reject the request.
-const REQUIRED_LABELS = {
-  name: 'Ölkə adı',
-  icon: 'İkon (mətn)',
-  description: 'Təsvir',
-  areasText: 'Ərazilər mətni',
-};
-
-function missingRequiredFields(form) {
-  return Object.entries(REQUIRED_LABELS)
-    .filter(([key]) => !String(form[key] || '').trim())
-    .map(([, label]) => label);
-}
+  // Redaktə zamanı hədəf həmişə seçilmiş ölkədir: PATCH /country/update
+  // ölkəni adı ilə tanıyır, ona görə form dəyəri deyil, editingName
+  // göndərilir (input oxunmadığı halda da).
+  const targetName = isEditing ? editingName : form.name.trim();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -88,7 +94,9 @@ function missingRequiredFields(form) {
     let detail = null;
     let loadNote = '';
     try {
-      detail = await getCountryEntity(country.name);
+      // Redaktə admin panelində olur, ona görə admin tokeni göndərilir
+      // (getCountryEntity default olaraq istifadəçi tokenini göndərir).
+      detail = await getCountryEntity(country.name, { tokenKey: ADMIN_TOKEN_KEY });
       if (!detail) loadNote = 'Server boş cavab qaytardı';
     } catch (err) {
       loadNote = describeFailure(err, 'Məlumat yüklənmədi');
@@ -104,7 +112,9 @@ function missingRequiredFields(form) {
       features: [
         ...(detail?.isVisaHelp ? ['isVisaHelp'] : []),
         ...(detail?.isDormitoryHelp ? ['isDormitoryHelp'] : []),
-        ...(detail?.isTopList ? ['isTopList'] : ['isTopList']),
+        // Top List hər zaman seçili saxlanılır, əks halda ölkə
+        // /country/top_countries-də görünməz və redaktə olunmaz olur.
+        'isTopList',
       ],
       description: detail?.content || '',
       areasText: detail?.area || '',
@@ -118,7 +128,7 @@ function missingRequiredFields(form) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    if (!targetName) return;
 
     if (!hasAdminToken()) {
       setStatus({
@@ -172,7 +182,7 @@ function missingRequiredFields(form) {
 
       const result = isEditing
         ? await updateCountry({
-            countryName: form.name.trim(),
+            countryName: targetName,
             flagImage,
             countryImage,
             universityCount: Number(form.universityCount) || 0,
@@ -183,10 +193,10 @@ function missingRequiredFields(form) {
             isTopList: form.features.includes('isTopList'),
             content: form.description.trim(),
             area: form.areasText.trim(),
-            icon: form.icon.trim() || form.name.trim(),
+            icon: form.icon.trim() || targetName,
           })
         : await addCountry({
-            countryName: form.name.trim(),
+            countryName: targetName,
             flagImage,
             countryImage,
             universityCount: Number(form.universityCount) || 0,
@@ -197,7 +207,7 @@ function missingRequiredFields(form) {
             isTopList: form.features.includes('isTopList'),
             content: form.description.trim(),
             area: form.areasText.trim(),
-            icon: form.icon.trim() || form.name.trim(),
+            icon: form.icon.trim() || targetName,
           });
 
       // The backend creates the record but answers 200 with an empty body, so
@@ -206,14 +216,14 @@ function missingRequiredFields(form) {
       const fresh = await getAllCountries().catch(() => null);
       reload();
 
-      const saved = (fresh || []).some((entry) => entry?.country_name === form.name.trim());
+      const saved = (fresh || []).some((entry) => entry?.country_name === targetName);
 
       closeForm();
 
       if (saved) {
         setStatus({
           state: 'success',
-          message: `"${form.name.trim()}" ${isEditing ? 'yeniləndi' : 'əlavə edildi'} və siyahı yeniləndi.`,
+          message: `"${targetName}" ${isEditing ? 'yeniləndi' : 'əlavə edildi'} və siyahı yeniləndi.`,
         });
         return;
       }
@@ -243,7 +253,7 @@ function missingRequiredFields(form) {
         `Endpoint: PATCH /country/update`,
         `Status: ${err?.status ?? '?'}`,
         `Token: ${tokenPreview}`,
-        `Ölkə: ${form.name.trim()}`,
+        `Ölkə: ${targetName}`,
         `Cavab body: ${err?.body ? JSON.stringify(err.body) : 'yoxdur (boş)'}`,
       ].join('\n');
       setStatus({ state: 'error', message: describeFailure(err, 'Naməlum xəta') });
@@ -285,7 +295,7 @@ function missingRequiredFields(form) {
           Ölkələr
           {isEditing && (
             <span className="ml-2 align-middle text-[12px] font-accent font-medium text-[#26aec4]">
-              Redaktə: {form.name}
+              Redaktə: {targetName}
             </span>
           )}
         </h2>
@@ -314,7 +324,25 @@ function missingRequiredFields(form) {
         <form onSubmit={handleSubmit} className={`${CARD} grid grid-cols-1 sm:grid-cols-2 gap-4`}>
           <div>
             <label className={FIELD_LABEL} htmlFor="country-name">Ölkə adı *</label>
-            <input id="country-name" name="name" value={form.name} onChange={handleChange} required className={FIELD_INPUT} />
+            <input
+              id="country-name"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              readOnly={isEditing}
+              tabIndex={isEditing ? -1 : undefined}
+              aria-readonly={isEditing || undefined}
+              title={isEditing ? 'Redaktə zamanı ölkə adı dəyişdirilə bilməz' : undefined}
+              className={`${FIELD_INPUT} ${
+                isEditing ? 'bg-[#ececec] text-[#323643]/55 cursor-not-allowed' : ''
+              }`}
+            />
+            {isEditing && (
+              <p className="mt-1 text-[10px] text-[#323643]/50">
+                Ad dəyişdirilə bilməz — endpoint ölkəni adı ilə tanıyır.
+              </p>
+            )}
           </div>
 
           <div>
@@ -429,7 +457,12 @@ function missingRequiredFields(form) {
           </div>
 
       {status.message && (
-        <p role="alert" className="sm:col-span-2 text-[12px] text-red-600">
+        <p
+          role={status.state === 'error' ? 'alert' : 'status'}
+          className={`sm:col-span-2 text-[12px] ${
+            status.state === 'error' ? 'text-red-600' : 'text-[#1a8a99]'
+          }`}
+        >
           {status.message}
         </p>
       )}

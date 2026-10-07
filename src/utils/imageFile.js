@@ -7,7 +7,7 @@ function readAsDataUrl(file) {
   });
 }
 
-function drawToDataUrl(source, maxSize, quality) {
+function drawToDataUrl(source, maxSize, quality, mime = 'image/jpeg') {
   return new Promise((resolve) => {
     const img = new Image();
     img.onerror = () => resolve(source);
@@ -22,12 +22,22 @@ function drawToDataUrl(source, maxSize, quality) {
       canvas.height = height;
 
       const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, width, height);
+      if (!ctx) {
+        resolve(source);
+        return;
+      }
+
+      // JPEG şəffaflıq saxlamır, ona görə ağ fon yalnız JPEG üçün çəkilir.
+      // PNG/WebP-də alfa qorunur — universitet və ölkə loqoları üçün vacibdir.
+      if (mime === 'image/jpeg') {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+      }
+
       ctx.drawImage(img, 0, 0, width, height);
 
       try {
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        resolve(canvas.toDataURL(mime, quality));
       } catch {
         resolve(source);
       }
@@ -36,13 +46,18 @@ function drawToDataUrl(source, maxSize, quality) {
   });
 }
 
-export function readImageFile(file, { maxSize = 1400, quality = 0.85 } = {}) {
+export function readImageFile(file, { maxSize = 1400, quality = 0.85, mime } = {}) {
   if (!file) return Promise.resolve('');
   if (!file.type || !file.type.startsWith('image/')) {
     return Promise.reject(new Error('Yalnız şəkil faylı seçin'));
   }
 
-  return readAsDataUrl(file).then((source) => drawToDataUrl(source, maxSize, quality));
+  // Fayl PNG/WebP-dirsə və format dəyişdirilməyibsə, şəffaflığı itirmək
+  // üçün PNG-də yenidən kodlanmır.
+  const keepAlpha = file.type === 'image/png' || file.type === 'image/webp';
+  const target = mime || (keepAlpha ? 'image/png' : 'image/jpeg');
+
+  return readAsDataUrl(file).then((source) => drawToDataUrl(source, maxSize, quality, target));
 }
 
 /**

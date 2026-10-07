@@ -11,6 +11,7 @@ import FacultiesManager from './components/admin/FacultiesManager';
 import FaqManager from './components/admin/FaqManager';
 import AdBoardManager from './components/admin/AdBoardManager';
 import SpinPrizesManager from './components/admin/SpinPrizesManager';
+import WebPropertiesManager from './components/admin/WebPropertiesManager';
 import CommentUrlGenerator from './components/admin/CommentUrlGenerator';
 import RequireAdmin from './components/admin/RequireAdmin';
 import AdminLoginPage from './pages/AdminLoginPage';
@@ -63,6 +64,7 @@ function App() {
             <Route path="faqs" element={<FaqManager />} />
            <Route path="ads" element={<AdBoardManager />} />
            <Route path="prizes" element={<SpinPrizesManager />} />
+            <Route path="properties" element={<WebPropertiesManager />} />
             <Route path="comments" element={<CommentUrlGenerator />} />
             <Route path="admins" element={<AdminAdminsPage />} />
          </Route>

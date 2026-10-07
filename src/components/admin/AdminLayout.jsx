@@ -41,6 +41,7 @@ const MENU = [
   { to: '/admin/faqs', label: 'FAQ', icon: '' },
   { to: '/admin/ads', label: 'Ad Board', icon: '' },
   { to: '/admin/prizes', label: 'Spin Prizes', icon: '' },
+  { to: '/admin/properties', label: 'Web Config', icon: '' },
   { to: '/admin/comments', label: 'Comment URLs', icon: '' },
   { to: '/admin/admins', label: 'Admins', icon: '' },
 ];

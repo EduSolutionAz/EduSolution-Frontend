@@ -251,10 +251,15 @@ export function mapFaculties(items) {
 export function mapComment(dto, index) {
   const comment = text(dto?.comment);
   if (!comment) return null;
+
+  const author = text(dto.applicant_name) || 'Anonim';
+
+  // Eyni ad iki dəfə gələ bilər (eyni şəxs iki rəy yaza bilər), ona görə
+  // id təkcə addan qurulmur — index də əlavə olunur.
   return {
-    id: text(dto.applicant_name) || `comment-${index}`,
+    id: `${author}-${index}`,
     text: comment,
-    author: text(dto.applicant_name) || 'Anonim',
+    author,
     service: text(dto.service),
   };
 }

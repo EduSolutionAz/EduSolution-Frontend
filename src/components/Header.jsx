@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import CountryFlag from './CountryFlag';
 import { useCountriesWithUniversities, useAllUniversities } from '../services/contentHooks';
+import { isUserAuthenticated, clearUserToken } from '../services/session';
 import { slugify } from '../utils/format';
 
 const NAV_LINKS = [
@@ -28,6 +29,9 @@ function Chevron({ open }) {
 }
 
 export default function Header() {
+  // Token localStorage-dadır və header hər səhifədə yenidən qurulur,
+  // ona görə render anında oxunur — state və effect lazım deyil.
+  const isAuthenticated = isUserAuthenticated();
   const [menuOpen, setMenuOpen] = useState(false);
   const [openCountries, setOpenCountries] = useState(false);
   const [openUnis, setOpenUnis] = useState(false);
@@ -35,6 +39,10 @@ export default function Header() {
   const [mobileUnis, setMobileUnis] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  // Ana səhifədə sağ üstdə Login/Register göstərilmir — giriş linkləri
+  // yalnız digər səhifələrdə qalır, giriş etmiş istifadəçi üçün isə
+  // Çıxış düyməsi görünməyə davam edir.
+  const isHome = location.pathname === '/';
   const { data } = useCountriesWithUniversities();
   const countries = data || [];
   const { data: allUniversities } = useAllUniversities();
@@ -63,6 +71,12 @@ export default function Header() {
     document.addEventListener('mousedown', onClick);
     return () => document.removeEventListener('mousedown', onClick);
   }, []);
+
+  const handleUserLogout = () => {
+    clearUserToken();
+    setMenuOpen(false);
+    navigate('/');
+  };
 
   const smoothScrollTo = (hash) => {
     const id = hash.replace('#', '');
@@ -182,6 +196,32 @@ export default function Header() {
                 </a>
               ),
             )}
+
+            {!isHome && <span className="w-px h-4 bg-white/20" aria-hidden />}
+
+            {isAuthenticated ? (
+              <button
+                type="button"
+                onClick={handleUserLogout}
+                className="hover:text-cyan-300 transition cursor-pointer"
+              >
+                Logout
+              </button>
+            ) : (
+              !isHome && (
+                <>
+                  <Link to="/login" className="hover:text-cyan-300 transition">
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="px-3 py-1 rounded-full bg-[#26aec4] text-[#080d4a] font-accent font-semibold hover:bg-[#3cc3d8] transition"
+                  >
+                    Register
+                  </Link>
+                </>
+              )
+            )}
           </nav>
 
           <button
@@ -278,6 +318,37 @@ export default function Header() {
                   {l.label}
                 </a>
               ),
+            )}
+
+            {(!isHome || isAuthenticated) && (
+              <div className="border-t border-white/10 mt-2 pt-2 flex items-center gap-2">
+                {isAuthenticated ? (
+                  <button
+                    type="button"
+                    onClick={handleUserLogout}
+                    className="py-2.5 px-2 rounded w-full text-left text-white/70 hover:bg-white/10 hover:text-cyan-300 transition cursor-pointer"
+                  >
+                    Çıxış
+                  </button>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      onClick={() => setMenuOpen(false)}
+                      className="py-2.5 px-2 rounded text-white/80 hover:bg-white/10 hover:text-cyan-300 transition"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={() => setMenuOpen(false)}
+                      className="py-2.5 px-2 rounded bg-[#26aec4] text-[#080d4a] font-semibold hover:bg-[#3cc3d8] transition text-center"
+                    >
+                      Register
+                    </Link>
+                  </>
+                )}
+              </div>
             )}
           </nav>
         </div>

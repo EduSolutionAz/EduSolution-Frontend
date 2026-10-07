@@ -94,13 +94,18 @@ export default function AuthPage({ initialMode = 'login' }) {
       }
     }
 
-    const password = formData.password;
-    if (!password.trim()) {
-      next.password = 'Şifrə tələb olunur';
-    } else if (password.length < LIMITS.PASSWORD_MIN) {
-      next.password = `Şifrə minimum ${LIMITS.PASSWORD_MIN} simvol olmalıdır`;
-    } else if (password.length > LIMITS.PASSWORD_MAX) {
-      next.password = `Şifrə maksimum ${LIMITS.PASSWORD_MAX} simvol olmalıdır`;
+    // Şifrə yalnız login-də və qeydiyyatın 3-cü addımında tələb olunur.
+    // Əvvəl iki addımda yoxlanırdı və boş input görünmədiyi halda
+    // qeydiyyat dayandırdı.
+    if (isLogin || registerStep === 3) {
+      const password = formData.password;
+      if (!password.trim()) {
+        next.password = 'Şifrə tələb olunur';
+      } else if (password.length < LIMITS.PASSWORD_MIN) {
+        next.password = `Şifrə minimum ${LIMITS.PASSWORD_MIN} simvol olmalıdır`;
+      } else if (password.length > LIMITS.PASSWORD_MAX) {
+        next.password = `Şifrə maksimum ${LIMITS.PASSWORD_MAX} simvol olmalıdır`;
+      }
     }
 
     return next;

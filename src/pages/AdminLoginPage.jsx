@@ -8,13 +8,6 @@ import { readToken } from '../services/httpClient';
 const INPUT =
   'w-full h-[42px] bg-white/95 border border-white/30 rounded px-4 text-[13px] text-[#080d4a] outline-none focus:border-[#26aec4] transition';
 
-// Leaving the login screen also ends any stored session, so the next visit
-// to /admin asks for the credentials again.
-const handleLeaveSite = () => {
-  clearAdminToken();
-  navigate('/', { replace: true });
-};
-
 export default function AdminLoginPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: '', password: '' });
@@ -25,6 +18,13 @@ export default function AdminLoginPage() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
+  };
+
+  // Leaving the login screen also ends any stored session, so the next visit
+  // to /admin asks for the credentials again.
+  const handleLeaveSite = () => {
+    clearAdminToken();
+    navigate('/', { replace: true });
   };
 
   const handleSubmit = async (e) => {

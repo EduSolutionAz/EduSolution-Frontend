@@ -4,14 +4,19 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import UniversitiesList from '../components/UniversitiesList';
 import AverageCosts from '../components/AverageCosts';
-import { useAllCountries, useCountry, useCountryEntity, useCountryLogos, useTopCountries } from '../services/contentHooks';
 import {
-  mapAllCountry,
+  useAllCountries,
+  useCountry,
+  useCountryEntity,
+  useCountryLogos,
+  useTopCountries,
+  useUniversitiesByCountry,
+} from '../services/contentHooks';
+import {
   mapCountry,
   mapCountryEntity,
   mapCountryFromSummary,
   mapCountryLogos,
-  mapTopCountry,
 } from '../services/mappers';
 
 import { gradientFor, universityInitials } from '../utils/format';
@@ -50,15 +55,13 @@ export default function CountryPage() {
   const { data: logoItems } = useCountryLogos();
   const flagMap = mapCountryLogos(logoItems);
 
-  // Ana ekran /country/top_countries-dən gəlir, bura isə /country/all-dən
-  // axtarırdı. Backend-də yeni ölkə top-da görünüb all-da görünməyəndə
-  // "tapılmadı" çıxırdı. Ona görə hər iki siyahını birləşdirib axtarırıq.
+  // useAllCountries və useTopCountries artıq map edilmiş ölkə obyektləri
+  // qaytarır (country_name yoxdur). Onları təkrar map etmək siyahını boş
+  // edirdi, ona görə olduğu kimi birləşdirilir.
   const { data: allCountries, loading: loadingList } = useAllCountries();
-  const { data: topRaw, loading: loadingTop } = useTopCountries();
-  const allList = (allCountries || []).map(mapAllCountry).filter(Boolean);
-  const topList = (topRaw || []).map(mapTopCountry).filter(Boolean);
+  const { data: topCountries, loading: loadingTop } = useTopCountries();
   const mergedBySlug = new Map();
-  [...allList, ...topList].forEach((c) => {
+  [...(allCountries || []), ...(topCountries || [])].forEach((c) => {
     if (!mergedBySlug.has(c.slug)) mergedBySlug.set(c.slug, c);
   });
   const countryList = [...mergedBySlug.values()];
@@ -84,14 +87,26 @@ export default function CountryPage() {
   const { data: entityData } = useCountryEntity(countryName);
   const entity = mapCountryEntity(entityData);
 
+  // Universitetlər ayrı endpoint-dən gəlir; country_detail çox vaxt boş
+  // siyahı qaytarır, ona görə bu siyahı həlledicidir.
+  const { data: rawUniversities } = useUniversitiesByCountry(countryName);
+  const universities = (rawUniversities || [])
+    .map((entry) => (typeof entry === 'string' ? entry : entry?.university_name))
+    .filter(Boolean)
+    .map((universityName) => ({ id: universityName, universityName }));
+
   // Fall back to the summary entry so a country that exists is never shown as
   // "not found".
-  const country = detail || (summary ? mapCountryFromSummary(summary) : null);
-  if (country && entity) {
-    country.heroImage = country.heroImage || entity.heroImage;
-    country.card = { ...country.card, ...entity.card };
-    country.costs = entity.costs;
-  }
+  const base = detail || (summary ? mapCountryFromSummary(summary) : null);
+  const country = base
+    ? {
+        ...base,
+        heroImage: (base.heroImage || (entity && entity.heroImage)) || '',
+        card: { ...base.card, ...(entity && entity.card) },
+        costs: entity ? entity.costs : base.costs,
+        universities: universities.length > 0 ? universities : base.universities || [],
+      }
+    : null;
 
   const flag = (country && flagMap[country.slug]) || (entity && entity.flag) || '';
 
@@ -161,10 +176,10 @@ export default function CountryPage() {
                 className="w-7 h-5 object-contain"
                 loading="lazy"
               />
-            )}
-<h1 className="text-center text-[#2f3f80] font-heading font-bold text-[24px] sm:text-[32px] tracking-wide">
-                {country.name}
-              </h1>
+)}
+            <h1 className="text-center text-[#2f3f80] font-heading font-bold text-[24px] sm:text-[32px] tracking-wide">
+              {country.name}
+            </h1>
             {country.icon && <span className="text-[20px] leading-none">{country.icon}</span>}
           </div>
 
@@ -224,11 +239,11 @@ export default function CountryPage() {
             />
           </div>
 
-          {/* Areas */}
+{/* Areas */}
           {country.areasText && (
             <section>
-<h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-3">
-                Universities in {country.name}
+              <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-3">
+                Regions &amp; Areas
               </h2>
               <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6 break-words [overflow-wrap:anywhere] whitespace-pre-line">
                 {country.areasText}

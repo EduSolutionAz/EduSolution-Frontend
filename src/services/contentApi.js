@@ -49,8 +49,14 @@ export async function getUniversityEntity(universityName, { tokenKey = ADMIN_TOK
   return data;
 }
 
-/** Full country record for prefilling the edit form. */
-export async function getCountryEntity(countryName, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+/**
+ * Full country record (fees, images, flags).
+ *
+ * The default token is the user token, not the admin one: this endpoint also
+ * feeds the public country page, so an admin-only default hid the hero image
+ * and the average costs from every visitor who was not signed in as admin.
+ */
+export async function getCountryEntity(countryName, { tokenKey = USER_TOKEN_KEY } = {}) {
   const { data } = await request(
     `/country/country_entity/${encodeURIComponent(countryName)}`,
     { tokenKey },

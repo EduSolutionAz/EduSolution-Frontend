@@ -8,8 +8,12 @@ import {
   getCountryLogos,
   getUniversityDetails,
   getAllUniversities,
+  getUniversitiesByCountry,
   getTopComments,
 } from './contentApi';
+import { getAllAds } from './adApi';
+import { getWebProperties } from './propertyApi';
+import { getPrizes } from './spinApi';
 import {
   attachFlags,
   mapAllCountry,
@@ -95,6 +99,18 @@ export function useAllUniversities() {
   return useApiResource(() => getAllUniversities(), [], { fallback: EMPTY_LIST });
 }
 
+/**
+ * Universities of one country for the public country page.
+ * GET /country/country_detail often carries an empty universities list, so the
+ * dedicated endpoint is used as the source of truth.
+ */
+export function useUniversitiesByCountry(countryName) {
+  return useApiResource(() => getUniversitiesByCountry(countryName), [countryName], {
+    enabled: Boolean(countryName),
+    fallback: EMPTY_LIST,
+  });
+}
+
 export function useCountryDetails(countryName, { enabled = true } = {}) {
   return useApiResource(() => getCountryDetails(countryName), [countryName], {
     enabled: Boolean(countryName) && enabled,
@@ -109,6 +125,45 @@ export function useUniversityDetails(universityName) {
 
 export function useTopComments() {
   return useApiResource(() => getTopComments(), [], { fallback: EMPTY_LIST });
+}
+
+/**
+ * GET /spin/prizes -> [{ prize_name, prize_weight }]. Public.
+ * Mapped to { name, weight } so the wheel and the admin table read the same
+ * shape as before.
+ */
+export function useSpinPrizes() {
+  const { data, ...rest } = useApiResource(() => getPrizes(), [], { fallback: EMPTY_LIST });
+
+  const prizes = (data || [])
+    .map((item, index) => {
+      const name = typeof item?.prize_name === 'string' ? item.prize_name.trim() : '';
+      if (!name) return null;
+      const weight = Number(item?.prize_weight);
+      return { id: name, name, weight: Number.isFinite(weight) ? weight : 0, key: `${name}-${index}` };
+    })
+    .filter(Boolean);
+
+  return { ...rest, data: prizes };
+}
+
+/**
+ * GET /ad/all -> [{ title, photo_url }].
+ *
+ * The endpoint answers 401 without a token, so on a signed out visitor the
+ * request is skipped entirely instead of firing a request that is known to
+ * fail. The caller falls back to its stored ads.
+ */
+export function useAllAds({ enabled = true } = {}) {
+  return useApiResource(() => getAllAds(), [], { enabled, fallback: EMPTY_LIST });
+}
+
+/**
+ * GET /property/all. Returns null (not an error) while the backend has no
+ * row, which is what lets the home page keep showing static numbers.
+ */
+export function useWebProperties() {
+  return useApiResource(() => getWebProperties(), [], { fallback: null });
 }
 
 /**

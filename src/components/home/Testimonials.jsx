@@ -14,8 +14,17 @@ export default function Testimonials() {
       .filter(Boolean)
       .map((entry) => ({ ...entry, service: getServiceLabel(entry.service) }));
 
+  // API-dən rəy gəlməsə nümunə rəylər göstərilir. Hər ikisinin `id`
+  // açarı var, ona görə siyahı açarları təkrarsızdır.
   const displayItems =
-    items.length > 0 ? items : testimonials.map((entry) => ({ ...entry, key: entry.author, service: null }));
+    items.length > 0
+      ? items
+      : testimonials.map((entry, i) => ({
+          id: `${entry.author}-${i}`,
+          text: entry.text,
+          author: entry.author,
+          service: null,
+        }));
 
   const total = displayItems.length;
   const index = total > 0 ? active % total : 0;
@@ -85,7 +94,7 @@ export default function Testimonials() {
         <div className="flex justify-center gap-2 mt-6">
           {displayItems.map((entry, i) => (
             <button
-              key={entry.key ?? entry.id}
+              key={entry.id}
               type="button"
               onClick={() => goTo(i)}
               aria-label={`Show comment ${i + 1}`}
