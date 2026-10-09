@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PROMO_ADS } from '../../data/promoAds';
+import { getAds, subscribe } from '../../store/adminStore';
+import { useAllAds } from '../../services/contentHooks';
 
 const AUTO_DELAY = 5000;
 
@@ -28,13 +29,36 @@ function Arrow({ direction, onClick, disabled, onMouseEnter, onMouseLeave }) {
 }
 
 export default function PromoBanner() {
-  const ads = PROMO_ADS;
-  const count = ads.length;
   const navigate = useNavigate();
   const [active, setActive] = useState(0);
   const [broken, setBroken] = useState({});
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  // PromoBanner is the single ad board now: it consumes the same GET /ad/all
+  // API that AdBoard used. Admin-saved local ads are only the fallback when
+  // the request fails or returns nothing.
+  const { data: apiAds } = useAllAds();
+  const storedAds = useSyncExternalStore(subscribe, getAds, getAds);
+
+  const remoteAds = (apiAds || []).map((ad) => ({
+    id: ad.id,
+    src: ad.photoUrl || '',
+    alt: ad.title || 'reklam',
+    title: ad.title || '',
+    description: ad.content || '',
+  }));
+
+  const localAds = (storedAds || []).map((ad) => ({
+    id: ad.id,
+    src: ad.imageFile || ad.imageUrl || '',
+    alt: ad.alt || 'reklam',
+    title: ad.alt || '',
+    description: '',
+  }));
+
+  const ads = remoteAds.length > 0 ? remoteAds : localAds;
+  const count = ads.length;
 
   const advance = useCallback(
     (step) => setActive((i) => (i + step + count) % count),
@@ -103,7 +127,7 @@ export default function PromoBanner() {
         backgroundSize: '700px auto',
       }}
     >
-      <div className="max-w-[560px] mx-auto px-8 sm:px-12">
+      <div className="w-full max-w-[680px] mx-auto px-8 sm:px-12">
         <div className="relative">
           <Arrow
             direction="left"
@@ -120,7 +144,7 @@ export default function PromoBanner() {
             onMouseLeave={() => setPaused(false)}
             onFocus={() => setPaused(true)}
             onBlur={() => setPaused(false)}
-            className="w-full block aspect-square overflow-hidden bg-[#fdf6f3] rounded-[8px] shadow-[0_6px_20px_rgba(0,0,0,0.2)] border border-[#1a2e5a]/10 cursor-pointer group transition-all duration-300 hover:shadow-[0_10px_28px_rgba(0,0,0,0.26)] hover:-translate-y-0.5"
+            className="w-full block aspect-[16/4.5] overflow-hidden bg-[#fdf6f3] rounded-[10px] shadow-[0_6px_20px_rgba(0,0,0,0.2)] border border-[#1a2e5a]/10 cursor-pointer group transition-all duration-300 hover:shadow-[0_10px_28px_rgba(0,0,0,0.26)] hover:-translate-y-0.5"
             aria-label={`Reklam: ${ad.title || ad.alt}`}
           >
             {isBroken ? (

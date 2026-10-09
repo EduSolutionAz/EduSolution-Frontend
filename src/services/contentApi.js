@@ -70,7 +70,7 @@ export async function getCountryEntity(countryName, { tokenKey = USER_TOKEN_KEY 
  * 200 with an empty body for any "Bearer" value.
  */
 export async function getCountryDetails(countryName, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
-  const { data } = await request(`/country/country_details/${encodeURIComponent(countryName)}`, {
+  const { data } = await request(`/country/country_detail/${encodeURIComponent(countryName)}`, {
     tokenKey,
   });
   return data;

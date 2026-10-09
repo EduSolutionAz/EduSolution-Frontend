@@ -1,17 +1,17 @@
 // Əsas (home) səhifə üçün bütün məlumatlar — backend-ə qoşulmağa hazır.
 export const heroStats = [
   {
-    value: '157',
+    value: '0',
     label: 'Students Helped',
     sub: 'our applicants are believing on us',
   },
   {
-    value: '35',
+    value: '0',
     label: 'Partner University',
     sub: 'we continusly contacting with new universities to increase partner university count',
   },
   {
-    value: '97',
+    value: '0',
     label: 'Visa Success Rate',
     sub: 'we help our customers in every aspect of visa process',
   },
@@ -67,10 +67,10 @@ export const whyUs = {
 };
 
 export const funNumbers = [
-  { value: '150', label: 'Admission Sent' },
-  { value: '140', label: 'Successful Admission' },
-  { value: '78', label: 'Visa Help' },
-  { value: '76', label: 'Successful Visa Help' },
+  { value: '0', label: 'Admission Sent' },
+  { value: '0', label: 'Successful Admission' },
+  { value: '0', label: 'Visa Help' },
+  { value: '0', label: 'Successful Visa Help' },
 ];
 
 export const steps = [

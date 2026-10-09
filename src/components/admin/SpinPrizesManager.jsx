@@ -16,7 +16,7 @@ import {
   SECTION_TITLE,
 } from './fields';
 
-const EMPTY_FORM = { prizeName: '' };
+const EMPTY_FORM = { prizeName: '', prizeWeight: '' };
 const STATUS_IDLE = { state: 'idle', message: '' };
 
 /** SpinWinnersDTO -> [{ id, email, prizeId, prize }]. */
@@ -129,9 +129,23 @@ export default function SpinPrizesManager() {
     const name = form.prizeName.trim();
     if (!name) return;
 
+    // Weight optional: empty/blank falls back to the backend default (10).
+    // When supplied it must be a positive integer — an empty string would
+    // otherwise be parsed as 0 by Number(''), so only send it when valid.
+    const rawWeight = String(form.prizeWeight ?? '').trim();
+    let prizeWeight;
+    if (rawWeight !== '') {
+      const parsed = Number(rawWeight);
+      if (!Number.isInteger(parsed) || parsed < 1) {
+        setStatus({ state: 'error', message: 'Çəki 1-dən az olmayan tam ədəd olmalıdır' });
+        return;
+      }
+      prizeWeight = parsed;
+    }
+
     setStatus({ state: 'loading', message: '' });
     try {
-      const data = await addPrize({ prizeName: name });
+      const data = await addPrize({ prizeName: name, prizeWeight });
 
       if (data && data.is_created === false) {
         const first = data?.errors?.[0]?.error_message ?? data?.errors?.[0]?.message;
@@ -272,7 +286,7 @@ export default function SpinPrizesManager() {
 
         {showForm && (
           <form onSubmit={handleSubmit} className={`${CARD} grid grid-cols-1 sm:grid-cols-3 gap-4`}>
-            <div className="sm:col-span-3">
+            <div className="sm:col-span-2">
               <label className={FIELD_LABEL} htmlFor="prize-name">
                 Nağıl adı *
               </label>
@@ -285,8 +299,27 @@ export default function SpinPrizesManager() {
                 className={FIELD_INPUT}
                 required
               />
+            </div>
+
+            <div>
+              <label className={FIELD_LABEL} htmlFor="prize-weight">
+                Çəki (weight)
+              </label>
+              <input
+                id="prize-weight"
+                name="prizeWeight"
+                type="number"
+                min="1"
+                step="1"
+                inputMode="numeric"
+                value={form.prizeWeight}
+                onChange={handleChange}
+                placeholder="10"
+                className={FIELD_INPUT}
+              />
               <p className="mt-1 text-[10px] text-[#323643]/45">
-                Çəki (weight) backend tərəfdə idarə olunur, burada göstərilmir.
+                Boş qalsa standart çəki (10) istifadə olunur. Çarxın fırlanma
+                şansı çəkiyə görədir.
               </p>
             </div>
 

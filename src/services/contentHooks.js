@@ -150,12 +150,12 @@ export function useSpinPrizes() {
 /**
  * GET /ad/all -> [{ title, photo_url }].
  *
- * The endpoint answers 401 without a token, so on a signed out visitor the
- * request is skipped entirely instead of firing a request that is known to
- * fail. The caller falls back to its stored ads.
+ * Called on the public home page regardless of auth and without any token,
+ * since the backend endpoint is public. Failures degrade to the caller's
+ * local fallback (ads saved by the admin panel).
  */
 export function useAllAds({ enabled = true } = {}) {
-  return useApiResource(() => getAllAds(), [], { enabled, fallback: EMPTY_LIST });
+  return useApiResource(() => getAllAds({ auth: false }), [], { enabled, fallback: EMPTY_LIST });
 }
 
 /**
