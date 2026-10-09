@@ -3,6 +3,19 @@ import { asArray, request } from './httpClient';
 
 const EMPTY_AD = { title: '', content: '', photoUrl: '' };
 
+/**
+ * Backend ad content uses the literal two-character sequence `\n` for line
+ * breaks. HTML rendering collapses plain newlines too, so the literal
+ * sequence is converted to a real newline here and rendered with
+ * `whitespace-pre-line` on the display side.
+ */
+function normalizeLineBreaks(value) {
+  return String(value ?? '')
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\r\n/g, '\n');
+}
+
 function mapAd(dto) {
   const title = typeof dto?.title === 'string' ? dto.title.trim() : '';
   if (!title) return null;
@@ -10,17 +23,19 @@ function mapAd(dto) {
   return {
     id: title,
     title,
-    content: typeof dto?.content === 'string' ? dto.content : '',
+    content: normalizeLineBreaks(dto?.content),
     photoUrl: typeof dto?.photo_url === 'string' ? dto.photo_url : '',
   };
 }
 
 /**
- * GET /ad/all -> [{ title, photo_url }]. Requires authentication (401
- * without a token), so the public home page has to degrade gracefully.
+ * GET /ad/all -> [{ title, photo_url }]. Public endpoint.
+ *
+ * The home page calls it without auth (no Authorization header). The admin
+ * panel passes its own token so the same loader serves both callers.
  */
-export async function getAllAds({ tokenKey = USER_TOKEN_KEY } = {}) {
-  const { data } = await request('/ad/all', { tokenKey });
+export async function getAllAds({ tokenKey = USER_TOKEN_KEY, auth = true } = {}) {
+  const { data } = await request('/ad/all', { tokenKey, auth });
   return asArray(data).map(mapAd).filter(Boolean);
 }
 

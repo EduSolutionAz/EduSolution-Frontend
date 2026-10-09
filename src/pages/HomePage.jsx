@@ -1,7 +1,6 @@
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Hero from '../components/home/Hero';
-import AdBoard from '../components/home/AdBoard';
 import PromoBanner from '../components/home/PromoBanner';
 import CountrySearch from '../components/home/CountrySearch';
 import WorkingWith from '../components/home/WorkingWith';
@@ -20,7 +19,6 @@ export default function HomePage() {
       <Header />
       <main className="flex-1">
         <Hero />
-        <AdBoard />
         <PromoBanner />
         <CountrySearch />
         <WorkingWith />

@@ -99,7 +99,7 @@ export default function AdPage() {
           <h1 className="text-[#1a2e5a] font-heading font-bold text-[22px] sm:text-[26px] tracking-wide">
             {ad.title}
           </h1>
-          <p className="text-[#1a2e5a]/70 text-[14px] sm:text-[15px] leading-[1.7] mt-3">
+          <p className="text-[#1a2e5a]/70 text-[14px] sm:text-[15px] leading-[1.7] mt-3 whitespace-pre-line">
             {ad.description}
           </p>
 

@@ -173,16 +173,16 @@ admin həm backend-dən, həm lokal oxuyur. Fərq görünən hər yerə sarı
    Sətir yaradılmayıb. **Web Config**-də bir dəfə "Yadda saxla" basın —
    ana səhifədəki rəqəmlər o vaxtdan əsl məlumat olacaq.
 
-4. **`GET /ad/all` → 401**
-   Token tələb edir. Çıxış etməmiş ziyarətçi reklamları görmür və localStorage-a
-   düşür. Reklamlar həm də ictimai olmalıdırsa, `SecurityConfig`-də bu endpoint
-   `permitAll()` olmalıdır.
+4. **`GET /ad/all`** — ictimai endpoint
+   Ana səhifə bu endpoint-i auth olmadan çağırır (Authorization başlığı yoxdur).
+   Uğursuz olarsa localStorage-dakı ehtiyat siyahıya düşür. Admin panel isə
+   öz tokeni ilə çağırır.
 
 5. **`GET /spin/winners` → 401**
    Rol fərq etmir, `authenticated()`-dır. Frontend əvvəlcə admin, sonra
    istifadəçi tokeni ilə cəhd edir.
 
-6. **`GET /country/country_details/{name}` → 401 və Swagger-da YOXDUR**
+6. **`GET /country/country_detail/{name}` → 401 və Swagger-da YOXDUR**
    Endpoint real işləyir, amma sənəddə yazılmayıb. Auth tələb edir.
    İstifadəçi tokeni göndərilir.
 
