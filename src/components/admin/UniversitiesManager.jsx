@@ -184,7 +184,10 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
         form.universityLogo,
         'logo',
       );
-      if (!logo) {
+      // Yeni universitet üçün loqo məcburidir; redaktədə isə backend
+      // UpdateUniversityRequestDTO-da onu məcburi saymır, ona görə loqo
+      // seçilməyibsə omis edilir və mövcud dəyər serverdə saxlanılır.
+      if (!isEditing && !logo) {
         setStatus({
           state: 'error',
           message:
@@ -439,11 +442,15 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
 
           <div className="sm:col-span-2">
             <ImageUploadField
-              label="Universitet loqosu (fayl) *"
+              label={`Universitet loqosu (fayl)${isEditing ? '' : ' *'}`}
               value={form.universityLogo}
               onChange={(value) => setForm((prev) => ({ ...prev, universityLogo: value }))}
               maxSize={320}
-              hint="JPG/PNG, avtomatik 320px-ə kiçildilir"
+              hint={
+                isEditing
+                  ? 'İsteğe bağlıdır — boş qalsa mövcud loqo saxlanılır'
+                  : 'JPG/PNG, avtomatik 320px-ə kiçildilir'
+              }
               previewClass="w-full h-[110px] object-contain"
               previewWrapper="w-[160px] h-[110px]"
             />
