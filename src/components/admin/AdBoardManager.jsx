@@ -20,7 +20,7 @@ import {
   SECTION_TITLE,
 } from './fields';
 
-const EMPTY_FORM = { title: '', content: '', image: '' };
+const EMPTY_FORM = { title: '', content: '', link: '', image: '' };
 const STATUS_IDLE = { state: 'idle', message: '' };
 
 /**
@@ -41,6 +41,7 @@ function mergeAds(remote, stored) {
       key: title,
       title,
       content: ad.content || '',
+      link: ad.link || '',
       photoUrl: ad.photoUrl || '',
       pending: false,
       storedId: null,
@@ -55,6 +56,7 @@ function mergeAds(remote, stored) {
       title,
       // Lokal reklamda ayrıca mətn yoxdur; keçid linki mətn yerinə saxlanılır.
       content: ad.linkUrl || '',
+      link: ad.linkUrl || '',
       photoUrl: ad.imageFile || ad.imageUrl || '',
       pending: true,
       storedId: ad.id,
@@ -114,7 +116,7 @@ export default function AdBoardManager() {
 
   const handleEdit = (ad) => {
     setEditing(ad);
-    setForm({ title: ad.title, content: ad.content, image: ad.photoUrl });
+    setForm({ title: ad.title, content: ad.content, link: ad.link || '', image: ad.photoUrl });
     setStatus(STATUS_IDLE);
     setShowForm(true);
   };
@@ -132,6 +134,7 @@ export default function AdBoardManager() {
       const payload = {
         title: form.title.trim(),
         content: form.content.trim() || form.title.trim(),
+        link: form.link.trim(),
         image: file || form.image || undefined,
       };
 
@@ -178,7 +181,7 @@ export default function AdBoardManager() {
         const file = await dataUrlToFile(ad.photoUrl, 'ad');
         // eslint-disable-next-line no-await-in-loop
         const data = await addAd(
-          { title: ad.title, content: ad.content || ad.title, image: file || undefined },
+          { title: ad.title, content: ad.content || ad.title, link: ad.link || '', image: file || undefined },
           { tokenKey: ADMIN_TOKEN_KEY },
         );
         if (data && data.is_created === false) failed.push(ad.title);
@@ -327,6 +330,20 @@ export default function AdBoardManager() {
               hint="Yeni fayl seçilməsə mövcud şəkil saxlanılır"
               previewClass="w-full h-[90px] object-contain"
               previewWrapper="w-full h-[90px]"
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className={FIELD_LABEL} htmlFor="ad-link">
+              Link
+            </label>
+            <input
+              id="ad-link"
+              name="link"
+              value={form.link}
+              onChange={handleChange}
+              placeholder="https://example.com və ya /reklam/başlıq"
+              className={FIELD_INPUT}
             />
           </div>
 
