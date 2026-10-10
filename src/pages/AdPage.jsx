@@ -33,6 +33,7 @@ export default function AdPage() {
           alt: remote.title || 'reklam',
           title: remote.title || fallback?.title || '',
           description: remote.content || fallback?.description || '',
+          link: remote.link || fallback?.link || '',
         });
       } else {
         setAd(fallback || null);
@@ -102,6 +103,17 @@ export default function AdPage() {
           <p className="text-[#1a2e5a]/70 text-[14px] sm:text-[15px] leading-[1.7] mt-3 whitespace-pre-line">
             {ad.description}
           </p>
+
+          {ad.link && (
+            <a
+              href={ad.link}
+              target={/^https?:\/\//i.test(ad.link) ? '_blank' : undefined}
+              rel={/^https?:\/\//i.test(ad.link) ? 'noopener noreferrer' : undefined}
+              className="inline-block mt-4 text-[#1a8a99] underline break-all hover:text-[#146e7a]"
+            >
+              {ad.link}
+            </a>
+          )}
 
           <div className="mt-7">
             <Link

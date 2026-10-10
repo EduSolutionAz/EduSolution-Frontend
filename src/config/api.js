@@ -1,7 +1,7 @@
 const env = import.meta.env || {};
 
 const REMOTE_API_BASE_URL =
-  env.VITE_API_BASE_URL || 'https://edusolution-backend-obby.onrender.com/api/v1';
+  env.VITE_API_BASE_URL || 'https://www.api.edusolution.az/';
 
 // In dev the backend sends no CORS headers, so requests go through the Vite
 // proxy and look same-origin. In production the real URL is used directly and

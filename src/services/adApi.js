@@ -1,7 +1,7 @@
 import { ADMIN_TOKEN_KEY, USER_TOKEN_KEY } from '../config/api';
 import { asArray, request } from './httpClient';
 
-const EMPTY_AD = { title: '', content: '', photoUrl: '' };
+const EMPTY_AD = { title: '', content: '', link: '', photoUrl: '' };
 
 /**
  * Backend ad content uses the literal two-character sequence `\n` for line
@@ -24,6 +24,7 @@ function mapAd(dto) {
     id: title,
     title,
     content: normalizeLineBreaks(dto?.content),
+    link: typeof dto?.link === 'string' ? dto.link.trim() : '',
     photoUrl: typeof dto?.photo_url === 'string' ? dto.photo_url : '',
   };
 }
@@ -61,18 +62,20 @@ export async function getAdInfo(adTitle, { auth = true } = {}) {
  * Spring binds a @ModelAttribute argument from the query string and from the
  * multipart parts, which makes the call work for either mapping.
  */
-function adRequestPayload({ title, content, image }) {
+function adRequestPayload({ title, content, link, image }) {
   const trimmedTitle = (title || '').trim();
   const trimmedContent = (content || '').trim();
+  const trimmedLink = (link || '').trim();
 
   const formData = new FormData();
   formData.append('title', trimmedTitle);
   formData.append('content', trimmedContent);
+  formData.append('link', trimmedLink);
   if (image) formData.append('image', image);
 
   return {
     formData,
-    query: { title: trimmedTitle, content: trimmedContent },
+    query: { title: trimmedTitle, content: trimmedContent, link: trimmedLink },
   };
 }
 
