@@ -159,7 +159,10 @@ export default function CountriesManager() {
         resolveImageFile(form.heroImage, 'country'),
       ]);
 
-      if (!flag.file || !country.file) {
+      // Yeni ölkə yaradılarkən hər iki şəkil vacibdir; redaktədə isə backend
+      // UpdateCountryRequestDTO-da onları məcburi saymır, ona görə də seçilməyən
+      // şəkillər omis edilir və mövcud dəyər serverdə saxlanılır.
+      if (!isEditing && (!flag.file || !country.file)) {
         const missing = [
           ...(flag.file ? [] : ['Bayraq']),
           ...(country.file ? [] : ['Hero şəkil']),
@@ -167,11 +170,7 @@ export default function CountriesManager() {
 
         setStatus({
           state: 'error',
-          message:
-            `${missing} fayl kimi göndərilə bilmədi. ` +
-            (isEditing
-              ? 'Redaktə zamanı hər iki şəkli seçməlisiniz, çünki server URL qaytarır və həmin URL-i fayla çevirmək mümkün olmadı.'
-              : 'Hər iki fayl seçilməlidir.'),
+          message: `${missing} fayl kimi göndərilə bilmədi. Yeni ölkə üçün hər iki fayl seçilməlidir.`,
         });
         setIsSaving(false);
         return;
@@ -347,11 +346,15 @@ export default function CountriesManager() {
 
           <div>
             <ImageUploadField
-              label="Bayraq (fayl) *"
+              label={`Bayraq (fayl)${isEditing ? '' : ' *'}`}
               value={form.flag}
               onChange={(value) => setForm((prev) => ({ ...prev, flag: value }))}
               maxSize={96}
-              hint="JPG/PNG, avtomatik 96px-ə kiçildilir"
+              hint={
+                isEditing
+                  ? 'İsteğe bağlıdır — boş qalsa mövcud bayraq saxlanılır'
+                  : 'JPG/PNG, avtomatik 96px-ə kiçildilir'
+              }
               previewClass="w-full h-[70px] object-contain"
               previewWrapper="w-[110px] h-[70px]"
             />
@@ -436,11 +439,15 @@ export default function CountriesManager() {
 
           <div className="sm:col-span-2">
             <ImageUploadField
-              label="Hero şəkil (fayl) *"
+              label={`Hero şəkil (fayl)${isEditing ? '' : ' *'}`}
               value={form.heroImage}
               onChange={(value) => setForm((prev) => ({ ...prev, heroImage: value }))}
               maxSize={1400}
-              hint="JPG/PNG, avtomatik 1400px-ə kiçildilir"
+              hint={
+                isEditing
+                  ? 'İsteğe bağlıdır — boş qalsa mövcud şəkil saxlanılır'
+                  : 'JPG/PNG, avtomatik 1400px-ə kiçildilir'
+              }
               previewClass="w-full h-[120px] object-cover"
               previewWrapper="w-full h-[120px]"
             />
