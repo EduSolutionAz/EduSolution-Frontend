@@ -1,4 +1,4 @@
-import { formatUsd, slugify } from '../utils/format';
+import { formatUsd, normalizeUniversityType, slugify } from '../utils/format';
 
 export const SERVICE_OPTIONS = [
   { value: 'UNIVERSITY', label: 'Admission to Universities' },
@@ -209,6 +209,10 @@ export function mapCountryFromSummary(summary) {
 /**
  * /university/university_details/{name} ->
  * { title, content, faculties[], photo_url, view_url }
+ *
+ * The response may carry the type under `university_type` or `universityType`;
+ * it is normalized here instead of hard-coding PUBLIC so Private universities
+ * render correctly.
  */
 export function mapUniversity(dto) {
   const name = text(dto?.title);
@@ -218,7 +222,7 @@ export function mapUniversity(dto) {
     id: name,
     universityName: name,
     universityLogo: text(dto.photo_url),
-    universityType: 'PUBLIC',
+    universityType: normalizeUniversityType(dto?.university_type ?? dto?.universityType),
     isPartner: false,
     shortDescription: '',
     city: '',

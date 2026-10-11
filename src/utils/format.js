@@ -39,7 +39,19 @@ export function getUniversityName(university) {
 }
 
 export function getUniversityTypeLabel(type) {
-  return type === 'PRIVATE' ? 'Private' : 'Public';
+  return normalizeUniversityType(type) === 'PRIVATE' ? 'Private' : 'Public';
+}
+
+/**
+ * Normalizes a university type value from the backend into the canonical
+ * PUBLIC | PRIVATE enum this app uses.
+ *
+ * Handles both key casings (`university_type` / `universityType`) and case
+ * differences ("private", "Private", "PRIVATE"). Any unrecognized value
+ * (including empty/unknown) falls back to PUBLIC.
+ */
+export function normalizeUniversityType(value) {
+  return String(value ?? '').trim().toLowerCase() === 'private' ? 'PRIVATE' : 'PUBLIC';
 }
 
 export function isImageFlag(flag) {

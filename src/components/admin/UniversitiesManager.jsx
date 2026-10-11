@@ -5,7 +5,7 @@ import { describeFailure } from '../../services/httpClient';
 import { endAdminSession, hasAdminToken, isAuthFailure } from '../../services/session';
 import { useAllCountries } from '../../services/contentHooks';
 import { resolveImageFile } from '../../utils/imageFile';
-import { UNIVERSITY_TYPES } from '../../utils/format';
+import { normalizeUniversityType, UNIVERSITY_TYPES } from '../../utils/format';
 import {
   BTN_ACCENT,
   BTN_DELETE,
@@ -134,7 +134,7 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
       // Redaktə zamanı ölkə kilidlənir, ona görə server cavabından deyil,
       // seçilmiş qeydin ölkəsi göstərilir.
       countryName: lockedCountry,
-      universityType: detail?.universityType || 'PUBLIC',
+      universityType: normalizeUniversityType(detail?.university_type ?? detail?.universityType),
       shortDescription: detail?.shortDescription || '',
       universityLogo: detail?.universityLogo || '',
       fee: String(detail?.fee ?? ''),
