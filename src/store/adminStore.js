@@ -3,6 +3,7 @@ import { countries as seedCountries } from '../data/countries';
 import { faqs as seedFaqs } from '../data/faqs';
 import {
   FEATURE_OPTIONS,
+  normalizeUniversityType,
   slugify,
   toNumber,
 } from '../utils/format';
@@ -72,7 +73,7 @@ function normalizeUniversity(university, country) {
     universityName: source.universityName || source.name || '',
     countryName: source.countryName || (country && country.name) || '',
     countrySlug: source.countrySlug || (country && country.slug) || '',
-    universityType: source.universityType === 'PRIVATE' ? 'PRIVATE' : 'PUBLIC',
+    universityType: normalizeUniversityType(source?.university_type ?? source?.universityType),
     shortDescription: source.shortDescription || '',
     universityLogo: source.universityLogo || '',
     city: source.city || '',
