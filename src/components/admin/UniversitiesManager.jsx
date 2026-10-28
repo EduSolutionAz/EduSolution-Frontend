@@ -130,18 +130,18 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
     }
 
     setForm({
-      universityName: detail?.universityName || university.universityName,
+      universityName: detail?.university_name || detail?.universityName || university.universityName || university.name || '',
       // Redaktə zamanı ölkə kilidlənir, ona görə server cavabından deyil,
       // seçilmiş qeydin ölkəsi göstərilir.
       countryName: lockedCountry,
       universityType: normalizeUniversityType(detail?.university_type ?? detail?.universityType),
-      shortDescription: detail?.shortDescription || '',
-      universityLogo: detail?.universityLogo || '',
-      fee: String(detail?.fee ?? ''),
-      city: detail?.city || '',
-      content: detail?.content || '',
-      area: detail?.area || '',
-      isPartner: Boolean(detail?.isPartner),
+      shortDescription: detail?.short_description ?? detail?.shortDescription ?? '',
+      universityLogo: detail?.university_logo ?? detail?.universityLogo ?? '',
+      fee: String(detail?.fee ?? detail?.university_fee ?? detail?.universityFee ?? ''),
+      city: detail?.city ?? '',
+      content: detail?.content ?? '',
+      area: detail?.area ?? '',
+      isPartner: Boolean(detail?.is_partner ?? detail?.isPartner),
     });
     setStatus({
       state: loadNote ? 'error' : 'idle',
@@ -237,8 +237,13 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
         );
         setStatus({
           state: 'success',
-          message: `"${targetUniversityName}" ${isEditing ? 'yeniləndi' : 'əlavə edildi'} və siyahı yeniləndi.`,
+          message: `"${targetUniversityName}" ${isEditing ? 'yeniləndi' : 'əlavə edildi'} və siyahı yeniləndi. Səhifə yenilənəcək...`,
         });
+        setTimeout(() => {
+          if (typeof window !== 'undefined') {
+            window.location.reload();
+          }
+        }, 1500);
         return;
       }
 

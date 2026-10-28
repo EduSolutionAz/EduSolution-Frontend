@@ -207,6 +207,22 @@ admin həm backend-dən, həm lokal oxuyur. Fərq görünən hər yerə sarı
     Production-da `VITE_API_BASE_URL` birbaşa istifadə olunur, ona görə
     deployment origin-i backend-də `allow` edilməlidir.
 
+### Domen / DNS (deployment — frontend və backend deyil)
+
+12. **Rəy linkləri açılmır: `http://edusolution.az/comment/<token>`**
+    Linki backend (`POST /applicant/generate`) yaradıb e-poçtla göndərir.
+    Sayt **yalnız `www.edusolution.az`** üzərində işləyir — kök domenin
+    (`edusolution.az`) **A/AAAA qeydi yoxdur**, yalnız `www.edusolution.az`
+    qeydi var (`104.21.13.212`, `172.67.133.31` — Cloudflare). Kök domendən
+    açılan hər link brauzerdə "This site can't be reached" verir.
+
+    *Həll:* (a) Cloudflare DNS-də kök domenə A qeydi əlavə edin (Name `@`
+    → dəyər `104.21.13.212` və `172.67.133.31`, Proxied); (b) ideal olaraq
+    Cloudflare Redirect Rule ilə `edusolution.az/*` → `https://www.edusolution.az/$1`
+    (301) qurun ki, bütün təraf `www` üzərinə düşsün; (c) backend-in rəy linki
+    üçün bazasını kanonik `https://www.edusolution.az` saxlayın ki, e-poçtdakı
+    link dərhal işləsin.
+
 ### Frontend tərəfdə
 
 1. **FAQ hələ localStorage-dadır** — Swagger-da FAQ endpointi yoxdur. Yeni

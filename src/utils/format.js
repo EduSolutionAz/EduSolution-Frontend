@@ -28,6 +28,11 @@ export function formatUsd(value) {
   return amount > 0 ? `${amount}$` : 'Free';
 }
 
+export function formatUsdAmount(value) {
+  const amount = Math.round(toNumber(value));
+  return amount > 0 ? `${new Intl.NumberFormat('en-US').format(amount)}$` : 'Free';
+}
+
 export function formatSemesterCount(value) {
   const semesters = Math.round(toNumber(value));
   return semesters > 0 ? String(semesters) : '';

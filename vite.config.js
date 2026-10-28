@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 
 const BACKEND_ORIGIN = 'https://www.api.edusolution.az'
+// const BACKEND_ORIGIN = 'http://localhost:8080/'
 
 // https://vite.dev/config/
 export default defineConfig({
