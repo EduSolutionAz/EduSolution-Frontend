@@ -69,7 +69,7 @@ tərəfdə CORS qurulmalıdır** (bax: "Problemlər").
 | Countries | `/country/*` |
 | Universities | `/university/*` |
 | Faculties | `/faculty/*` |
-| FAQ | **localStorage** — backend endpointi yoxdur |
+| FAQ | `/faq/all`, `/faq/create`, `/faq/update`, `/faq/delete` |
 | Ad Board | `/ad/*` |
 | Spin Prizes | `/spin/*` (nağıllar + qaliblar) |
 | Web Config | `/property/all`, `/property/add` |
@@ -102,7 +102,7 @@ src/
   pages/             Route səhifələri
   services/
     httpClient.js    fetch wrapper, token, timeout, xəta mesajları
-    contentApi.js    ölkə / universitet / faculty / applicant / contact
+    contentApi.js    ölkə / universitet / FAQ / faculty / applicant / contact
     authApi.js       qeydiyyat, giriş
     spinApi.js       çarx, nağıllar, qaliblar
     adApi.js         reklamlar
@@ -110,7 +110,7 @@ src/
     contentHooks.js  useApiResource və hazır hook-lar
     mappers.js       API DTO -> UI model
     session.js       token və sessiya
-  store/adminStore.js  FAQ üçün localStorage store (və köhnə fallback)
+  store/adminStore.js  reklam, çarx, ölkə və rəy üçün local fallback
   utils/             format, id, şəkil emalı
 ```
 
@@ -207,13 +207,27 @@ admin həm backend-dən, həm lokal oxuyur. Fərq görünən hər yerə sarı
     Production-da `VITE_API_BASE_URL` birbaşa istifadə olunur, ona görə
     deployment origin-i backend-də `allow` edilməlidir.
 
+### Domen / DNS (deployment — frontend və backend deyil)
+
+12. **Rəy linkləri açılmır: `http://edusolution.az/comment/<token>`**
+    Linki backend (`POST /applicant/generate`) yaradıb e-poçtla göndərir.
+    Sayt **yalnız `www.edusolution.az`** üzərində işləyir — kök domenin
+    (`edusolution.az`) **A/AAAA qeydi yoxdur**, yalnız `www.edusolution.az`
+    qeydi var (`104.21.13.212`, `172.67.133.31` — Cloudflare). Kök domendən
+    açılan hər link brauzerdə "This site can't be reached" verir.
+
+    *Həll:* (a) Cloudflare DNS-də kök domenə A qeydi əlavə edin (Name `@`
+    → dəyər `104.21.13.212` və `172.67.133.31`, Proxied); (b) ideal olaraq
+    Cloudflare Redirect Rule ilə `edusolution.az/*` → `https://www.edusolution.az/$1`
+    (301) qurun ki, bütün təraf `www` üzərinə düşsün; (c) backend-in rəy linki
+    üçün bazasını kanonik `https://www.edusolution.az` saxlayın ki, e-poçtdakı
+    link dərhal işləsin.
+
 ### Frontend tərəfdə
 
-1. **FAQ hələ localStorage-dadır** — Swagger-da FAQ endpointi yoxdur. Yeni
-   ekip üçün problem yaradır (data hər brauzerə xas). Backend CRUD lazımdır.
-2. **`store/adminStore.js` hələ də mövcuddur** — reklam və nağıl üçün
-   fallback, FAQ üçün isə yeganə mənbədir.
-3. **Çarx oyun limiti işləmir** (1-ci backend problemi səbəbindən).
-4. **Sayt rəqəmləri statik fallback** göstərir, 3-cü problem qalana qədər.
-5. `npm run lint` 16 xəbərdarlıq verir — hamısı `set-state-in-effect`
+1. **`store/adminStore.js` hələ də mövcuddur** — reklam, nağıl və bəzi
+   admin məlumatları üçün local fallback.
+2. **Çarx oyun limiti işləmir** (1-ci backend problemi səbəbindən).
+3. **Sayt rəqəmləri statik fallback** göstərir, 3-cü problem qalana qədər.
+4. `npm run lint` 16 xəbərdarlıq verir — hamısı `set-state-in-effect`
    (data yükləmə) patternıdır, xəta yoxdur.

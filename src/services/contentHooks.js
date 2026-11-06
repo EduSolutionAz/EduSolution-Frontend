@@ -10,6 +10,7 @@ import {
   getAllUniversities,
   getUniversitiesByCountry,
   getTopComments,
+  getAllFaqs,
 } from './contentApi';
 import { getAllAds } from './adApi';
 import { getWebProperties } from './propertyApi';
@@ -125,6 +126,11 @@ export function useUniversityDetails(universityName) {
 
 export function useTopComments() {
   return useApiResource(() => getTopComments(), [], { fallback: EMPTY_LIST });
+}
+
+/** FAQ records shared by the public pages and the admin manager. */
+export function useFaqs() {
+  return useApiResource(() => getAllFaqs(), [], { fallback: EMPTY_LIST });
 }
 
 /**

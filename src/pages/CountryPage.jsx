@@ -55,9 +55,6 @@ export default function CountryPage() {
   const { data: logoItems } = useCountryLogos();
   const flagMap = mapCountryLogos(logoItems);
 
-  // useAllCountries və useTopCountries artıq map edilmiş ölkə obyektləri
-  // qaytarır (country_name yoxdur). Onları təkrar map etmək siyahını boş
-  // edirdi, ona görə olduğu kimi birləşdirilir.
   const { data: allCountries, loading: loadingList } = useAllCountries();
   const { data: topCountries, loading: loadingTop } = useTopCountries();
   const mergedBySlug = new Map();
@@ -74,41 +71,65 @@ export default function CountryPage() {
         c.name.toLowerCase() === normalizedSlug ||
         c.name.toLowerCase() === guess.toLowerCase(),
     ) || null;
-  // Əgər summary tapılmasa, slug-ı birbaşa backend-ə göndərmək işləməz,
-  // çünki backend real ad gözləyir ("yeni-olke" yox, "Yeni Olke").
-  // Ona görə slug-ı boşluqlu tahminə çevirib onu sorğulayırıq.
-  const countryName = summary?.name || guess || slug || '';
+  const countryName = summary?.apiName || summary?.name || guess || slug || '';
 
   const { data, loading } = useCountry(countryName);
   const detail = data ? mapCountry(data) : null;
 
-  // /country/country_detail omits the fees, the flag and the background image,
-  // so those come from /country/country_entity.
   const { data: entityData } = useCountryEntity(countryName);
   const entity = mapCountryEntity(entityData);
 
-  // Universitetlər ayrı endpoint-dən gəlir; country_detail çox vaxt boş
-  // siyahı qaytarır, ona görə bu siyahı həlledicidir.
   const { data: rawUniversities } = useUniversitiesByCountry(countryName);
   const universities = (rawUniversities || [])
-    .map((entry) => (typeof entry === 'string' ? entry : entry?.university_name))
-    .filter(Boolean)
-    .map((universityName) => ({ id: universityName, universityName }));
+    .map((entry) => {
+      const universityName = typeof entry === 'string'
+        ? entry
+        : entry?.university_name ?? entry?.universityName ?? entry?.name;
+      return universityName ? { id: universityName, apiName: universityName, universityName } : null;
+    })
+    .filter(Boolean);
 
-  // Fall back to the summary entry so a country that exists is never shown as
-  // "not found".
   const base = detail || (summary ? mapCountryFromSummary(summary) : null);
-  const country = base
+  let countryObj = base
     ? {
         ...base,
-        heroImage: (base.heroImage || (entity && entity.heroImage)) || '',
-        card: { ...base.card, ...(entity && entity.card) },
-        costs: entity ? entity.costs : base.costs,
+        heroImage: (base.heroImage || entity?.heroImage) || '',
+        card: {
+          ...base.card,
+          ...(entity && entity.card),
+          universityCount: entity?.card?.universityCount || base.card.universityCount || 0,
+          tuitionFee: entity?.card?.tuitionFee ?? detail?.card?.tuitionFee ?? base.card.tuitionFee ?? 0,
+          features: entity?.card?.features?.length ? entity.card.features : base.card.features,
+        },
+        costs: {
+          rental: entity?.costs?.rental?.value && entity.costs.rental.value !== '—'
+            ? entity.costs.rental
+            : detail?.costs?.rental?.value && detail.costs.rental.value !== '—'
+              ? detail.costs.rental
+              : base.costs.rental,
+          monthly: entity?.costs?.monthly?.value && entity.costs.monthly.value !== '—'
+            ? entity.costs.monthly
+            : detail?.costs?.monthly?.value && detail.costs.monthly.value !== '—'
+              ? detail.costs.monthly
+              : base.costs.monthly,
+        },
         universities: universities.length > 0 ? universities : base.universities || [],
+        description: base.description || entity?.content || '',
+        areasText: base.areasText || entity?.area || '',
+        name: entity?.countryName || entity?.name || base.name,
+        flag: base.flag || entity?.flag || '',
+        icon: base.icon || entity?.icon || '',
       }
     : null;
 
-  const flag = (country && flagMap[country.slug]) || (entity && entity.flag) || '';
+  const countryMerged = countryObj
+    ? {
+        ...countryObj,
+        flag: flagMap[countryObj.slug] || countryObj.flag || entity?.flag || '',
+      }
+    : null;
+  const flagFinal = countryMerged?.flag || '';
+  const country = countryMerged;
 
   if (loadingList || loadingTop || (loading && countryName)) {
     return (
@@ -118,43 +139,18 @@ export default function CountryPage() {
     );
   }
 
-  if (!country) {
+  if (!countryMerged) {
     return (
       <PageShell>
-<main className="flex-1 w-full min-w-0 overflow-hidden flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-            <h1 className="text-2xl font-bold text-[#080d4a]">Ölkə tapılmadı</h1>
-            <p className="text-sm text-[#080d4a]/70 break-words [overflow-wrap:anywhere]">"{slug}" adlı ölkə mövcud deyil.</p>
-          <p className="text-[11px] text-[#080d4a]/50 max-w-[520px]">
-            Axtarılan: slug="{slug}", tahmin="{countryName}". Siyahıda {countryList.length} ölkə var.
-            Əgər yeni yaratmısansa: 1) /admin-də siyahıda görünür? 2) Adı olduğu kimi yaz
-            (məs: "Cənubi Koreya" üçün /country/cenubi-koreya). 3) Brauzerdə Network-də
-            GET /country/all cavabında country_name varmı yoxla.
-          </p>
-
-          {countryList.length > 0 ? (
-            <div className="mt-2 flex flex-wrap justify-center gap-2">
-              {countryList.map((c) => (
-                <Link
-                  key={c.slug}
-                  to={`/country/${c.slug}`}
-                  className="px-4 py-1.5 rounded-full bg-[#080d4a] text-white text-[12px] hover:bg-[#141c63] transition"
-                >
-                  {c.name}
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <Link
-              to="/"
-              className="mt-2 inline-flex px-5 py-2 rounded-full bg-[#080d4a] text-white text-sm"
-            >
-              Ana səhifə
-            </Link>
-          )}
+        <main className="flex-1 w-full min-w-0 overflow-hidden flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+          <h1 className="text-2xl font-bold text-[#080d4a]">Ölkə tapılmadı</h1>
+          <p className="text-sm text-[#080d4a]/70 break-words [overflow-wrap:anywhere]">"{slug}" adlı ölkə mövcud deyil.</p>
         </main>
       </PageShell>
     );
   }
+
+
 
   return (
     <PageShell>
@@ -167,28 +163,23 @@ export default function CountryPage() {
         }}
       >
         <div className="max-w-[900px] mx-auto w-full min-w-0 px-4 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16 overflow-hidden">
-          {/* Title */}
           <div className="flex items-center justify-center gap-2.5 mb-4 sm:mb-5">
-            {flag && (
-              <img
-                src={flag}
-                alt={country.name}
-                className="w-7 h-5 object-contain"
-                loading="lazy"
-              />
-)}
+            {flagFinal && (
+              <img src={flagFinal} alt={country.name} className="w-7 h-5 object-contain" loading="lazy" />
+            )}
             <h1 className="text-center text-[#2f3f80] font-heading font-bold text-[24px] sm:text-[32px] tracking-wide">
               {country.name}
             </h1>
             {country.icon && <span className="text-[20px] leading-none">{country.icon}</span>}
           </div>
 
-          {/* Hero image */}
           <div
             className="w-full overflow-hidden rounded-[2px] shadow-sm mb-5 sm:mb-6"
-            style={country.heroImage && brokenSrc !== country.heroImage
-              ? { backgroundColor: '#d8cccc' }
-              : { background: gradientFor(country.name) }}
+            style={
+              country.heroImage && brokenSrc !== country.heroImage
+                ? { backgroundColor: '#d8cccc' }
+                : { background: gradientFor(country.name) }
+            }
           >
             {country.heroImage && brokenSrc !== country.heroImage ? (
               <img
@@ -210,7 +201,6 @@ export default function CountryPage() {
             )}
           </div>
 
-          {/* Description */}
           {country.description ? (
             <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6 mb-8 sm:mb-10 break-words [overflow-wrap:anywhere] whitespace-pre-line">
               {country.description}
@@ -221,7 +211,6 @@ export default function CountryPage() {
             </p>
           )}
 
-          {/* Universities */}
           <div className="mb-8 sm:mb-10">
             <UniversitiesList
               universities={country.universities}
@@ -230,7 +219,6 @@ export default function CountryPage() {
             />
           </div>
 
-          {/* Costs */}
           <div className="mb-8 sm:mb-10">
             <AverageCosts
               tuitionFee={country.card.tuitionFee}
@@ -239,7 +227,6 @@ export default function CountryPage() {
             />
           </div>
 
-{/* Areas */}
           {country.areasText && (
             <section>
               <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-3">

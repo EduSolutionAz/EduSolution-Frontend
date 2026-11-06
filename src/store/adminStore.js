@@ -1,6 +1,5 @@
 import { createId } from '../utils/id';
 import { countries as seedCountries } from '../data/countries';
-import { faqs as seedFaqs } from '../data/faqs';
 import {
   FEATURE_OPTIONS,
   normalizeUniversityType,
@@ -9,7 +8,7 @@ import {
 } from '../utils/format';
 
 const STORAGE_KEY = 'eduSoliton_admin_v1';
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 const DEFAULT_COSTS = {
   rental: { value: '', label: 'Rental Fee', note: '' },
@@ -20,7 +19,6 @@ const DEFAULT_STATE = {
   schemaVersion: SCHEMA_VERSION,
   ads: [],
   prizes: [],
-  faqs: [],
   applicants: [],
   applicantGenerations: [],
   countries: [],
@@ -114,18 +112,9 @@ function normalizeCountry(country) {
   };
 }
 
-function normalizeFaq(faq) {
-  return {
-    id: faq.id || createId('faq'),
-    question: faq.question || '',
-    answer: faq.answer || '',
-  };
-}
-
 function migrateSeed() {
   return {
     ...DEFAULT_STATE,
-    faqs: seedFaqs.map(normalizeFaq),
     countries: seedCountries.map((country) => {
       const normalized = normalizeCountry(country);
       normalized.universities = normalized.universities.map((university, index) => ({
@@ -171,7 +160,6 @@ function migrateStored(stored) {
     prizes: stored.prizes || [],
     applicants: normalizeApplicants(stored),
     applicantGenerations: Array.isArray(stored.applicantGenerations) ? stored.applicantGenerations : [],
-    faqs: Array.isArray(stored.faqs) ? stored.faqs.map(normalizeFaq) : seedFaqs.map(normalizeFaq),
     countries: (stored.countries || []).map(normalizeCountry),
   };
 }
@@ -341,42 +329,6 @@ export function addPrize(name) {
 export function removePrize(id) {
   const s = cloneState();
   s.prizes = s.prizes.filter((p) => p.id !== id);
-  return commit(s);
-}
-
-export function getFaqs() {
-  return ensureState().faqs;
-}
-
-export function addFaq(question, answer) {
-  const s = cloneState();
-  s.faqs.push(normalizeFaq({ id: createId('faq'), question, answer }));
-  return commit(s);
-}
-
-export function updateFaq(id, patch) {
-  const s = cloneState();
-  const idx = s.faqs.findIndex((f) => f.id === id);
-  if (idx < 0) return false;
-
-  s.faqs[idx] = normalizeFaq({ ...s.faqs[idx], ...patch, id });
-  return commit(s);
-}
-
-export function moveFaq(id, direction) {
-  const s = cloneState();
-  const idx = s.faqs.findIndex((f) => f.id === id);
-  const target = idx + direction;
-  if (idx < 0 || target < 0 || target >= s.faqs.length) return false;
-
-  const [item] = s.faqs.splice(idx, 1);
-  s.faqs.splice(target, 0, item);
-  return commit(s);
-}
-
-export function removeFaq(id) {
-  const s = cloneState();
-  s.faqs = s.faqs.filter((f) => f.id !== id);
   return commit(s);
 }
 

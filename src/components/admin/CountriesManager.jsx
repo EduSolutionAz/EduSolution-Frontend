@@ -39,6 +39,9 @@ const EMPTY_FORM = {
   universityCount: '',
   tuitionFee: '',
   rentalFee: '',
+  // Aylıq xərclər: backend tərəfində BigDecimal olaraq saxlanılır, ona görə
+  // dəyər olduğu kimi (nöqtə ilə) göndərilir, JS Number-a çevrilmir.
+  monthlySpending: '',
   // Checked by default: the admin list reads /country/top_countries, so a
   // country saved without this flag is invisible and cannot be edited.
   features: ['isTopList'],
@@ -103,15 +106,16 @@ export default function CountriesManager() {
     }
 
     setForm({
-      name: detail?.countryName || country.name,
-      flag: detail?.flagImage || '',
-      heroImage: detail?.countryImage || '',
-      universityCount: String(detail?.universityCount ?? ''),
-      tuitionFee: String(detail?.tuitionFee ?? ''),
-      rentalFee: String(detail?.rentalFee ?? ''),
+      name: detail?.country_name || detail?.countryName || country.name,
+      flag: detail?.flag_image || detail?.flagImage || '',
+      heroImage: detail?.country_image || detail?.countryImage || '',
+      universityCount: String(detail?.university_count ?? detail?.universityCount ?? ''),
+      tuitionFee: String(detail?.tuition_fee ?? detail?.tuitionFee ?? ''),
+      rentalFee: String(detail?.rental_fee ?? detail?.rentalFee ?? ''),
+      monthlySpending: String(detail?.monthly_spending ?? detail?.monthlySpending ?? ''),
       features: [
-        ...(detail?.isVisaHelp ? ['isVisaHelp'] : []),
-        ...(detail?.isDormitoryHelp ? ['isDormitoryHelp'] : []),
+        ...((detail?.is_visa_help ?? detail?.isVisaHelp) ? ['isVisaHelp'] : []),
+        ...((detail?.is_dormitory_help ?? detail?.isDormitoryHelp) ? ['isDormitoryHelp'] : []),
         // Top List hər zaman seçili saxlanılır, əks halda ölkə
         // /country/top_countries-də görünməz və redaktə olunmaz olur.
         'isTopList',
@@ -149,6 +153,17 @@ export default function CountriesManager() {
       return;
     }
 
+    // BigDecimal: yalnız müsbət ondalık rəqəm qəbul edilir (vergül nöqtəyə
+    // çevrilir); boş sahə 0 göndərilir ki, DTO sahəsi heç vaxt boş qalmasın.
+    const monthlySpending = String(form.monthlySpending || '').trim().replace(',', '.');
+    if (monthlySpending && !/^\d+(\.\d+)?$/.test(monthlySpending)) {
+      setStatus({
+        state: 'error',
+        message: 'Aylıq xərclər rəqəm olmalıdır (məsələn 450.50).',
+      });
+      return;
+    }
+
     setIsSaving(true);
     setStatus({ state: 'loading', message: '' });
     setRawResponse('');
@@ -179,35 +194,27 @@ export default function CountriesManager() {
       const { file: flagImage } = flag;
       const { file: countryImage } = country;
 
-      const result = isEditing
-        ? await updateCountry({
-            countryName: targetName,
-            flagImage,
-            countryImage,
-            universityCount: Number(form.universityCount) || 0,
-            tuitionFee: Number(form.tuitionFee) || 0,
-            rentalFee: Number(form.rentalFee) || 0,
-            isVisaHelp: form.features.includes('isVisaHelp'),
-            isDormitoryHelp: form.features.includes('isDormitoryHelp'),
-            isTopList: form.features.includes('isTopList'),
-            content: form.description.trim(),
-            area: form.areasText.trim(),
-            icon: form.icon.trim() || targetName,
-          })
-        : await addCountry({
-            countryName: targetName,
-            flagImage,
-            countryImage,
-            universityCount: Number(form.universityCount) || 0,
-            tuitionFee: Number(form.tuitionFee) || 0,
-            rentalFee: Number(form.rentalFee) || 0,
-            isVisaHelp: form.features.includes('isVisaHelp'),
-            isDormitoryHelp: form.features.includes('isDormitoryHelp'),
-            isTopList: form.features.includes('isTopList'),
-            content: form.description.trim(),
-            area: form.areasText.trim(),
-            icon: form.icon.trim() || targetName,
-          });
+      // CountryAddRequestDTO və UpdateCountryRequestDTO eyni sahələri göndərir,
+      // ona görə bir payload hər iki əməliyyat üçün istifadə olunur.
+      const payload = {
+        countryName: targetName,
+        flagImage,
+        countryImage,
+        universityCount: Number(form.universityCount) || 0,
+        tuitionFee: Number(form.tuitionFee) || 0,
+        rentalFee: Number(form.rentalFee) || 0,
+        // BigDecimal olduğu üçün string kimi göndərilir: Number() fırlanması
+        // səbəbi ilə 450.50 dəyəri serverdə 450.5 kimi saxlana bilərdi.
+        monthlySpending: monthlySpending || '0',
+        isVisaHelp: form.features.includes('isVisaHelp'),
+        isDormitoryHelp: form.features.includes('isDormitoryHelp'),
+        isTopList: form.features.includes('isTopList'),
+        content: form.description.trim(),
+        area: form.areasText.trim(),
+        icon: form.icon.trim() || targetName,
+      };
+
+      const result = isEditing ? await updateCountry(payload) : await addCountry(payload);
 
       // The backend creates the record but answers 200 with an empty body, so
       // the response cannot be trusted. The list is refetched and the outcome
@@ -222,8 +229,13 @@ export default function CountriesManager() {
       if (saved) {
         setStatus({
           state: 'success',
-          message: `"${targetName}" ${isEditing ? 'yeniləndi' : 'əlavə edildi'} və siyahı yeniləndi.`,
+          message: `"${targetName}" ${isEditing ? 'yeniləndi' : 'əlavə edildi'} və siyahı yeniləndi. Səhifə yenilənəcək...`,
         });
+        setTimeout(() => {
+          if (typeof window !== 'undefined') {
+            window.location.reload();
+          }
+        }, 1500);
         return;
       }
 
@@ -406,6 +418,25 @@ export default function CountriesManager() {
               placeholder="0"
               className={FIELD_INPUT}
             />
+          </div>
+
+          <div>
+            <label className={FIELD_LABEL} htmlFor="country-monthly">Aylıq xərclər ($)</label>
+            <input
+              id="country-monthly"
+              name="monthlySpending"
+              type="number"
+              min="0"
+              step="any"
+              inputMode="decimal"
+              value={form.monthlySpending}
+              onChange={handleChange}
+              placeholder="500"
+              className={FIELD_INPUT}
+            />
+            <p className="mt-1 text-[10px] text-[#323643]/50">
+              Ondalık dəstəklənir (backend BigDecimal), məsələn 450.50
+            </p>
           </div>
 
           <div>

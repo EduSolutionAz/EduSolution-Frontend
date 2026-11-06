@@ -21,7 +21,14 @@ function normalizeProperties(dto) {
 
   // visa_success_rate is computed by the backend from visa_help and
   // successful_visa_help, so it is read-only here.
-  const rate = Number(source.visa_success_rate);
+  const rateRaw =
+    source.visa_success_rate ??
+    source.visaSuccessRate ??
+    source.visa_success ??
+    source.visaSuccess ??
+    source.success_rate ??
+    source.visa_rate;
+  const rate = Number(rateRaw);
   value.visa_success_rate = Number.isFinite(rate) ? rate : null;
 
   return value;
