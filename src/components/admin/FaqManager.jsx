@@ -55,13 +55,15 @@ export default function FaqManager() {
           { id: editingId, question, answer },
           { tokenKey: ADMIN_TOKEN_KEY },
         );
-        if (response?.is_updated !== true) throw new Error('FAQ yenilənmədi');
+        if (response && response.is_updated === false) {
+          throw new Error('FAQ yenilənmədi');
+        }
       } else {
         const response = await createFaq(
           { question, answer },
           { tokenKey: ADMIN_TOKEN_KEY },
         );
-        if (response?.is_created !== true || !response?.faq_id) {
+        if (response && response.is_created === false) {
           throw new Error('FAQ yaradılmadı');
         }
       }
@@ -94,7 +96,7 @@ export default function FaqManager() {
 
     try {
       const response = await deleteFaq(faq.id, { tokenKey: ADMIN_TOKEN_KEY });
-      if (response?.is_deleted !== true) throw new Error('FAQ silinmədi');
+      if (response && response.is_deleted === false) throw new Error('FAQ silinmədi');
       reload();
       if (editingId === faq.id) closeForm();
       setStatus({ state: 'success', message: 'FAQ silindi' });
