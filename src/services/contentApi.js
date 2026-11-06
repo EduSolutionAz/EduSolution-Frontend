@@ -238,18 +238,27 @@ export async function addApplicantComment(
 }
 
 function mapFaq(dto) {
-  const id = dto?.faq_id ?? dto?.faqId;
-  const question = dto?.faq_question ?? dto?.faqQuestion;
-  const answer = dto?.faq_answer ?? dto?.faqAnswer;
-  if (id == null || typeof question !== 'string' || typeof answer !== 'string') return null;
+  const id = dto?.faq_id ?? dto?.faqId ?? dto?.id;
+  const question = dto?.faq_question ?? dto?.faqQuestion ?? dto?.question;
+  // The FAQ DTO uses faq_text, while older payloads returned faq_answer.
+  const answer =
+    dto?.faq_text ??
+    dto?.faqText ??
+    dto?.faq_answer ??
+    dto?.faqAnswer ??
+    dto?.answer;
+  if (typeof question !== 'string' || typeof answer !== 'string') return null;
 
-  return { id: String(id), question, answer };
+  return { id: String(id ?? question), question, answer };
 }
 
-/** GET /faq/all -> [{ faq_id, faq_question, faq_answer }]. Public. */
+/** GET /faq/all -> [{ faq_id, faq_question, faq_text }]. Public. */
 export async function getAllFaqs() {
   const { data } = await request('/faq/all', { auth: false });
-  return asArray(data).map(mapFaq).filter(Boolean);
+  const list = Array.isArray(data)
+    ? data
+    : data?.content ?? data?.faqs ?? data?.items ?? data?.data;
+  return asArray(list).map(mapFaq).filter(Boolean);
 }
 
 /** POST /faq/create -> { faq_id, is_created }. Admin token required. */
@@ -267,7 +276,13 @@ export async function updateFaq({ id, question, answer }, { tokenKey = ADMIN_TOK
   const { data } = await request('/faq/update', {
     method: 'PATCH',
     tokenKey,
-    body: { faq_id: id, faq_question: question, faq_answer: answer },
+    body: {
+      faq_id: id,
+      faq_question: question,
+      faq_text: answer,
+      // Kept for older backends that still name the field faq_answer.
+      faq_answer: answer,
+    },
   });
   return data;
 }
