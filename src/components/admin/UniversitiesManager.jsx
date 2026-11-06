@@ -38,6 +38,7 @@ const EMPTY_FORM = {
   area: '',
   isPartner: false,
   fee: '',
+  semesterCount: '',
 };
 
 export default function UniversitiesManager() {
@@ -138,6 +139,7 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
       shortDescription: detail?.short_description ?? detail?.shortDescription ?? '',
       universityLogo: detail?.university_logo ?? detail?.universityLogo ?? '',
       fee: String(detail?.fee ?? detail?.university_fee ?? detail?.universityFee ?? ''),
+      semesterCount: String(detail?.semester_count ?? detail?.semesterCount ?? detail?.semesters ?? ''),
       city: detail?.city ?? '',
       content: detail?.content ?? '',
       area: detail?.area ?? '',
@@ -206,6 +208,8 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
         shortDescription: form.shortDescription.trim(),
         universityLogo: logo,
         fee: Number(form.fee) || 0,
+        semester_count: form.semesterCount === '' || form.semesterCount == null ? undefined : Number(form.semesterCount),
+        semesterCount: form.semesterCount === '' || form.semesterCount == null ? undefined : Number(form.semesterCount),
         city: form.city.trim(),
         content: form.content.trim(),
         area: form.area.trim(),
@@ -429,7 +433,7 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
             />
           </div>
 
-          <div className="sm:col-span-2 sm:col-start-1">
+          <div>
             <label className={FIELD_LABEL} htmlFor="uni-fee">University Fee ($)</label>
             <input
               id="uni-fee"
@@ -441,6 +445,22 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
               value={form.fee}
               onChange={handleChange}
               placeholder="0 = pulsuz"
+              className={FIELD_INPUT}
+            />
+          </div>
+
+          <div>
+            <label className={FIELD_LABEL} htmlFor="uni-semester">Semester Count</label>
+            <input
+              id="uni-semester"
+              name="semesterCount"
+              type="number"
+              min="0"
+              step="1"
+              inputMode="numeric"
+              value={form.semesterCount || ''}
+              onChange={handleChange}
+              placeholder="Məs: 8"
               className={FIELD_INPUT}
             />
           </div>

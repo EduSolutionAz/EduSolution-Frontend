@@ -236,3 +236,48 @@ export async function addApplicantComment(
   });
   return data;
 }
+
+function mapFaq(dto) {
+  const id = dto?.faq_id ?? dto?.faqId;
+  const question = dto?.faq_question ?? dto?.faqQuestion;
+  const answer = dto?.faq_answer ?? dto?.faqAnswer;
+  if (id == null || typeof question !== 'string' || typeof answer !== 'string') return null;
+
+  return { id: String(id), question, answer };
+}
+
+/** GET /faq/all -> [{ faq_id, faq_question, faq_answer }]. Public. */
+export async function getAllFaqs() {
+  const { data } = await request('/faq/all', { auth: false });
+  return asArray(data).map(mapFaq).filter(Boolean);
+}
+
+/** POST /faq/create -> { faq_id, is_created }. Admin token required. */
+export async function createFaq({ question, answer }, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request('/faq/create', {
+    method: 'POST',
+    tokenKey,
+    body: { faq_question: question, faq_text: answer },
+  });
+  return data;
+}
+
+/** PATCH /faq/update -> { faq_id, is_updated }. Admin token required. */
+export async function updateFaq({ id, question, answer }, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request('/faq/update', {
+    method: 'PATCH',
+    tokenKey,
+    body: { faq_id: id, faq_question: question, faq_answer: answer },
+  });
+  return data;
+}
+
+/** DELETE /faq/delete -> { is_deleted }. Admin token required. */
+export async function deleteFaq(id, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
+  const { data } = await request('/faq/delete', {
+    method: 'DELETE',
+    tokenKey,
+    body: { faq_id: id },
+  });
+  return data;
+}

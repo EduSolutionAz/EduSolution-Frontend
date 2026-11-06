@@ -1,14 +1,16 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FaqAccordion from '../components/FaqAccordion';
-import { getFaqs, subscribe } from '../store/adminStore';
+import { useFaqs } from '../services/contentHooks';
 
 export default function FaqPage() {
-  const faqs = useSyncExternalStore(subscribe, getFaqs, getFaqs);
+  const { data: faqs, loading, error } = useFaqs();
   const [openId, setOpenId] = useState(undefined);
 
-  const activeId = openId === undefined ? (faqs[0]?.id ?? null) : openId;
+  const activeId = openId === undefined || (openId && !faqs.some((faq) => faq.id === openId))
+    ? (faqs[0]?.id ?? null)
+    : openId;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f6eeee] font-sans overflow-x-hidden">
@@ -40,7 +42,17 @@ export default function FaqPage() {
                 />
               </div>
             ))}
-            {faqs.length === 0 && (
+            {loading && faqs.length === 0 && (
+              <p className="text-center text-[#2f4486]/60 text-[13px] py-10">
+                FAQ-lar yüklənir…
+              </p>
+            )}
+            {error && faqs.length === 0 && (
+              <p role="alert" className="text-center text-[#2f4486]/60 text-[13px] py-10">
+                FAQ-ları yükləmək mümkün olmadı
+              </p>
+            )}
+            {!loading && !error && faqs.length === 0 && (
               <p className="text-center text-[#2f4486]/60 text-[13px] py-10">
                 Hələ sual əlavə edilməyib
               </p>

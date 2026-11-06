@@ -69,7 +69,7 @@ tərəfdə CORS qurulmalıdır** (bax: "Problemlər").
 | Countries | `/country/*` |
 | Universities | `/university/*` |
 | Faculties | `/faculty/*` |
-| FAQ | **localStorage** — backend endpointi yoxdur |
+| FAQ | `/faq/all`, `/faq/create`, `/faq/update`, `/faq/delete` |
 | Ad Board | `/ad/*` |
 | Spin Prizes | `/spin/*` (nağıllar + qaliblar) |
 | Web Config | `/property/all`, `/property/add` |
@@ -102,7 +102,7 @@ src/
   pages/             Route səhifələri
   services/
     httpClient.js    fetch wrapper, token, timeout, xəta mesajları
-    contentApi.js    ölkə / universitet / faculty / applicant / contact
+    contentApi.js    ölkə / universitet / FAQ / faculty / applicant / contact
     authApi.js       qeydiyyat, giriş
     spinApi.js       çarx, nağıllar, qaliblar
     adApi.js         reklamlar
@@ -110,7 +110,7 @@ src/
     contentHooks.js  useApiResource və hazır hook-lar
     mappers.js       API DTO -> UI model
     session.js       token və sessiya
-  store/adminStore.js  FAQ üçün localStorage store (və köhnə fallback)
+  store/adminStore.js  reklam, çarx, ölkə və rəy üçün local fallback
   utils/             format, id, şəkil emalı
 ```
 
@@ -225,11 +225,9 @@ admin həm backend-dən, həm lokal oxuyur. Fərq görünən hər yerə sarı
 
 ### Frontend tərəfdə
 
-1. **FAQ hələ localStorage-dadır** — Swagger-da FAQ endpointi yoxdur. Yeni
-   ekip üçün problem yaradır (data hər brauzerə xas). Backend CRUD lazımdır.
-2. **`store/adminStore.js` hələ də mövcuddur** — reklam və nağıl üçün
-   fallback, FAQ üçün isə yeganə mənbədir.
-3. **Çarx oyun limiti işləmir** (1-ci backend problemi səbəbindən).
-4. **Sayt rəqəmləri statik fallback** göstərir, 3-cü problem qalana qədər.
-5. `npm run lint` 16 xəbərdarlıq verir — hamısı `set-state-in-effect`
+1. **`store/adminStore.js` hələ də mövcuddur** — reklam, nağıl və bəzi
+   admin məlumatları üçün local fallback.
+2. **Çarx oyun limiti işləmir** (1-ci backend problemi səbəbindən).
+3. **Sayt rəqəmləri statik fallback** göstərir, 3-cü problem qalana qədər.
+4. `npm run lint` 16 xəbərdarlıq verir — hamısı `set-state-in-effect`
    (data yükləmə) patternıdır, xəta yoxdur.

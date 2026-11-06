@@ -258,6 +258,8 @@ export function mapUniversity(dto) {
     (typeof root?.type === 'object' ? (root.type.name || root.type.value || root.type.code) : undefined) ??
     findDeep(root, ['university_type', 'universitytype', 'type', 'category']);
 
+  const semesterCount = Number(findDeep(root, ['semester_count', 'semestercount', 'semesterCount', 'semesters', 'numberofsemesters', 'termcount']) ?? root?.semester_count ?? root?.semesterCount ?? root?.semesters ?? 0) || 0;
+
   const uni = {
     id: apiName,
     apiName,
@@ -271,7 +273,7 @@ export function mapUniversity(dto) {
     content: text(firstField(root, ['content', 'description', 'about', 'info', 'long_description', 'body'])),
     viewUrl: text(root?.view_url ?? root?.viewUrl ?? root?.viewUrlLink),
     universityFee: Number.isFinite(universityFee) ? universityFee : 0,
-    semesterCount: Number(root?.semester_count ?? root?.semesterCount ?? root?.semesters ?? root?.numberOfSemesters ?? root?.termCount) || 0,
+    semesterCount,
     countryName: text(firstField(root, ['country_name', 'countryName', 'country'])),
     faculties: asList(firstField(root, ['faculties', 'facultyList', 'facultiesList']))
       .map((entry) => {
