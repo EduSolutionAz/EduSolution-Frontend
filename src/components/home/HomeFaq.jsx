@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import FaqAccordion from '../FaqAccordion';
 import { useFaqs } from '../../services/contentHooks';
-
 export default function HomeFaq() {
   const { data: faqs, loading, error } = useFaqs();
   const [openId, setOpenId] = useState(undefined);
@@ -23,7 +22,7 @@ export default function HomeFaq() {
     >
       <div className="max-w-[860px] mx-auto">
         <h2 className="text-center text-[#1a2e5a] font-heading font-bold text-[20px] sm:text-[26px] tracking-wide mb-6 sm:mb-8">
-          Frequently Asked Questions
+          {'Tez-tez verilən suallar'}
         </h2>
 
         <div className="flex flex-col gap-2.5 sm:gap-3" role="list">
@@ -37,15 +36,15 @@ export default function HomeFaq() {
             </div>
           ))}
           {loading && faqs.length === 0 && (
-            <p className="text-center text-[#1a2e5a]/60 text-[13px] py-8">FAQ-lar yüklənir…</p>
+            <p className="text-center text-[#1a2e5a]/60 text-[13px] py-8">{'FAQ-lar yüklənir…'}</p>
           )}
           {error && faqs.length === 0 && (
             <p role="alert" className="text-center text-[#1a2e5a]/60 text-[13px] py-8">
-              FAQ-ları yükləmək mümkün olmadı
+              {'FAQ-ları yükləmək mümkün olmadı'}
             </p>
           )}
           {!loading && !error && faqs.length === 0 && (
-            <p className="text-center text-[#1a2e5a]/60 text-[13px] py-8">Hələ sual əlavə edilməyib</p>
+            <p className="text-center text-[#1a2e5a]/60 text-[13px] py-8">{'Hələ sual əlavə edilməyib'}</p>
           )}
         </div>
       </div>

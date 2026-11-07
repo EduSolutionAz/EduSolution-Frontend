@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { createContact } from '../../services/contentApi';
 import { SERVICE_OPTIONS } from '../../services/mappers';
 import { WHATSAPP_DISPLAY, whatsappLink } from '../../config/contact';
-
 export default function ContactSection() {
   const [form, setForm] = useState({ name: '', phone: '', service: '' });
   const [status, setStatus] = useState({ state: 'idle', message: '' });
@@ -48,14 +47,14 @@ export default function ContactSection() {
     >
       <div className="max-w-[980px] mx-auto px-4">
         <h2 className="text-center text-[#f7f7f7] font-heading font-bold text-[24px] sm:text-[30px] tracking-wide mb-7">
-          Contact us
+          {'Bizimlə əlaqə'}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 items-center">
           {/* Form */}
           <div className="bg-[#0a1145] rounded-lg px-6 sm:px-8 py-8">
             <h3 className="text-[#f7f7f7] font-accent font-semibold text-[16px] mb-5 text-center">
-              Enter Your Information
+              {'Məlumatlarınızı daxil edin'}
             </h3>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -64,7 +63,7 @@ export default function ContactSection() {
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                placeholder="Name and Surname"
+                placeholder={'Ad və soyad'}
                 required
                 className="w-full h-[44px] bg-[#f6eeee] rounded-full px-5 text-[#323643] text-[13px] outline-none placeholder-[#323643]/60 focus:ring-2 focus:ring-[#26aec4]"
               />
@@ -73,7 +72,7 @@ export default function ContactSection() {
                 name="phone"
                 value={form.phone}
                 onChange={handleChange}
-                placeholder="Phone Number"
+                placeholder={'Telefon nömrəsi'}
                 required
                 className="w-full h-[44px] bg-[#f6eeee] rounded-full px-5 text-[#323643] text-[13px] outline-none placeholder-[#323643]/60 focus:ring-2 focus:ring-[#26aec4]"
               />
@@ -85,7 +84,7 @@ export default function ContactSection() {
                 className="w-full h-[44px] bg-[#f6eeee] rounded-full px-5 text-[#323643] text-[13px] outline-none focus:ring-2 focus:ring-[#26aec4] cursor-pointer"
               >
                 <option value="" disabled hidden>
-                  Service you Want
+                  {'İstədiyiniz xidmət'}
                 </option>
                 {SERVICE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -98,7 +97,7 @@ export default function ContactSection() {
                 disabled={status.state === 'loading'}
                 className="self-center w-[150px] h-[42px] bg-[#26aec4] text-[#080d4a] rounded-full font-accent font-semibold text-[14px] hover:bg-[#3cc3d8] hover:scale-105 active:scale-95 transition-all tracking-wide cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {status.state === 'loading' ? 'Göndərilir...' : 'Send'}
+                {status.state === 'loading' ? 'Göndərilir...' : 'Göndər'}
               </button>
 
               {status.message && (
@@ -117,18 +116,17 @@ export default function ContactSection() {
           {/* Side info */}
           <div className="flex flex-col items-center text-center md:items-start md:text-left">
             <p className="text-[#f7f7f7]/90 text-[13px] leading-6 max-w-[360px]">
-              Enter Your Information to the boxes, and we will contact you shortly. By entering your
-              information, you are accepting the terms and condition of our website.
+              {'Məlumatlarınızı qutulara daxil edin, qısa müddətdə sizinlə əlaqə saxlayacağıq. Məlumatlarınızı daxil etməklə veb saytımızın şərtlərini qəbul etmiş olursunuz.'}
             </p>
 
             <div className="my-6 flex items-center gap-3 text-[#f7f7f7]/50 text-[13px] font-accent w-full justify-center md:justify-start">
               <span className="h-px w-10 bg-[#f7f7f7]/25" />
-              Or
+              {'Və ya'}
               <span className="h-px w-10 bg-[#f7f7f7]/25" />
             </div>
 
             <p className="text-[#f7f7f7] font-accent font-medium text-[14px] mb-3">
-              Contact Through Whatsapp
+              {'WhatsApp ilə əlaqə'}
             </p>
             <a
               href={whatsappLink()}
@@ -144,7 +142,7 @@ export default function ContactSection() {
             </a>
 
             <p className="mt-3 text-[#f7f7f7]/45 text-[11px] max-w-[300px]">
-              İş saatları: həftəci 09:00 - 18:00 · Weekend: 10:00 - 15:00
+              {'İş saatları: həftə içi 09:00 - 18:00 · Həftə sonu: 10:00 - 15:00'}
             </p>
           </div>
         </div>

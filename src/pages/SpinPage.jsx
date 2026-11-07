@@ -5,7 +5,6 @@ import { getPrizes as getStoredPrizes, subscribe } from '../store/adminStore';
 import { useSpinPrizes } from '../services/contentHooks';
 import { checkCanPlay, getBrowserId, playSpin, sendPrize } from '../services/spinApi';
 import { describeFailure } from '../services/httpClient';
-
 // Admin panelindəki "Spin Nağılları" səhifəsi bu siyahını idarə edir, ona
 // görə çarx həmişəlik bu siyahını oxuyur.
 const DEFAULT_SEGMENTS = [
@@ -219,10 +218,10 @@ export default function SpinPage() {
       >
         <div className="text-center">
           <h1 className="text-[#0d1440] font-heading font-bold text-[26px] sm:text-[36px] tracking-wide">
-            Spin &amp; Win
+            {'Fırlat & qazan'}
           </h1>
           <p className="mt-1.5 text-[#1a2e5a]/60 text-[12px] sm:text-[14px]">
-            Çarxı fırladın, qazanacağınız mükafatı görün
+            {'Çarxı fırladın, qazanacağınız mükafatı görün'}
           </p>
         </div>
 
@@ -261,7 +260,7 @@ export default function SpinPage() {
 
           {/* rotating wheel */}
           <div ref={wheelRef} className="absolute inset-0" style={{ willChange: 'transform' }}>
-            <svg viewBox="0 0 260 260" className="w-full h-full" role="img" aria-label="Fırlatma çarxı">
+          <svg viewBox="0 0 260 260" className="w-full h-full" role="img" aria-label={'Fırlatma çarxı'}>
 <defs>
                   {segments.map((segment, i) => (
                     <linearGradient key={`grad-${segment.label}-${i}`} id={`seg-${i}`} x1="0" y1="0" x2="0" y2="1">
@@ -370,7 +369,7 @@ export default function SpinPage() {
                 : '0 10px 26px rgba(38,174,196,0.42), inset 0 1px 0 rgba(255,255,255,0.55)',
             }}
           >
-            <span className="relative z-10">{spinning ? 'Fırladılır...' : 'Firlat'}</span>
+            <span className="relative z-10">{spinning ? 'Fırladılır...' : 'Fırlat'}</span>
           </button>
 
           <p className="text-[11px] text-[#1a2e5a]/45">
@@ -378,7 +377,7 @@ export default function SpinPage() {
               ? 'Çarx yavaşlayır…'
               : canPlay === false
                 ? 'Bu brauzer üçün fırlatma həddi dolub — yenidən yoxlayın'
-                : `${count} mükafat var — hər fırlatmada yeni biri`}
+                : ("{count}" + " mükafat var — hər fırlatmada yeni biri")}
           </p>
 
           {sendState.state === 'error' && sendState.message && (
@@ -418,9 +417,9 @@ export default function SpinPage() {
             </div>
 
             <h3 className="mt-6 text-[#0d1440] font-heading font-bold text-[22px] sm:text-[24px] tracking-wide">
-              Təbriklər!
+              {'Təbriklər!'}
             </h3>
-            <p className="mt-1 text-[13px] text-[#323643]/60">Çarxda sizə çıxdı:</p>
+            <p className="mt-1 text-[13px] text-[#323643]/60">{'Çarxda sizə çıxdı:'}</p>
 
             <div className="mt-4 mb-5 py-4 rounded-2xl bg-[#26aec4]/10">
               <p className="text-[#0d7f92] font-heading font-bold text-[20px] sm:text-[22px] leading-tight">
@@ -429,7 +428,7 @@ export default function SpinPage() {
             </div>
 
             <p className="text-[12px] text-[#323643]/60 mb-2 text-left">
-              Mükafatı e-poçt ünvanınıza göndərmək üçün yazın:
+              {'Mükafatı e-poçt ünvanınıza göndərmək üçün yazın:'}
             </p>
 
             <div className="flex gap-2">
@@ -473,7 +472,7 @@ export default function SpinPage() {
                 boxShadow: '0 8px 20px rgba(13,20,64,0.3)',
               }}
             >
-              Bağla
+              {'Bağla'}
             </button>
           </div>
         </div>

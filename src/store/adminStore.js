@@ -11,8 +11,8 @@ const STORAGE_KEY = 'eduSoliton_admin_v1';
 const SCHEMA_VERSION = 3;
 
 const DEFAULT_COSTS = {
-  rental: { value: '', label: 'Rental Fee', note: '' },
-  monthly: { value: '', label: 'Monthly Spending', note: '' },
+  rental: { value: '', label: 'Kirayə haqqı', note: '' },
+  monthly: { value: '', label: 'Aylıq xərc', note: '' },
 };
 
 const DEFAULT_STATE = {

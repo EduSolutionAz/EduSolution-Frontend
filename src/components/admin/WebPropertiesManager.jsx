@@ -14,12 +14,12 @@ import {
 // successful_visa_help dəyərlərindən hesablayıb qaytarır, ona görə
 // yalnız oxuna bilən (read-only) göstərilir.
 const FIELDS = [
-  { key: 'students_helped', label: 'Students Helped', hint: 'Ümumi kömək etdiyimiz tələbə sayı' },
-  { key: 'visa_success_rate', label: 'Visa Success Rate', hint: 'Backend hesablayır — dəyişmək mümkün deyil', readOnly: true },
-  { key: 'admissions_sent', label: 'Admission Sent', hint: 'Göndərdiyimiz qəbul müraciətləri' },
-  { key: 'successful_admission', label: 'Successful Admission', hint: 'Nəticələnən qəbullar' },
-  { key: 'visa_help', label: 'Visa Help', hint: 'Viza dəstəyi verdiyimiz şəxslər' },
-  { key: 'successful_visa_help', label: 'Successful Visa Help', hint: 'Nəticələnən viza müraciətləri' },
+  { key: 'students_helped', label: 'Tələbələrə kömək', hint: 'Ümumi kömək etdiyimiz tələbə sayı' },
+  { key: 'visa_success_rate', label: 'Viza uğur nisbəti', hint: 'Backend hesablayır — dəyişmək mümkün deyil', readOnly: true },
+  { key: 'admissions_sent', label: 'Göndərilən qəbul müraciəti', hint: 'Göndərdiyimiz qəbul müraciətləri' },
+  { key: 'successful_admission', label: 'Uğurlu qəbul', hint: 'Nəticələnən qəbullar' },
+  { key: 'visa_help', label: 'Viza dəstəyi', hint: 'Viza dəstəyi verdiyimiz şəxslər' },
+  { key: 'successful_visa_help', label: 'Uğurlu viza dəstəyi', hint: 'Nəticələnən viza müraciətləri' },
 ];
 
 const EDITABLE = FIELDS.filter((field) => !field.readOnly);
@@ -92,7 +92,7 @@ export default function WebPropertiesManager() {
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className={SECTION_TITLE}>Web Config</h2>
+        <h2 className={SECTION_TITLE}>Veb konfiqurasiya</h2>
         <button
           type="button"
           onClick={load}

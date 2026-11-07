@@ -23,8 +23,8 @@ const REQUIRED_LABELS = {
   universityName: 'Universitet adı',
   shortDescription: 'Qısa təsvir',
   city: 'Şəhər',
-  content: 'Content (uzun mətn)',
-  area: 'Area',
+  content: 'Məzmun (uzun mətn)',
+  area: 'Ərazi',
 };
 
 const EMPTY_FORM = {
@@ -434,7 +434,7 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
           </div>
 
           <div>
-            <label className={FIELD_LABEL} htmlFor="uni-fee">University Fee ($)</label>
+            <label className={FIELD_LABEL} htmlFor="uni-fee">Universitet haqqı ($)</label>
             <input
               id="uni-fee"
               name="fee"
@@ -450,7 +450,7 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
           </div>
 
           <div>
-            <label className={FIELD_LABEL} htmlFor="uni-semester">Semester Count</label>
+            <label className={FIELD_LABEL} htmlFor="uni-semester">Semestr sayı</label>
             <input
               id="uni-semester"
               name="semesterCount"
@@ -482,12 +482,12 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
           </div>
 
           <div className="sm:col-span-2">
-            <label className={FIELD_LABEL} htmlFor="uni-content">Content (uzun mətn)</label>
+            <label className={FIELD_LABEL} htmlFor="uni-content">Məzmun (uzun mətn)</label>
             <textarea id="uni-content" name="content" value={form.content} onChange={handleChange} rows={5} className={FIELD_TEXTAREA} />
           </div>
 
           <div className="sm:col-span-2">
-            <label className={FIELD_LABEL} htmlFor="uni-area">Area</label>
+            <label className={FIELD_LABEL} htmlFor="uni-area">Ərazi</label>
             <textarea id="uni-area" name="area" value={form.area} onChange={handleChange} rows={2} className={FIELD_TEXTAREA} />
           </div>
 
@@ -500,7 +500,7 @@ const activeCountry = selectedCountry || countries[0]?.name || '';
                 onChange={handleChange}
                 className="w-4 h-4 accent-[#26aec4]"
               />
-              Partner universitet (Partner badge)
+              Partnyor universitet (Partnyor nişanı)
             </label>
           </div>
 

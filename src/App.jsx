@@ -19,13 +19,12 @@ import AdminAdminsPage from './pages/AdminAdminsPage';
 import CommentPage from './pages/CommentPage';
 import SpinPage from './pages/SpinPage';
 import AdPage from './pages/AdPage';
-
 function NotFound() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f6eeee] text-[#080d4a] gap-3">
-      <h1 className="text-2xl font-bold">404 — Səhifə tapılmadı</h1>
+      <h1 className="text-2xl font-bold">{'404 — Səhifə tapılmadı'}</h1>
       <a href="/" className="underline">
-        Ana səhifəyə qayıt
+        {'Ana səhifəyə qayıt'}
       </a>
     </div>
   );

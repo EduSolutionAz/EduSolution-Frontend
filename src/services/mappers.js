@@ -1,9 +1,9 @@
 import { formatUsd, formatUsdAmount, normalizeUniversityType, slugify } from '../utils/format';
 
 export const SERVICE_OPTIONS = [
-  { value: 'UNIVERSITY', label: 'Admission to Universities' },
-  { value: 'RESIDENCE_PERMIT', label: 'Residence Permit' },
-  { value: 'VISA', label: 'Student / Work / Touristic Visa' },
+  { value: 'UNIVERSITY', label: 'Universitetlərə qəbul' },
+  { value: 'RESIDENCE_PERMIT', label: 'Yaşayış icazəsi' },
+  { value: 'VISA', label: 'Tələbə / İş / Turist vizası' },
 ];
 
 export const SERVICE_VALUES = ['VISA', 'RESIDENCE_PERMIT', 'UNIVERSITY'];
@@ -11,8 +11,8 @@ export const SERVICE_VALUES = ['VISA', 'RESIDENCE_PERMIT', 'UNIVERSITY'];
 const EMPTY_COST = { value: '—', label: '', note: '' };
 
 const EMPTY_COSTS = {
-  rental: { ...EMPTY_COST, label: 'Rental Fee' },
-  monthly: { ...EMPTY_COST, label: 'Monthly Spending' },
+  rental: { ...EMPTY_COST, label: 'Kirayə haqqı' },
+  monthly: { ...EMPTY_COST, label: 'Aylıq xərc' },
 };
 
 function asList(value) {
@@ -41,8 +41,8 @@ export function mapTopCountry(dto) {
   if (!name) return null;
 
   const features = [];
-  if (dto.visa_help || dto.isVisaHelp) features.push('Visa Help');
-  if (dto.dormitory_help || dto.isDormitoryHelp) features.push('Dormitories');
+  if (dto.visa_help || dto.isVisaHelp) features.push('Viza dəstəyi');
+  if (dto.dormitory_help || dto.isDormitoryHelp) features.push('Yataqxanalar');
   return {
     slug: slugify(canonicalName || name),
     apiName: canonicalName || name,
@@ -71,8 +71,8 @@ export function mapAllCountry(dto) {
   if (!name) return null;
 
   const features = [];
-  if (dto.is_visa_help) features.push('Visa Help');
-  if (dto.is_dormitory_help) features.push('Dormitories');
+  if (dto.is_visa_help) features.push('Viza dəstəyi');
+  if (dto.is_dormitory_help) features.push('Yataqxanalar');
 
   return {
     slug: slugify(canonicalName || name),
@@ -126,8 +126,8 @@ export function mapCountryEntity(dto) {
       universityCount: Number(dto?.university_count ?? dto?.universityCount) || 0,
       tuitionFee,
       features: [
-        ...((dto?.is_visa_help ?? dto?.isVisaHelp ?? dto?.visaHelp) ? ['Visa Help'] : []),
-        ...((dto?.is_dormitory_help ?? dto?.isDormitoryHelp ?? dto?.dormitoryHelp) ? ['Dormitories'] : []),
+        ...((dto?.is_visa_help ?? dto?.isVisaHelp ?? dto?.visaHelp) ? ['Viza dəstəyi'] : []),
+        ...((dto?.is_dormitory_help ?? dto?.isDormitoryHelp ?? dto?.dormitoryHelp) ? ['Yataqxanalar'] : []),
       ],
     },
     costs: {
@@ -410,6 +410,7 @@ export function mapUniversityLogos(items) {
         return { src: item, alt: '' };
       }
       const src =
+        item?.university_logo_url ??
         item?.logo_url ??
         item?.photo_url ??
         item?.image_url ??

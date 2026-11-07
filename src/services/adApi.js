@@ -20,17 +20,19 @@ function mapAd(dto) {
   const title = typeof dto?.title === 'string' ? dto.title.trim() : '';
   if (!title) return null;
 
+  const link = dto?.link ?? dto?.ad_link ?? dto?.adLink;
+
   return {
     id: title,
     title,
     content: normalizeLineBreaks(dto?.content),
-    link: typeof dto?.link === 'string' ? dto.link.trim() : '',
+    link: typeof link === 'string' ? link.trim() : '',
     photoUrl: typeof dto?.photo_url === 'string' ? dto.photo_url : '',
   };
 }
 
 /**
- * GET /ad/all -> [{ title, photo_url }]. Public endpoint.
+ * GET /ad/all -> [{ title, photo_url, ad_link }]. Public endpoint.
  *
  * The home page calls it without auth (no Authorization header). The admin
  * panel passes its own token so the same loader serves both callers.
@@ -40,7 +42,7 @@ export async function getAllAds({ tokenKey = USER_TOKEN_KEY, auth = true } = {})
   return asArray(data).map(mapAd).filter(Boolean);
 }
 
-/** GET /ad/info/{adTitle} -> { title, content, photo_url }. Public. */
+/** GET /ad/info/{adTitle} -> { title, content, photo_url, ad_link }. Public. */
 export async function getAdInfo(adTitle, { auth = true } = {}) {
   if (!adTitle) return null;
 
@@ -57,10 +59,10 @@ export async function getAdInfo(adTitle, { auth = true } = {}) {
 /**
  * POST /ad/add -> { title, is_created }. Admin token.
  *
- * The OpenAPI spec documents AdAddRequestDTO as a *query* parameter while the
- * image is declared `format: binary`, so the same values are sent both ways:
- * Spring binds a @ModelAttribute argument from the query string and from the
- * multipart parts, which makes the call work for either mapping.
+ * Values are sent only as multipart fields. The backend binds @ModelAttribute
+ * from the multipart parts, and sending the same field in the query string as
+ * well made Spring join both copies with a comma ("Title,Title"), which is
+ * what duplicated ad titles and bodies.
  */
 function adRequestPayload({ title, content, link, image }) {
   const trimmedTitle = (title || '').trim();
@@ -73,32 +75,25 @@ function adRequestPayload({ title, content, link, image }) {
   formData.append('link', trimmedLink);
   if (image) formData.append('image', image);
 
-  return {
-    formData,
-    query: { title: trimmedTitle, content: trimmedContent, link: trimmedLink },
-  };
+  return formData;
 }
 
 /** POST /ad/add. Admin token. */
 export async function addAd(payload, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
-  const { formData, query } = adRequestPayload(payload);
   const { data } = await request('/ad/add', {
     method: 'POST',
     tokenKey,
-    formData,
-    query,
+    formData: adRequestPayload(payload),
   });
   return data;
 }
 
 /** PATCH /ad/update. Admin token. Takes the same body as /ad/add. */
 export async function updateAd(payload, { tokenKey = ADMIN_TOKEN_KEY } = {}) {
-  const { formData, query } = adRequestPayload(payload);
   const { data } = await request('/ad/update', {
     method: 'PATCH',
     tokenKey,
-    formData,
-    query,
+    formData: adRequestPayload(payload),
   });
   return data;
 }

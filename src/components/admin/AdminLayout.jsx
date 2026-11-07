@@ -35,15 +35,15 @@ function TokenStatus() {
 }
 
 const MENU = [
-  { to: '/admin/countries', label: 'Countries', icon: '' },
-  { to: '/admin/universities', label: 'Universities', icon: '' },
-  { to: '/admin/faculties', label: 'Faculties', icon: '' },
+  { to: '/admin/countries', label: 'Ölkələr', icon: '' },
+  { to: '/admin/universities', label: 'Universitetlər', icon: '' },
+  { to: '/admin/faculties', label: 'Fakültələr', icon: '' },
   { to: '/admin/faqs', label: 'FAQ', icon: '' },
-  { to: '/admin/ads', label: 'Ad Board', icon: '' },
-  { to: '/admin/prizes', label: 'Spin Prizes', icon: '' },
-  { to: '/admin/properties', label: 'Web Config', icon: '' },
-  { to: '/admin/comments', label: 'Comment URLs', icon: '' },
-  { to: '/admin/admins', label: 'Admins', icon: '' },
+  { to: '/admin/ads', label: 'Reklamlar', icon: '' },
+  { to: '/admin/prizes', label: 'Çarx mükafatları', icon: '' },
+  { to: '/admin/properties', label: 'Veb konfiqurasiya', icon: '' },
+  { to: '/admin/comments', label: 'Rəy linkləri', icon: '' },
+  { to: '/admin/admins', label: 'Adminlər', icon: '' },
 ];
 
 export default function AdminLayout() {
@@ -59,7 +59,7 @@ export default function AdminLayout() {
       <aside className="w-64 sm:w-72 bg-[#080d4a] text-white flex flex-col shrink-0">
         <div className="h-[60px] sm:h-[70px] flex items-center gap-2 px-5 border-b border-white/10">
           <span className="text-[22px] leading-none">🛠</span>
-          <h1 className="font-heading font-bold text-[16px]">Admin Panel</h1>
+          <h1 className="font-heading font-bold text-[16px]">Admin paneli</h1>
         </div>
         <nav className="flex-1 py-4" role="list">
           {MENU.map((item) => (

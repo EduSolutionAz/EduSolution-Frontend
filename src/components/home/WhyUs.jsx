@@ -1,12 +1,11 @@
 import { whyUs } from '../../data/home';
-
 const ICONS = {
-  'Personalized Consultation': '🎯',
-  'University Admissions': '📚',
-  'Visa Assistance': '🛂',
-  'Accommodation Support': '🏠',
-  'Legalization & Residence Support': '📋',
-  'Continuous Support': '🤝',
+  'Fərdi məsləhət': '🎯',
+  'Universitetə qəbul': '📚',
+  'Viza dəstəyi': '🛂',
+  'Yerləşmə dəstəyi': '🏠',
+  'Leqallaşdırma və yaşayış dəstəyi': '📋',
+  'Daimi dəstək': '🤝',
 };
 
 export default function WhyUs() {
@@ -22,7 +21,7 @@ export default function WhyUs() {
     >
       <div className="relative max-w-[980px] mx-auto px-4 sm:px-6">
         <h2 className="text-center text-white font-heading font-bold text-[20px] sm:text-[22px] tracking-wide">
-          Why EduSolution Academy
+          {'Niyə EduSolution Academy'}
         </h2>
 
         <p className="text-center text-white/70 text-[10px] sm:text-[11px] leading-[1.7] mt-3 max-w-[620px] mx-auto">

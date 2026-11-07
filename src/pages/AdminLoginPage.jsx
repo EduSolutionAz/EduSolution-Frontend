@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
     >
       <div className="w-full max-w-[360px]">
         <div className="text-center mb-7">
-          <h1 className="text-white text-[22px] font-heading font-bold tracking-wide">Admin Panel</h1>
+          <h1 className="text-white text-[22px] font-heading font-bold tracking-wide">Admin paneli</h1>
           <p className="text-white/60 text-[12px] mt-1.5">Davam etmək üçün daxil olun</p>
         </div>
 

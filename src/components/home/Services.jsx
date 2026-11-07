@@ -1,5 +1,4 @@
 import { services } from '../../data/home';
-
 const ICONS = {
   legal: (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#1a2e5a" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
@@ -40,7 +39,7 @@ export default function Services() {
     >
       <div className="max-w-[860px] mx-auto px-4 sm:px-6">
         <h2 className="text-center text-white font-heading font-bold text-[20px] sm:text-[22px] tracking-wide mb-7 sm:mb-8">
-          Our Services
+          {'Xidmətlərimiz'}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5" role="list">

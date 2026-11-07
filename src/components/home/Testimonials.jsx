@@ -3,7 +3,6 @@ import { testimonials } from '../../data/home';
 import { getServiceLabel } from '../../services/commentApi';
 import { useTopComments } from '../../services/contentHooks';
 import { mapComment } from '../../services/mappers';
-
 export default function Testimonials() {
   const { data } = useTopComments();
   const [active, setActive] = useState(0);
@@ -16,15 +15,14 @@ export default function Testimonials() {
 
   // API-dən rəy gəlməsə nümunə rəylər göstərilir. Hər ikisinin `id`
   // açarı var, ona görə siyahı açarları təkrarsızdır.
-  const displayItems =
-    items.length > 0
-      ? items
-      : testimonials.map((entry, i) => ({
-          id: `${entry.author}-${i}`,
-          text: entry.text,
-          author: entry.author,
-          service: null,
-        }));
+  const displayItems = items.length > 0
+    ? items
+    : testimonials.map((entry, i) => ({
+        id: `${entry.author}-${i}`,
+        text: entry.text,
+        author: entry.author,
+        service: null,
+      }));
 
   const total = displayItems.length;
   const index = total > 0 ? active % total : 0;
@@ -47,14 +45,14 @@ export default function Testimonials() {
     >
       <div className="max-w-[780px] mx-auto px-4">
         <h2 className="text-center text-[#1a2e5a] font-heading font-bold text-[22px] sm:text-[28px] tracking-wide mb-9">
-          What are people saying about us
+          {'İnsanlar bizim haqqımızda nə deyir'}
         </h2>
 
         <div className="flex items-center gap-3 sm:gap-5">
           <button
             type="button"
             onClick={() => goTo(index - 1)}
-            aria-label="Previous comment"
+            aria-label={'Əvvəlki rəy'}
             className="shrink-0 text-[#1a2e5a] text-[34px] font-bold leading-none hover:text-[#1a2e5a]/70 transition-colors cursor-pointer px-1"
           >
             &lt;
@@ -84,7 +82,7 @@ export default function Testimonials() {
           <button
             type="button"
             onClick={() => goTo(index + 1)}
-            aria-label="Next comment"
+            aria-label={'Növbəti rəy'}
             className="shrink-0 text-[#1a2e5a] text-[34px] font-bold leading-none hover:text-[#1a2e5a]/70 transition-colors cursor-pointer px-1"
           >
             &gt;
@@ -97,7 +95,7 @@ export default function Testimonials() {
               key={entry.id}
               type="button"
               onClick={() => goTo(i)}
-              aria-label={`Show comment ${i + 1}`}
+              aria-label={("Rəy " + (i + 1))}
               aria-current={i === index}
               className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
                 i === index ? 'bg-[#1a2e5a] w-5' : 'bg-[#1a2e5a]/20 hover:bg-[#1a2e5a]/40'

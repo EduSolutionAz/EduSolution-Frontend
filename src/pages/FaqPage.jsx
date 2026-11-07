@@ -3,7 +3,6 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FaqAccordion from '../components/FaqAccordion';
 import { useFaqs } from '../services/contentHooks';
-
 export default function FaqPage() {
   const { data: faqs, loading, error } = useFaqs();
   const [openId, setOpenId] = useState(undefined);
@@ -29,7 +28,7 @@ export default function FaqPage() {
       >
         <div className="max-w-[1050px] mx-auto">
           <h1 className="text-center text-[#2f4486] font-bold text-[22px] sm:text-[30px] tracking-wide mb-6 sm:mb-8">
-            Frequently Asked Questions
+            {'Tez-tez verilən suallar'}
           </h1>
 
           <div className="flex flex-col gap-2.5 sm:gap-3" role="list">
@@ -44,17 +43,17 @@ export default function FaqPage() {
             ))}
             {loading && faqs.length === 0 && (
               <p className="text-center text-[#2f4486]/60 text-[13px] py-10">
-                FAQ-lar yüklənir…
+                {'FAQ-lar yüklənir…'}
               </p>
             )}
             {error && faqs.length === 0 && (
               <p role="alert" className="text-center text-[#2f4486]/60 text-[13px] py-10">
-                FAQ-ları yükləmək mümkün olmadı
+                {'FAQ-ları yükləmək mümkün olmadı'}
               </p>
             )}
             {!loading && !error && faqs.length === 0 && (
               <p className="text-center text-[#2f4486]/60 text-[13px] py-10">
-                Hələ sual əlavə edilməyib
+                {'Hələ sual əlavə edilməyib'}
               </p>
             )}
           </div>

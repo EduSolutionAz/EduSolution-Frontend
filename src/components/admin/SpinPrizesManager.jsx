@@ -234,7 +234,7 @@ export default function SpinPrizesManager() {
       {/* ---------------- Nağıllar ---------------- */}
       <div className="space-y-6">
         <div className="flex items-center justify-between gap-3">
-          <h2 className={SECTION_TITLE}>Spin Nağılları</h2>
+          <h2 className={SECTION_TITLE}>Çarx mükafatları</h2>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -303,7 +303,7 @@ export default function SpinPrizesManager() {
 
             <div>
               <label className={FIELD_LABEL} htmlFor="prize-weight">
-                Çəki (weight)
+                Çəki (ağırlıq)
               </label>
               <input
                 id="prize-weight"
@@ -407,9 +407,9 @@ export default function SpinPrizesManager() {
             <thead>
               <tr className="bg-[#f6eeee] text-[#323643]/70 text-[11px] uppercase tracking-wide">
                 <th className="px-4 py-2.5 font-semibold">#</th>
-                <th className="px-4 py-2.5 font-semibold">Email</th>
+                <th className="px-4 py-2.5 font-semibold">E-poçt</th>
                 <th className="px-4 py-2.5 font-semibold">Mükafat</th>
-                <th className="px-4 py-2.5 font-semibold">Prize ID (UUID)</th>
+                <th className="px-4 py-2.5 font-semibold">Mükafat ID (UUID)</th>
               </tr>
             </thead>
             <tbody>

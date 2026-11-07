@@ -4,7 +4,6 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { APPLICANT_SERVICES, LIMITS } from '../services/commentApi';
 import { sendReview } from '../services/contentApi';
-
 const STATUS = {
   IDLE: 'idle',
   SENDING: 'sending',
@@ -82,10 +81,10 @@ export default function CommentPage() {
       >
         <div className="max-w-[560px] mx-auto">
           <h1 className="text-center text-[#2f3f80] font-bold text-[22px] sm:text-[28px] tracking-wide mb-2">
-            Share Your Feedback
+            {'Rəyinizi paylaşın'}
           </h1>
           <p className="text-center text-[#323643]/60 text-[12px] mb-8">
-            Your opinion helps us improve. This review link can be used once.
+            {'Fikriniz bizə təkmilləşməyə kömək edir. Bu rəy linki yalnız bir dəfə istifadə oluna bilər.'}
           </p>
 
           {status === STATUS.DONE ? (
@@ -95,15 +94,15 @@ export default function CommentPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-[#2f3f80] text-[17px] font-semibold mb-2">Təşəkkür edirik!</h2>
+              <h2 className="text-[#2f3f80] text-[17px] font-semibold mb-2">{'Təşəkkür edirik!'}</h2>
               <p className="text-[#323643]/60 text-[13px] leading-6">
-                Rəyiniz qeydə alındı. Faylınız üçün təşəkkür edirik.
+                {'Rəyiniz qeydə alındı. Faylınız üçün təşəkkür edirik.'}
               </p>
               <Link
                 to="/"
                 className="mt-6 inline-flex px-5 py-2 rounded-full bg-[#080d4a] text-white text-[13px] hover:bg-[#141c63] transition"
               >
-                Ana səhifə
+                {'Ana səhifə'}
               </Link>
             </div>
           ) : status === STATUS.BLOCKED ? (
@@ -114,21 +113,21 @@ export default function CommentPage() {
                   <circle cx="12" cy="12" r="9" />
                 </svg>
               </div>
-              <h2 className="text-[#2f3f80] text-[17px] font-semibold mb-2">Link işləmir</h2>
+              <h2 className="text-[#2f3f80] text-[17px] font-semibold mb-2">{'Link işləmir'}</h2>
               <ul className="text-[#323643]/60 text-[13px] leading-6 space-y-1">
                 {messages.map((message) => (
                   <li key={message}>{message}</li>
                 ))}
               </ul>
               <p className="text-[#323643]/50 text-[12px] mt-4">
-                Yeni link üçün bizimlə əlaqə saxlayın.
+                {'Yeni link üçün bizimlə əlaqə saxlayın.'}
               </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow px-6 py-6 space-y-5">
               <div>
                 <label htmlFor="review-service" className={FIELD_LABEL}>
-                  Xidmət növü *
+                  {'Xidmət növü *'}
                 </label>
                 <select
                   id="review-service"
@@ -146,7 +145,7 @@ export default function CommentPage() {
 
               <div>
                 <label htmlFor="review-comment" className={FIELD_LABEL}>
-                  Rəyiniz *
+                  {'Rəyiniz *'}
                 </label>
                 <textarea
                   id="review-comment"
@@ -154,7 +153,7 @@ export default function CommentPage() {
                   onChange={(e) => setComment(e.target.value)}
                   rows={6}
                   maxLength={LIMITS.COMMENT_MAX}
-                  placeholder="Təcrübənizi yazın..."
+                  placeholder={'Təcrübənizi yazın...'}
                   className={`${FIELD} resize-y leading-6`}
                 />
                 <div className="flex items-center justify-between mt-1.5">
@@ -166,9 +165,9 @@ export default function CommentPage() {
                     }`}
                   >
                     {length < LIMITS.COMMENT_MIN
-                      ? `Ən azı ${LIMITS.COMMENT_MIN} simvol`
+                      ? ("Ən azı " + (LIMITS.COMMENT_MIN) + " simvol")
                       : isTooLong
-                        ? `Maksimum ${LIMITS.COMMENT_MAX} simvol`
+                        ? ("Maksimum " + (LIMITS.COMMENT_MAX) + " simvol")
                         : 'Hazırdır'}
                   </span>
                   <span className="text-[11px] text-[#323643]/40">

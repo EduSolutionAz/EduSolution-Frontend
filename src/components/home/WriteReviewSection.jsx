@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { addApplicantComment } from '../../services/contentApi';
 import { isUserAuthenticated } from '../../services/session';
 import { SERVICE_OPTIONS } from '../../services/mappers';
-
 const LIMITS = { NAME_MAX: 50, COMMENT_MIN: 10, COMMENT_MAX: 256 };
 
 const INPUT =
@@ -73,31 +71,17 @@ export default function WriteReviewSection() {
     >
       <div className="max-w-[520px] mx-auto px-4">
         <h2 className="text-center text-[#1a2e5a] font-heading font-bold text-[20px] sm:text-[24px] tracking-wide mb-2">
-          Share your experience
+          {'Təcrübənizi paylaşın'}
         </h2>
         <p className="text-center text-[#1a2e5a]/60 text-[12px] mb-6">
-          Təcrübənizi paylaşın — rəyiniz sayğımızda əhəmiyyətli rol oynayır.
+          {'Təcrübənizi paylaşın — rəyiniz sayğımızda əhəmiyyətli rol oynayır.'}
         </p>
 
         {!isLoggedIn ? (
           <div className="bg-white rounded-lg shadow px-6 py-8 text-center">
-            <p className="text-[#323643]/70 text-[13px] mb-5">
-              Rəy yazmaq üçün hesabınıza giriş etməlisiniz.
+            <p className="text-[#323643]/70 text-[13px]">
+              {'Rəy yazmaq üçün hesabınıza giriş etməlisiniz.'}
             </p>
-            <div className="flex items-center justify-center gap-3">
-              <Link
-                to="/login"
-                className="px-6 py-2.5 rounded-full bg-[#080d4a] text-white text-[13px] font-semibold hover:bg-[#141c63] transition"
-              >
-                Giriş et
-              </Link>
-              <Link
-                to="/register"
-                className="px-6 py-2.5 rounded-full border border-[#080d4a]/30 text-[#080d4a] text-[13px] font-semibold hover:bg-[#080d4a]/5 transition"
-              >
-                Qeydiyyatdan keç
-              </Link>
-            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow px-6 py-6 space-y-4">
@@ -106,7 +90,7 @@ export default function WriteReviewSection() {
                 htmlFor="review-name"
                 className="block text-[#323643]/70 text-[11px] mb-1"
               >
-                Adınız *
+                {'Adınız *'}
               </label>
               <input
                 id="review-name"
@@ -114,7 +98,7 @@ export default function WriteReviewSection() {
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                placeholder="Ad və Soyad"
+                placeholder={'Ad və Soyad'}
                 className={INPUT}
                 required
               />
@@ -125,7 +109,7 @@ export default function WriteReviewSection() {
                 htmlFor="review-service"
                 className="block text-[#323643]/70 text-[11px] mb-1"
               >
-                Xidmət növü *
+                {'Xidmət növü *'}
               </label>
               <select
                 id="review-service"
@@ -147,7 +131,7 @@ export default function WriteReviewSection() {
                 htmlFor="review-text"
                 className="block text-[#323643]/70 text-[11px] mb-1"
               >
-                Rəyiniz *
+                {'Rəyiniz *'}
               </label>
               <textarea
                 id="review-text"
@@ -156,7 +140,7 @@ export default function WriteReviewSection() {
                 onChange={handleChange}
                 rows={5}
                 maxLength={LIMITS.COMMENT_MAX}
-                placeholder="Təcrübənizi yazın..."
+                placeholder={'Təcrübənizi yazın...'}
                 className="w-full bg-[#f6eeee] rounded-2xl px-4 py-3 text-[13px] text-[#323643] outline-none placeholder-[#323643]/60 focus:ring-2 focus:ring-[#26aec4] resize-y leading-6 transition"
               />
               <div className="flex items-center justify-between mt-1.5">
@@ -168,7 +152,7 @@ export default function WriteReviewSection() {
                   }`}
                 >
                   {length < LIMITS.COMMENT_MIN
-                    ? `Ən azı ${LIMITS.COMMENT_MIN} simvol`
+                    ? ("Ən azı " + (LIMITS.COMMENT_MIN) + " simvol")
                     : `${length}/${LIMITS.COMMENT_MAX}`}
                 </span>
               </div>
