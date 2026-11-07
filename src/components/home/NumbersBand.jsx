@@ -1,13 +1,12 @@
 import { funNumbers } from '../../data/home';
 import { useWebProperties } from '../../services/contentHooks';
-
 // Sıra vizual tərtibi, dəyərlər isə GET /property/all-dan gəlir.
 const TILES = [
-  { key: 'admissions_sent', label: 'Admission Sent', suffix: '' },
-  { key: 'successful_admission', label: 'Successful Admission', suffix: '' },
-  { key: 'visa_help', label: 'Visa Help', suffix: '' },
-  { key: 'successful_visa_help', label: 'Successful Visa Help', suffix: '' },
-  { key: 'visa_success_rate', label: 'Visa Success Rate', suffix: '%' },
+  { key: 'admissions_sent', label: 'Göndərilən qəbul müraciəti', suffix: '' },
+  { key: 'successful_admission', label: 'Uğurlu qəbul', suffix: '' },
+  { key: 'visa_help', label: 'Viza dəstəyi', suffix: '' },
+  { key: 'successful_visa_help', label: 'Uğurlu viza dəstəyi', suffix: '' },
+  { key: 'visa_success_rate', label: 'Viza uğur nisbəti', suffix: '%' },
 ];
 
 function isZero(value) {

@@ -113,7 +113,7 @@ function toApiError(status, body) {
   const message =
     (body && (body.message || body.detail || body.error)) ||
     STATUS_MESSAGES[status] ||
-    `Request failed (${status})`;
+    `Sorğu uğursuz oldu (${status})`;
 
   return new ApiError(message, {
     code: body?.code,

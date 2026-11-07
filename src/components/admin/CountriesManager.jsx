@@ -328,7 +328,7 @@ export default function CountriesManager() {
         Siyahı <code className="text-[#323643]/70">GET /country/all</code> endpoint-indən gəlir
         və bütün ölkələri göstərir. Ana səhifə isə yalnız{' '}
         <code className="text-[#323643]/70">top_countries</code> (ilk 6) siyahısını istifadə edir —
-        yeni ölkə orada görünmək üçün <strong>Top List</strong> seçili olmalıdır.
+        yeni ölkə orada görünmək üçün <strong>Top siyahı</strong> seçili olmalıdır.
       </p>
 
       {showForm && (
@@ -389,7 +389,7 @@ export default function CountriesManager() {
           </div>
 
           <div>
-            <label className={FIELD_LABEL} htmlFor="country-fee">Təlim ücreti ($)</label>
+            <label className={FIELD_LABEL} htmlFor="country-fee">Təhsil haqqı ($)</label>
             <input
               id="country-fee"
               name="tuitionFee"
@@ -405,7 +405,7 @@ export default function CountriesManager() {
           </div>
 
           <div>
-            <label className={FIELD_LABEL} htmlFor="country-rental">İçarə haqqı ($)</label>
+            <label className={FIELD_LABEL} htmlFor="country-rental">Kirayə haqqı ($)</label>
             <input
               id="country-rental"
               name="rentalFee"

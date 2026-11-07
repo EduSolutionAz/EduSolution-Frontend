@@ -26,7 +26,7 @@ function validate(form) {
   if (!form.email.trim()) {
     errors.email = 'E-poçt tələb olunur';
   } else if (!EMAIL_RE.test(form.email.trim())) {
-    errors.email = 'Yanlış email formatı';
+    errors.email = 'Yanlış e-poçt formatı';
   } else if (form.email.trim().length > LIMITS.EMAIL_MAX) {
     errors.email = `E-poçt ${LIMITS.EMAIL_MAX} simvoldan uzun ola bilməz`;
   }

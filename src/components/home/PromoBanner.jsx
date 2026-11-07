@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAds, subscribe } from '../../store/adminStore';
 import { useAllAds } from '../../services/contentHooks';
-
+import { formatAdTitle } from '../../utils/format';
 const AUTO_DELAY = 5000;
 
 // Ox düyməsinə verilən handler-lər ötürülməlidir, yoxsa oxun üstünə
@@ -112,10 +112,11 @@ export default function PromoBanner() {
     return () => cancelAnimationFrame(frame);
   }, [active, paused, advance, count]);
 
-  if (!count) return null;
-
-  const ad = ads[active];
+  const ad = ads[active] || null;
   const isBroken = broken[active];
+  const displayTitle = ad ? formatAdTitle(ad.title || ad.alt) : '';
+
+  if (!count) return null;
 
   return (
     <section
@@ -145,17 +146,17 @@ export default function PromoBanner() {
             onFocus={() => setPaused(true)}
             onBlur={() => setPaused(false)}
             className="w-full block aspect-[16/4.5] overflow-hidden bg-[#fdf6f3] rounded-[10px] shadow-[0_6px_20px_rgba(0,0,0,0.2)] border border-[#1a2e5a]/10 cursor-pointer group transition-all duration-300 hover:shadow-[0_10px_28px_rgba(0,0,0,0.26)] hover:-translate-y-0.5"
-            aria-label={`Reklam: ${ad.title || ad.alt}`}
+            aria-label={("Reklam: " + (displayTitle))}
           >
             {isBroken ? (
               <span className="w-full h-full flex items-center justify-center text-[#080d4a]/60 text-[15px] font-accent font-medium px-6 text-center">
-                {ad.title || ad.alt}
+                {displayTitle}
               </span>
             ) : (
               <img
                 key={active}
                 src={ad.src}
-                alt={ad.alt}
+                alt={displayTitle}
                 className="w-full h-full object-cover select-none promo-settle"
                 draggable="false"
                 onError={() => setBroken((prev) => ({ ...prev, [active]: true }))}
@@ -181,7 +182,7 @@ export default function PromoBanner() {
                 onClick={() => advance(i - active)}
                 onMouseEnter={() => setPaused(true)}
                 onMouseLeave={() => setPaused(false)}
-                aria-label={`${i + 1}-ci reklam: ${item.title || item.alt}`}
+                aria-label={("Reklam: " + (formatAdTitle(item.title || item.alt)))}
                 aria-current={i === active}
                 className={`h-2 rounded-full transition-all cursor-pointer ${
                   i === active
@@ -194,7 +195,7 @@ export default function PromoBanner() {
         )}
 
         <p className="mt-3 text-center text-[12px] text-[#1a2e5a]/55">
-          {ad.title || ad.alt}
+          {displayTitle}
         </p>
 
         {count > 1 && !paused && (

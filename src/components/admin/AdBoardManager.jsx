@@ -4,6 +4,7 @@ import { addAd, deleteAd, getAllAds, updateAd } from '../../services/adApi';
 import { ADMIN_TOKEN_KEY } from '../../config/api';
 import { describeFailure } from '../../services/httpClient';
 import { dataUrlToFile, resolveImageFile } from '../../utils/imageFile';
+import { cleanAdDescription, formatAdTitle } from '../../utils/format';
 import {
   getAds as getStoredAds,
   removeAd as removeStoredAd,
@@ -230,7 +231,7 @@ export default function AdBoardManager() {
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className={SECTION_TITLE}>Reklam Lövhəsi</h2>
+        <h2 className={SECTION_TITLE}>Reklam lövhəsi</h2>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -359,65 +360,72 @@ export default function AdBoardManager() {
       )}
 
       <ul className="space-y-3" role="list">
-        {ads.map((ad) => (
-          <li
-            key={ad.key}
-            className="bg-white rounded-md shadow px-4 py-3 flex items-center gap-4 justify-between"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              {ad.photoUrl && (
-                <img
-                  src={ad.photoUrl}
-                  alt=""
-                  className="w-16 h-10 object-cover rounded shrink-0"
-                  onError={(e) => {
-                    e.target.style.visibility = 'hidden';
-                  }}
-                />
-              )}
-              <div className="min-w-0">
-                <span className="text-[#080d4a] font-semibold text-[13px] block truncate">
-                  {ad.title}
-                </span>
-                {ad.content && (
-                  <span className="text-[#323643]/50 text-[11px] block truncate">{ad.content}</span>
-                )}
-                <a
-                  href={`/reklam/${encodeURIComponent(ad.title)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#323643]/50 text-[11px] underline block truncate"
-                >
-                  /reklam/{ad.title}
-                </a>
-              </div>
-            </div>
+        {ads.map((ad) => {
+          const title = formatAdTitle(ad.title);
+          const content = cleanAdDescription(ad.content);
+          const showContent =
+            content && content.toLocaleLowerCase('az') !== title.toLocaleLowerCase('az');
 
-            <div className="flex items-center gap-2 shrink-0">
-              {ad.pending ? (
-                <span className="px-2 py-0.5 rounded-full bg-[#fff4dc] text-[#a06a00] text-[10px] font-medium">
-                  lokal
-                </span>
-              ) : (
+          return (
+            <li
+              key={ad.key}
+              className="bg-white rounded-md shadow px-4 py-3 flex items-center gap-4 justify-between"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                {ad.photoUrl && (
+                  <img
+                    src={ad.photoUrl}
+                    alt=""
+                    className="w-16 h-10 object-cover rounded shrink-0"
+                    onError={(e) => {
+                      e.target.style.visibility = 'hidden';
+                    }}
+                  />
+                )}
+                <div className="min-w-0">
+                  <span className="text-[#080d4a] font-semibold text-[13px] block truncate">
+                    {title}
+                  </span>
+                  {showContent && (
+                    <span className="text-[#323643]/50 text-[11px] block truncate">{content}</span>
+                  )}
+                  <a
+                    href={`/reklam/${encodeURIComponent(ad.title)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#323643]/50 text-[11px] underline block truncate"
+                  >
+                    Reklam səhifəsini aç
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {ad.pending ? (
+                  <span className="px-2 py-0.5 rounded-full bg-[#fff4dc] text-[#a06a00] text-[10px] font-medium">
+                    lokal
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleEdit(ad)}
+                    className="px-3 py-1 text-[12px] text-[#080d4a] bg-[#e8eef7] rounded transition hover:bg-[#dbe4f2]"
+                  >
+                    Redaktə
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={() => handleEdit(ad)}
-                  className="px-3 py-1 text-[12px] text-[#080d4a] bg-[#e8eef7] rounded transition hover:bg-[#dbe4f2]"
+                  onClick={() => handleDelete(ad)}
+                  disabled={busyId === ad.key}
+                  className={BTN_DELETE}
                 >
-                  Redaktə
+                  Sil
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={() => handleDelete(ad)}
-                disabled={busyId === ad.key}
-                className={BTN_DELETE}
-              >
-                Sil
-              </button>
-            </div>
-          </li>
-        ))}
+              </div>
+            </li>
+          );
+        })}
 
         {loading && (
           <li className="text-center py-8 text-[#323643]/50 text-[13px]">Yüklənir...</li>

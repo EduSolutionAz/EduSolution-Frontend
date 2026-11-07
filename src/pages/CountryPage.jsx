@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -20,11 +20,10 @@ import {
 } from '../services/mappers';
 
 import { gradientFor, universityInitials } from '../utils/format';
-
 function Loading() {
   return (
     <div className="flex-1 flex items-center justify-center py-24 text-[#2f3f80]/60 text-[13px]">
-      Yüxlənir...
+      {'Yüklənir...'}
     </div>
   );
 }
@@ -143,8 +142,10 @@ export default function CountryPage() {
     return (
       <PageShell>
         <main className="flex-1 w-full min-w-0 overflow-hidden flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-          <h1 className="text-2xl font-bold text-[#080d4a]">Ölkə tapılmadı</h1>
-          <p className="text-sm text-[#080d4a]/70 break-words [overflow-wrap:anywhere]">"{slug}" adlı ölkə mövcud deyil.</p>
+          <h1 className="text-2xl font-bold text-[#080d4a]">{'Ölkə tapılmadı'}</h1>
+          <p className="text-sm text-[#080d4a]/70 break-words [overflow-wrap:anywhere]">
+            {("\"" + "{slug}" + "\" adlı ölkə mövcud deyil.")}
+          </p>
         </main>
       </PageShell>
     );
@@ -207,7 +208,7 @@ export default function CountryPage() {
             </p>
           ) : (
             <p className="text-center text-[#2f3f80]/50 text-[11px] mb-8 sm:mb-10">
-              Bu ölkə üçün hələ təfsilat yüklənməyib.
+              {'Bu ölkə üçün hələ təfsilat yüklənməyib.'}
             </p>
           )}
 
@@ -230,7 +231,7 @@ export default function CountryPage() {
           {country.areasText && (
             <section>
               <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-3">
-                Regions &amp; Areas
+                {'Regionlar & ərazilər'}
               </h2>
               <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6 break-words [overflow-wrap:anywhere] whitespace-pre-line">
                 {country.areasText}

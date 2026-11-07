@@ -23,8 +23,8 @@
 }
 
 @keyframes marquee {
-  0% { transform: translateX(-50%); }
-  100% { transform: translateX(0); }
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 /* Focus ring: only for keyboard users, so mouse clicks stay clean. */
@@ -76,12 +76,8 @@
 }
 
 .marquee-track {
-  animation: marquee 22s linear infinite;
+  animation: marquee 26s linear infinite;
   will-change: transform;
-}
-
-.marquee-group:hover .marquee-track {
-  animation-play-state: paused;
 }
 
 @layer base {

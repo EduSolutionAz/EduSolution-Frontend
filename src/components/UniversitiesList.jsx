@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getUniversityName } from '../utils/format';
-
 const PAGE_SIZE = 20;
 
 function UniversityRow({ university, countrySlug }) {
@@ -15,7 +14,7 @@ function UniversityRow({ university, countrySlug }) {
       </Link>
       {university.isPartner && (
         <span className="shrink-0 rounded-full bg-[#26aec4] px-1.5 py-[1px] text-[8px] sm:text-[9px] font-accent font-semibold text-[#080d4a]">
-          Partner
+          {'Partnyor'}
         </span>
       )}
     </li>
@@ -24,7 +23,7 @@ function UniversityRow({ university, countrySlug }) {
 
 export default function UniversitiesList({
   universities,
-  countryName = 'Germany',
+  countryName = 'Almaniya',
   countrySlug = '',
 }) {
   const [page, setPage] = useState({ slug: countrySlug, count: PAGE_SIZE });
@@ -43,12 +42,12 @@ export default function UniversitiesList({
   return (
     <section className="w-full">
       <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[21px] sm:text-[28px] tracking-wide mb-5 sm:mb-6">
-        Universities in {countryName}
+        {countryName} universitetləri
       </h2>
 
       {list.length === 0 ? (
         <p className="text-center italic text-[#2f3f80]/60 text-[11px] sm:text-[12px]">
-          *bu ölkədə universitet hələ əlavə edilməyib
+          {'*bu ölkədə universitet hələ əlavə edilməyib'}
         </p>
       ) : (
         <>
@@ -72,7 +71,7 @@ export default function UniversitiesList({
                 onClick={showMore}
                 className="px-6 py-2 rounded-full border border-[#2f3f80]/40 text-[#2f3f80] text-[12px] font-accent font-medium hover:bg-[#080d4a] hover:text-white hover:border-[#080d4a] transition"
               >
-                Daha çox göstər
+                {'Daha çox göstər'}
               </button>
               <span className="text-[11px] text-[#2f3f80]/60">
                 {visible.length} / {list.length}
@@ -81,7 +80,7 @@ export default function UniversitiesList({
           )}
 
           <p className="text-center italic text-[#2f3f80] text-[11px] sm:text-[12px] mt-6 sm:mt-8">
-            *click on university name to get detailed information
+            {'*ətraflı məlumat üçün universitet adına klikləyin'}
           </p>
         </>
       )}

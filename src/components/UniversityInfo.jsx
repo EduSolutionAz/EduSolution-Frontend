@@ -3,7 +3,6 @@ import {
   formatUsd,
   getUniversityTypeLabel,
 } from '../utils/format';
-
 function FeeIcon() {
   return (
     <svg width="34" height="30" viewBox="0 0 34 30" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -58,7 +57,7 @@ export default function UniversityInfo({ university }) {
   return (
     <section className="w-full">
       <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-4 sm:mb-5">
-        University Info
+        {'Universitet məlumatları'}
       </h2>
 
       <div className="bg-[#d6eef2] rounded-full px-4 sm:px-8 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 shadow-sm">
@@ -66,8 +65,8 @@ export default function UniversityInfo({ university }) {
           align="start"
           icon={<FeeIcon />}
           value={formatUsd(university.universityFee)}
-          label="University Fee"
-          note="Per semester"
+          label={'Universitet haqqı'}
+          note={'Semestr üzrə'}
         />
 
         <div className="hidden sm:block w-px self-stretch bg-[#1f2a5a]/30 mx-4" />
@@ -75,8 +74,8 @@ export default function UniversityInfo({ university }) {
         <Cell
           icon={<SemesterIcon />}
           value={semesters || '—'}
-          label="Semester Count"
-          note="Per academic year"
+          label={'Semestr sayı'}
+          note={'Akademik il üzrə'}
         />
 
         <div className="hidden sm:block w-px self-stretch bg-[#1f2a5a]/30 mx-4" />
@@ -85,7 +84,7 @@ export default function UniversityInfo({ university }) {
           align="end"
           icon={<TypeIcon />}
           value={getUniversityTypeLabel(university.universityType)}
-          label="University Type"
+          label={'Universitet növü'}
         />
       </div>
     </section>

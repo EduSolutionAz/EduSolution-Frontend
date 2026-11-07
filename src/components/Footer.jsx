@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import WhatsAppButton from './WhatsAppButton';
 import { WHATSAPP_DISPLAY, whatsappLink } from '../config/contact';
-
 // Boş "url" dəyərləri süzülür, ona görə sosial blok yalnız real
 // linklər yazıldıqda görünür. Linkləri buradan əlavə etmək olar.
 const SOCIAL_LINKS = [
@@ -48,11 +47,11 @@ export default function Footer() {
     <footer className="bg-[#080d4a] text-white">
       <div className="max-w-[1100px] mx-auto px-4 sm:px-8 pt-7 pb-6 grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6 text-center sm:text-left">
         <div className="flex flex-col items-center sm:items-start sm:col-start-1 sm:row-start-1">
-          <h3 className="text-[14px] italic mb-2">Site Map</h3>
+          <h3 className="text-[14px] italic mb-2">{'Sayt xəritəsi'}</h3>
           <div className="flex flex-row sm:flex-col flex-wrap justify-center gap-x-5 gap-y-1.5 sm:gap-1 text-[13px] sm:text-[12px]">
-            <SectionLink to="/#about">About Us</SectionLink>
-            <SectionLink to="/#study">Study Abroad</SectionLink>
-            <SectionLink to="/#services">Visa Help</SectionLink>
+            <SectionLink to="/#about">{'Haqqımızda'}</SectionLink>
+            <SectionLink to="/#study">{'Xaricdə təhsil'}</SectionLink>
+            <SectionLink to="/#services">{'Viza dəstəyi'}</SectionLink>
           </div>
         </div>
 
@@ -62,7 +61,7 @@ export default function Footer() {
             <span className="text-[14px] italic font-medium whitespace-nowrap">EduSolution Academy</span>
           </div>
           <p className="text-[11px] sm:text-[10px] leading-5 sm:leading-4 max-w-[280px] sm:max-w-[230px] mt-2 text-white/90">
-            Find universities, visa information, tuition fees and admission requirements for your dream country.
+            {'Arzu etdiyiniz ölkə üçün universitetlər, viza məlumatları, təhsil haqları və qəbul tələblərini tapın.'}
           </p>
           <a
             href={whatsappLink()}
@@ -81,7 +80,7 @@ export default function Footer() {
 
         {socials.length > 0 && (
           <div className="flex flex-col items-center sm:items-end sm:text-right">
-            <h3 className="text-[14px] italic mb-3 sm:mb-4">Our Social Media Accounts</h3>
+            <h3 className="text-[14px] italic mb-3 sm:mb-4">{'Sosial media hesablarımız'}</h3>
             <div className="flex gap-3 justify-center sm:justify-end">
               {socials.map((item) => (
                 <a

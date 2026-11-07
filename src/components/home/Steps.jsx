@@ -1,5 +1,4 @@
 import { steps } from '../../data/home';
-
 export default function Steps() {
   return (
     <section
@@ -12,7 +11,7 @@ export default function Steps() {
     >
       <div className="max-w-[1080px] mx-auto px-4">
         <h2 className="text-center text-[#30427d] font-heading font-bold text-[22px] sm:text-[28px] tracking-wide mb-8">
-          Step By Step to your Academic Dream
+          {'Akademik arzunuza addım-addım'}
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3" role="list">
@@ -24,7 +23,7 @@ export default function Steps() {
             >
               <span className="text-[24px] leading-none mb-2">{step.emoji}</span>
               <span className="text-[#e2eeff] font-accent text-[11px] font-semibold mb-0.5">
-                Step {i + 1}
+                {'Addım'} {i + 1}
               </span>
               <span className="text-[#f7f7f7] text-[11.5px] leading-4">{step.title}</span>
             </div>

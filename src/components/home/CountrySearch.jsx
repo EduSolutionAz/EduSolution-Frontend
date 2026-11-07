@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useTopCountries } from '../../services/contentHooks';
 import { mapTopCountry } from '../../services/mappers';
-
 export default function CountrySearch() {
   const navigate = useNavigate();
   const { data } = useTopCountries();
@@ -25,7 +24,7 @@ export default function CountrySearch() {
       return;
     }
 
-    setNotFound(`"${query.trim()}" tapılmadı`);
+    setNotFound(query.trim());
   };
 
   const handleChange = (e) => {
@@ -51,7 +50,7 @@ export default function CountrySearch() {
           </svg>
           <input
             type="text"
-            placeholder="Search for your dream country"
+            placeholder={'Arzu etdiyiniz ölkəni axtarın'}
             className="flex-1 bg-transparent outline-none text-[#1a2e5a] placeholder:text-[#1a2e5a]/50 text-[12px] sm:text-[13px] font-accent"
             list="country-options"
             value={query}
@@ -62,11 +61,13 @@ export default function CountrySearch() {
               <option key={c.slug} value={c.name} />
             ))}
           </datalist>
-          <button type="submit" aria-label="Axtar" className="hidden" />
+          <button type="submit" aria-label={'Axtar'} className="hidden" />
         </form>
 
         {notFound && (
-          <p className="text-center text-[#1a2e5a]/70 text-[12px] mt-2.5">{notFound}</p>
+          <p className="text-center text-[#1a2e5a]/70 text-[12px] mt-2.5">
+            {("\"" + (notFound) + "\" tapılmadı")}
+          </p>
         )}
       </div>
     </section>

@@ -1,6 +1,5 @@
 import { heroStats } from "../../data/home";
 import { useAllUniversities, useWebProperties } from "../../services/contentHooks";
-
 const SOCIAL_LINKS = [
   { key: "linkedin", label: "LinkedIn", url: "", icon: (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.55V9h3.57v11.45z" /></svg>
@@ -54,9 +53,9 @@ function VisaIcon() {
 }
 
 const ICONS = {
-  "Students Helped": <StudentsIcon />,
-  "Partner University": <UniversityIcon />,
-  "Visa Success Rate": <VisaIcon />,
+  "Tələbələrə kömək": <StudentsIcon />,
+  "Partnyor Universitet": <UniversityIcon />,
+  "Viza uğur nisbəti": <VisaIcon />,
 };
 
 export default function Hero() {
@@ -68,18 +67,18 @@ export default function Hero() {
   const partnerCount = universities?.length || 0;
 
   const stats = heroStats.map((stat) => {
-    if (stat.label === "Partner University") {
+    if (stat.label === "Partnyor Universitet") {
       return { ...stat, value: String(partnerCount) };
     }
 
-    if (stat.label === "Students Helped") {
+    if (stat.label === "Tələbələrə kömək") {
       const value = properties?.students_helped;
       return value === undefined || value === null
         ? stat
         : { ...stat, value: String(value) };
     }
 
-    if (stat.label === "Visa Success Rate") {
+    if (stat.label === "Viza uğur nisbəti") {
       const value = properties?.visa_success_rate;
       if (value === undefined || value === null) return stat;
       return {
@@ -107,8 +106,8 @@ export default function Hero() {
           {/* LEFT */}
           <div className="flex-1 text-center lg:text-left max-w-[560px] lg:max-w-[520px] mx-auto lg:mx-0">
             <h1 className="font-heading font-bold leading-[1.05] tracking-[0.02em]">
-              <span className="block text-[#1a2e5a] text-[30px] sm:text-[42px] lg:text-[44px]">Study in Europe</span>
-              <span className="block text-[#1a2e5a] text-[26px] sm:text-[38px] lg:text-[40px] mt-1 tracking-[0.12em]">With Confidence</span>
+              <span className="block text-[#1a2e5a] text-[30px] sm:text-[42px] lg:text-[44px]">{'Avropada Əminliklə'}</span>
+              <span className="block text-[#1a2e5a] text-[26px] sm:text-[38px] lg:text-[40px] mt-1 tracking-[0.12em]">{'Təhsil Alın'}</span>
             </h1>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 mt-6 sm:mt-7">
@@ -116,13 +115,13 @@ export default function Hero() {
                 href="#contact"
                 className="w-[210px] sm:w-auto inline-flex items-center justify-center px-[22px] py-[9px] bg-[#0b1140] text-white rounded-full text-[13px] font-accent font-medium tracking-wide hover:bg-[#162060] hover:shadow-lg transition-all hover:scale-[1.02] active:scale-95"
               >
-                Book Free Consultation
+                {'Pulsuz konsultasiya al'}
               </a>
               <a
                 href="#services"
                 className="w-[210px] sm:w-auto inline-flex items-center justify-center px-[22px] py-[9px] bg-[#0b1140] text-white rounded-full text-[13px] font-accent font-medium tracking-wide hover:bg-[#162060] hover:shadow-lg transition-all hover:scale-[1.02] active:scale-95"
               >
-                Our Services
+                {'Xidmətlərimiz'}
               </a>
             </div>
 
@@ -156,7 +155,7 @@ export default function Hero() {
             >
               <img
                 src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=900&q=80&auto=format&fit=crop&crop=faces"
-                alt="Student with acceptance letter in Europe"
+                alt={'Avropada qəbul məktubu olan tələbə'}
                 className="w-full h-full object-cover"
                 loading="eager"
                 onError={(e) => {
@@ -169,7 +168,7 @@ export default function Hero() {
               {/* Acceptance Letter card like in screenshot */}
               <div className="absolute bottom-[18%] right-[14%] sm:bottom-[14%] sm:right-[10%] bg-[#0b1140] text-[#e8c97a] px-3 sm:px-4 py-4 sm:py-5 rounded-[4px] shadow-[0_8px_24px_rgba(0,0,0,0.35)] flex flex-col items-center gap-1.5 rotate-[-2deg] border border-white/10">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8c97a" strokeWidth="1.4"><path d="M12 3L4 7v10l8 4 8-4V7z" /><path d="M12 11a3 3 0 100-6 3 3 0 000 6z" /><path d="M8 14c1.5 1 2.8 1.5 4 1.5s2.5-.5 4-1.5" /></svg>
-                <span className="text-[8px] sm:text-[9px] font-heading font-semibold tracking-wide leading-tight text-center">Acceptance<br />Letter</span>
+                <span className="text-[8px] sm:text-[9px] font-heading font-semibold tracking-wide leading-tight text-center">{'Qəbul'}<br />{'Məktubu'}</span>
               </div>
             </div>
           </div>

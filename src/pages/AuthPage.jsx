@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { createPassword, login, register, verifyCode } from '../services/authApi';
-
 const EMAIL_RE = /^[^\s@]+@[^\s]+\.[^\s]{2,}$/;
 const PHONE_RE = /^\+?[0-9\s()-]{9,20}$/;
 
@@ -52,19 +51,19 @@ export default function AuthPage({ initialMode = 'login' }) {
     if (isLogin) {
       const value = formData.identifier.trim();
       if (!value) {
-        next.identifier = 'Email və ya telefon tələb olunur';
+        next.identifier = 'E-poçt və ya telefon tələb olunur';
       } else if (value.includes('@') && !EMAIL_RE.test(value)) {
-        next.identifier = 'Yanlış email formatı';
+        next.identifier = 'Yanlış e-poçt formatı';
       } else if (value.includes('@') && value.length > LIMITS.EMAIL_MAX) {
-        next.identifier = `Email ${LIMITS.EMAIL_MAX} simvoldan uzun ola bilməz`;
+        next.identifier = `E-poçt ${LIMITS.EMAIL_MAX} simvoldan uzun ola bilməz`;
       } else if (!value.includes('@') && !PHONE_RE.test(value)) {
         next.identifier = 'Yanlış telefon formatı';
       }
     } else {
       if (!EMAIL_RE.test(formData.email.trim())) {
-        next.email = 'Düzgün email formatı daxil edin';
+        next.email = 'Düzgün e-poçt formatı daxil edin';
       } else if (formData.email.trim().length > LIMITS.EMAIL_MAX) {
-        next.email = `Email ${LIMITS.EMAIL_MAX} simvoldan uzun ola bilməz`;
+        next.email = `E-poçt ${LIMITS.EMAIL_MAX} simvoldan uzun ola bilməz`;
       }
 
       if (registerStep === 1) {
@@ -149,7 +148,7 @@ export default function AuthPage({ initialMode = 'login' }) {
         setRegisterStep(2);
         setNotice(
           data?.is_code_sent
-            ? `Təsdiq kodu ${email} ünvanına göndərildi.`
+            ? 'Təsdiq kodu {email} ünvanına göndərildi.'.replace('{email}', email)
             : 'Kod göndərilmədi, yenidən cəhd edin.',
         );
         return;
@@ -257,7 +256,7 @@ export default function AuthPage({ initialMode = 'login' }) {
                 className="flex flex-col items-center w-full max-w-[320px] sm:max-w-[270px]"
                 style={{ animation: 'fadeSlide 700ms cubic-bezier(0.77,0,0.175,1) both' }}
               >
-                <h2 className="text-[24px] sm:text-[22px] font-semibold mb-5 tracking-wide">Login</h2>
+                <h2 className="text-[24px] sm:text-[22px] font-semibold mb-5 tracking-wide">{'Daxil ol'}</h2>
                 <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3 sm:gap-[12px]">
                   <div className="relative">
                     <span className={iconWrap}>
@@ -269,8 +268,8 @@ export default function AuthPage({ initialMode = 'login' }) {
                     <input
                       type="text"
                       name="identifier"
-                      placeholder="Email"
-                      aria-label="Email"
+                      placeholder={'E-poçt və ya telefon'}
+                      aria-label={'E-poçt və ya telefon'}
                       value={formData.identifier}
                       onChange={handleChange}
                       autoComplete="username"
@@ -291,8 +290,8 @@ export default function AuthPage({ initialMode = 'login' }) {
                     <input
                       type="password"
                       name="password"
-                      placeholder="Password"
-                      aria-label="Password"
+                      placeholder={'Şifrə'}
+                      aria-label={'Şifrə'}
                       autoComplete="current-password"
                       value={formData.password}
                       onChange={handleChange}
@@ -312,18 +311,18 @@ export default function AuthPage({ initialMode = 'login' }) {
                       disabled={isSubmitting}
                       className="w-[130px] h-[38px] sm:w-[88px] sm:h-[25px] bg-white text-[#080d4a] rounded-full text-[13px] sm:text-[10px] font-accent font-semibold hover:bg-gray-200 transition-all hover:scale-105 sm:hover:scale-110 hover:shadow-[0_0_12px_rgba(255,255,255,0.5)] cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isSubmitting ? 'Göndərilir...' : 'Login'}
+                      {isSubmitting ? 'Göndərilir...' : 'Daxil ol'}
                     </button>
                   </div>
 
                   <p className="text-[12px] sm:text-[10px] text-center mt-1">
-                    If you don&apos;t have any account,{' '}
+                    {'Hesabınız yoxdursa,'}{' '}
                     <button
                       type="button"
                       onClick={() => switchMode('register')}
                       className="text-cyan-300 hover:text-cyan-200 hover:drop-shadow-[0_0_6px_rgba(103,232,249,0.7)] transition-all cursor-pointer font-medium"
                     >
-                      click here
+                      {'bura klikləyin'}
                     </button>
                   </p>
                 </form>
@@ -334,22 +333,22 @@ export default function AuthPage({ initialMode = 'login' }) {
                 className="flex flex-col items-center w-full max-w-[320px] sm:max-w-[270px]"
                 style={{ animation: 'fadeSlide 700ms cubic-bezier(0.77,0,0.175,1) both' }}
               >
-                <h2 className="text-[24px] sm:text-[22px] font-semibold mb-1 tracking-wide">Register</h2>
+                <h2 className="text-[24px] sm:text-[22px] font-semibold mb-1 tracking-wide">{'Qeydiyyat'}</h2>
                 <p className="text-[10px] text-white/60 mb-4">
-                  Step {registerStep} of 3
+                  {((registerStep) + "-ci addım / 3")}
                 </p>
 
                 <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3 sm:gap-[12px]">
                   <div>
                     <label className={LABEL_BASE} htmlFor="reg-email">
-                      Email *
+                      {'E-poçt'} *
                     </label>
                     <input
                       id="reg-email"
                       type="email"
                       name="email"
                       autoComplete="email"
-                      placeholder="Email"
+                      placeholder={'E-poçt'}
                       value={formData.email}
                       onChange={handleChange}
                       disabled={registerStep > 1}
@@ -362,14 +361,14 @@ export default function AuthPage({ initialMode = 'login' }) {
                     <>
                       <div>
                         <label className={LABEL_BASE} htmlFor="reg-name">
-                          Name and Surname *
+                          {'Ad və soyad'} *
                         </label>
                         <input
                           id="reg-name"
                           type="text"
                           name="name"
                           autoComplete="name"
-                          placeholder="Name and Surname"
+                          placeholder={'Ad və soyad'}
                           value={formData.name}
                           onChange={handleChange}
                           className={`${INPUT_BASE} ${errors.name ? 'border-red-400' : ''}`}
@@ -379,14 +378,14 @@ export default function AuthPage({ initialMode = 'login' }) {
 
                       <div>
                         <label className={LABEL_BASE} htmlFor="reg-phone">
-                          Phone Number *
+                          {'Telefon nömrəsi'} *
                         </label>
                         <input
                           id="reg-phone"
                           type="tel"
                           name="phone"
                           autoComplete="tel"
-                          placeholder="Phone Number"
+                          placeholder={'Telefon nömrəsi'}
                           value={formData.phone}
                           onChange={handleChange}
                           className={`${INPUT_BASE} ${errors.phone ? 'border-red-400' : ''}`}
@@ -399,7 +398,7 @@ export default function AuthPage({ initialMode = 'login' }) {
                   {registerStep === 2 && (
                     <div>
                       <label className={LABEL_BASE} htmlFor="reg-code">
-                        Verification Code *
+                        {'Təsdiq kodu'} *
                       </label>
                       <input
                         id="reg-code"
@@ -408,7 +407,7 @@ export default function AuthPage({ initialMode = 'login' }) {
                         name="code"
                         autoComplete="one-time-code"
                         maxLength={LIMITS.CODE_LENGTH}
-                        placeholder="6-digit code"
+                        placeholder={'6 rəqəmli kod'}
                         value={formData.code}
                         onChange={handleChange}
                         className={`${INPUT_BASE} ${errors.code ? 'border-red-400' : ''}`}
@@ -420,14 +419,14 @@ export default function AuthPage({ initialMode = 'login' }) {
                   {registerStep === 3 && (
                     <div>
                       <label className={LABEL_BASE} htmlFor="reg-pass">
-                        Create Password *
+                        {'Şifrə yaradın'} *
                       </label>
                       <input
                         id="reg-pass"
                         type="password"
                         name="password"
                           autoComplete="new-password"
-                        placeholder="Password"
+                        placeholder={'Şifrə'}
                         value={formData.password}
                         onChange={handleChange}
                         className={`${INPUT_BASE} ${errors.password ? 'border-red-400' : ''}`}
@@ -448,7 +447,7 @@ export default function AuthPage({ initialMode = 'login' }) {
                         onClick={registerStep === 2 ? backToStep1 : () => setRegisterStep(2)}
                         className="text-white/60 hover:text-white text-[11px] underline cursor-pointer"
                       >
-                        Geri
+                        {'Geri'}
                       </button>
                     )}
 
@@ -457,18 +456,18 @@ export default function AuthPage({ initialMode = 'login' }) {
                       disabled={isSubmitting}
                       className="w-[130px] h-[38px] sm:w-[88px] sm:h-[25px] bg-white text-[#080d4a] rounded-full text-[13px] sm:text-[10px] font-accent font-semibold hover:bg-gray-200 transition-all hover:scale-105 sm:hover:scale-110 hover:shadow-[0_0_12px_rgba(255,255,255,0.5)] cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isSubmitting ? 'Göndərilir...' : registerStep === 3 ? 'Finish' : 'Continue'}
+                      {isSubmitting ? 'Göndərilir...' : registerStep === 3 ? 'Tamamla' : 'Davam et'}
                     </button>
                   </div>
 
                   <p className="text-[12px] sm:text-[10px] text-center mt-1">
-                    If you already have any account,{' '}
+                    {'Hesabınız varsa,'}{' '}
                     <button
                       type="button"
                       onClick={() => switchMode('login')}
                       className="text-cyan-300 hover:text-cyan-200 hover:drop-shadow-[0_0_6px_rgba(103,232,249,0.7)] transition-all cursor-pointer font-medium"
                     >
-                      click here
+                      {'bura klikləyin'}
                     </button>
                   </p>
                 </form>
@@ -479,7 +478,7 @@ export default function AuthPage({ initialMode = 'login' }) {
 
         <p className="mt-4 text-[12px] text-[#080d4a]/60">
           <Link to="/" className="hover:underline">
-            ← Ana səhifəyə qayıt
+            ← {'Ana səhifəyə qayıt'}
           </Link>
         </p>
       </main>

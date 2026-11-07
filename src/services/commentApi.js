@@ -8,9 +8,9 @@ import {
 } from '../store/adminStore';
 
 export const APPLICANT_SERVICES = [
-  { value: 'VISA', label: 'Visa Process' },
-  { value: 'RESIDENCE_PERMIT', label: 'Residence Permit' },
-  { value: 'UNIVERSITY', label: 'University Admission' },
+  { value: 'VISA', label: 'Viza prosesi' },
+  { value: 'RESIDENCE_PERMIT', label: 'Yaşayış icazəsi' },
+  { value: 'UNIVERSITY', label: 'Universitetə qəbul' },
 ];
 
 export const LIMITS = {
@@ -24,19 +24,19 @@ export const LIMITS = {
 };
 
 const MESSAGES = {
-  NAME_REQUIRED: 'Name is required to proceed. Name cannot be blank',
-  NAME_LENGTH: 'Name must not exceed 100 characters',
-  EMAIL_REQUIRED: 'Email is required to proceed',
-  EMAIL_LENGTH: 'Email must not exceed 75 characters',
-  EMAIL_VALID: 'Email must be a valid email address',
-  COMMENT_REQUIRED: 'Comment cannot be blank',
-  COMMENT_SIZE: 'Comment cannot be less than 20 characters and more than 256 characters',
-  SERVICE_REQUIRED: 'Service type cannot be null',
-  TOKEN_LENGTH: 'Token must be exactly 36 characters',
-  TOKEN_REQUIRED: 'Token cannot be blank',
-  TOKEN_EXPIRED: 'Token has expired, request a new token',
-  TOKEN_USED: 'Token is already used',
-  TOKEN_NOT_FOUND: 'Token not found',
+  NAME_REQUIRED: 'Davam etmək üçün ad tələb olunur. Ad boş ola bilməz',
+  NAME_LENGTH: 'Ad 100 simvoldan uzun ola bilməz',
+  EMAIL_REQUIRED: 'Davam etmək üçün e-poçt tələb olunur',
+  EMAIL_LENGTH: 'E-poçt 75 simvoldan uzun ola bilməz',
+  EMAIL_VALID: 'E-poçt düzgün ünvan formatında olmalıdır',
+  COMMENT_REQUIRED: 'Rəy boş ola bilməz',
+  COMMENT_SIZE: 'Rəy 20 simvoldan az və 256 simvoldan çox ola bilməz',
+  SERVICE_REQUIRED: 'Xidmət növü boş ola bilməz',
+  TOKEN_LENGTH: 'Token dəqiq 36 simvol olmalıdır',
+  TOKEN_REQUIRED: 'Token boş ola bilməz',
+  TOKEN_EXPIRED: 'Tokenin vaxtı bitib, yeni token tələb edin',
+  TOKEN_USED: 'Token artıq istifadə olunub',
+  TOKEN_NOT_FOUND: 'Token tapılmadı',
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;

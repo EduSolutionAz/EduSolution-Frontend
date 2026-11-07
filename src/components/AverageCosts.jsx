@@ -1,10 +1,9 @@
 import { formatUsd } from '../utils/format';
-
-export default function AverageCosts({ tuitionFee, costs, countryName = 'Germany' }) {
+export default function AverageCosts({ tuitionFee, costs, countryName = 'Almaniya' }) {
   return (
     <section className="w-full">
       <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-4 sm:mb-5">
-        Average Costs for {countryName}
+        {((countryName) + " üçün orta xərclər")}
       </h2>
 
       <div className="bg-[#d6eef2] rounded-full px-4 sm:px-8 py-3 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 shadow-sm">
@@ -23,7 +22,7 @@ export default function AverageCosts({ tuitionFee, costs, countryName = 'Germany
             <div className="text-[#1f2a5a] font-bold text-[16px] leading-none">
               {formatUsd(tuitionFee)}
             </div>
-            <div className="text-[#1f2a5a]/80 text-[10px] leading-tight">University Cost</div>
+            <div className="text-[#1f2a5a]/80 text-[10px] leading-tight">{'Universitet xərci'}</div>
           </div>
         </div>
 

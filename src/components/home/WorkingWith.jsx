@@ -1,7 +1,6 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCountriesWithUniversities } from '../../services/contentHooks';
-import { formatUniversityCount, formatUsd, universityInitials } from '../../utils/format';
-
+import { formatUsd, toNumber, universityInitials } from '../../utils/format';
 const FLAG_MAP = {
   germany: 'de',
   turkiye: 'tr',
@@ -59,10 +58,12 @@ export default function WorkingWith() {
                 </h3>
 
                 <ul className="mt-1.5 space-y-0.5 text-white text-[10px] leading-[1.4] font-semibold w-fit mx-auto text-left drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
-                  <li className="flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-white shrink-0" />
-                    {formatUniversityCount(c.card?.universityCount)}
-                  </li>
+                  {Math.round(toNumber(c.card?.universityCount)) > 0 && (
+                    <li className="flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-white shrink-0" />
+                      {((Math.round(toNumber(c.card?.universityCount))) + "+ universitet")}
+                    </li>
+                  )}
                   <li className="flex items-center gap-1.5">
                     <span className="w-1 h-1 rounded-full bg-white shrink-0" />
                     {formatUsd(c.card?.tuitionFee)}
@@ -70,13 +71,13 @@ export default function WorkingWith() {
                   {(c.card?.features || []).map((f) => (
                     <li key={f} className="flex items-center gap-1.5">
                       <span className="w-1 h-1 rounded-full bg-white shrink-0" />
-                      {f}
+                    {f}
                     </li>
                   ))}
                 </ul>
 
                 <span className="mt-auto pt-2 text-white text-[10px] font-accent font-bold underline underline-offset-2 decoration-white/60 group-hover:decoration-white text-center block drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">
-                  learn more
+                  {'ətraflı'}
                 </span>
               </div>
             </Link>
@@ -85,7 +86,7 @@ export default function WorkingWith() {
 
         {/* Working With title + flags */}
         <div className="mt-8 sm:mt-10 text-center">
-          <h2 className="text-[#1a2e5a] font-heading font-bold text-[19px] sm:text-[22px] tracking-wide">Working With</h2>
+          <h2 className="text-[#1a2e5a] font-heading font-bold text-[19px] sm:text-[22px] tracking-wide">{'Əməkdaşlıq etdiyimiz ölkələr'}</h2>
           <div className="mt-3 flex items-center justify-center gap-2 sm:gap-2.5 flex-wrap max-w-[560px] mx-auto">
             {countries.map((c) => {
               const code = FLAG_MAP[c.slug];

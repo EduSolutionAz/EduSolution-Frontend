@@ -4,13 +4,12 @@ import CountryFlag from './CountryFlag';
 import { useCountriesWithUniversities, useAllUniversities } from '../services/contentHooks';
 import { isUserAuthenticated, clearUserToken } from '../services/session';
 import { slugify } from '../utils/format';
-
 const NAV_LINKS = [
-  { to: '/spin', label: 'Spin' },
-  { href: '#services', label: 'Visa Help' },
-  { href: '#study', label: 'Study Abroad' },
-  { href: '#about', label: 'About Us' },
-  { href: '#contact', label: 'Contact us' },
+  { to: '/spin', label: 'Çarx' },
+  { href: '#services', label: 'Viza dəstəyi' },
+  { href: '#study', label: 'Xaricdə təhsil' },
+  { href: '#about', label: 'Haqqımızda' },
+  { href: '#contact', label: 'Bizimlə əlaqə' },
   { href: '#faq', label: 'FAQ' },
 ];
 
@@ -39,10 +38,6 @@ export default function Header() {
   const [mobileUnis, setMobileUnis] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  // Ana səhifədə sağ üstdə Login/Register göstərilmir — giriş linkləri
-  // yalnız digər səhifələrdə qalır, giriş etmiş istifadəçi üçün isə
-  // Çıxış düyməsi görünməyə davam edir.
-  const isHome = location.pathname === '/';
   const { data } = useCountriesWithUniversities();
   const countries = data || [];
   const { data: allUniversities } = useAllUniversities();
@@ -105,7 +100,7 @@ export default function Header() {
     <header className="relative z-30">
       <div className="bg-[#080d4a]">
         <div className="max-w-[1100px] mx-auto h-[60px] sm:h-[70px] px-4 sm:px-6 flex items-center justify-between gap-3">
-          <Link to="/" className="shrink-0" aria-label="EduSolution home">
+          <Link to="/" className="shrink-0" aria-label="EduSolution Ana səhifə">
             <img
               src="/assets/logo.png"
               alt="EduSolution"
@@ -124,7 +119,7 @@ export default function Header() {
                 }}
                 className="inline-flex items-center hover:text-cyan-300 transition cursor-pointer"
               >
-                Countries <Chevron open={openCountries} />
+                {'Ölkələr'} <Chevron open={openCountries} />
               </button>
               {openCountries && (
                 <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-56 bg-white rounded-lg shadow-[0_12px_32px_rgba(0,0,0,0.18)] border border-[#1a2e5a]/10 overflow-hidden z-50">
@@ -155,13 +150,13 @@ export default function Header() {
                 }}
                 className="inline-flex items-center hover:text-cyan-300 transition cursor-pointer"
               >
-                Universities <Chevron open={openUnis} />
+                {'Universitetlər'} <Chevron open={openUnis} />
               </button>
               {openUnis && (
                 <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-72 bg-white rounded-lg shadow-[0_12px_32px_rgba(0,0,0,0.18)] border border-[#1a2e5a]/10 overflow-hidden z-50">
                   <div className="max-h-[360px] overflow-y-auto py-1">
                     {universities.length === 0 ? (
-                      <div className="px-4 py-6 text-center text-[#1a2e5a]/60 text-[13px]">No universities yet</div>
+                      <div className="px-4 py-6 text-center text-[#1a2e5a]/60 text-[13px]">{'Hələ universitet yoxdur'}</div>
                     ) : (
                       universities.slice(0, 40).map((u) => (
                         <Link
@@ -197,37 +192,24 @@ export default function Header() {
               ),
             )}
 
-            {!isHome && <span className="w-px h-4 bg-white/20" aria-hidden />}
-
-            {isAuthenticated ? (
-              <button
-                type="button"
-                onClick={handleUserLogout}
-                className="hover:text-cyan-300 transition cursor-pointer"
-              >
-                Logout
-              </button>
-            ) : (
-              !isHome && (
-                <>
-                  <Link to="/login" className="hover:text-cyan-300 transition">
-                    Login
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="px-3 py-1 rounded-full bg-[#26aec4] text-[#080d4a] font-accent font-semibold hover:bg-[#3cc3d8] transition"
-                  >
-                    Register
-                  </Link>
-                </>
-              )
+            {isAuthenticated && (
+              <>
+                <span className="w-px h-4 bg-white/20" aria-hidden />
+                <button
+                  type="button"
+                  onClick={handleUserLogout}
+                  className="hover:text-cyan-300 transition cursor-pointer"
+                >
+                  {'Çıxış'}
+                </button>
+              </>
             )}
           </nav>
 
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
-            aria-label="Menu"
+            aria-label={'Menyu'}
             aria-expanded={menuOpen}
             className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded text-white hover:bg-white/10 transition cursor-pointer"
           >
@@ -255,7 +237,7 @@ export default function Header() {
               onClick={() => setMobileCountries((v) => !v)}
               className="flex items-center justify-between py-2.5 px-2 rounded hover:bg-white/10 hover:text-cyan-300 transition text-left"
             >
-              <span>Countries</span>
+              <span>{'Ölkələr'}</span>
               <Chevron open={mobileCountries} />
             </button>
             {mobileCountries && (
@@ -279,7 +261,7 @@ export default function Header() {
               onClick={() => setMobileUnis((v) => !v)}
               className="flex items-center justify-between py-2.5 px-2 rounded hover:bg-white/10 hover:text-cyan-300 transition text-left"
             >
-              <span>Universities</span>
+              <span>{'Universitetlər'}</span>
               <Chevron open={mobileUnis} />
             </button>
             {mobileUnis && (
@@ -320,34 +302,15 @@ export default function Header() {
               ),
             )}
 
-            {(!isHome || isAuthenticated) && (
+            {isAuthenticated && (
               <div className="border-t border-white/10 mt-2 pt-2 flex items-center gap-2">
-                {isAuthenticated ? (
-                  <button
-                    type="button"
-                    onClick={handleUserLogout}
-                    className="py-2.5 px-2 rounded w-full text-left text-white/70 hover:bg-white/10 hover:text-cyan-300 transition cursor-pointer"
-                  >
-                    Çıxış
-                  </button>
-                ) : (
-                  <>
-                    <Link
-                      to="/login"
-                      onClick={() => setMenuOpen(false)}
-                      className="py-2.5 px-2 rounded text-white/80 hover:bg-white/10 hover:text-cyan-300 transition"
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      to="/register"
-                      onClick={() => setMenuOpen(false)}
-                      className="py-2.5 px-2 rounded bg-[#26aec4] text-[#080d4a] font-semibold hover:bg-[#3cc3d8] transition text-center"
-                    >
-                      Register
-                    </Link>
-                  </>
-                )}
+                <button
+                  type="button"
+                  onClick={handleUserLogout}
+                  className="py-2.5 px-2 rounded w-full text-left text-white/70 hover:bg-white/10 hover:text-cyan-300 transition cursor-pointer"
+                >
+                  {'Çıxış'}
+                </button>
               </div>
             )}
           </nav>
@@ -356,7 +319,7 @@ export default function Header() {
 
       <div className="bg-[#26aec4] px-3 py-1.5 sm:py-0 sm:h-[21px] flex items-center justify-center text-center">
         <p className="text-white text-[10px] sm:text-[11px] leading-snug tracking-wide max-w-[1100px]">
-          Find universities, visa information, tuition fees and admission requirements for your dream country.
+          {'Arzu etdiyiniz ölkə üçün universitetlər, viza məlumatları, təhsil haqları və qəbul tələblərini tapın.'}
         </p>
       </div>
     </header>

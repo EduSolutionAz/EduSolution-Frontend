@@ -5,7 +5,6 @@ import UniversityInfo from '../components/UniversityInfo';
 import { useCountryLogos, useTopCountries, useUniversityDetails } from '../services/contentHooks';
 import { mapCountryLogos, mapTopCountry, mapUniversity } from '../services/mappers';
 import { getUniversityTypeLabel, universityInitials } from '../utils/format';
-
 const PAGE_BACKGROUND = {
   backgroundImage: `linear-gradient(rgba(246,238,238,0.94), rgba(246,238,238,0.94)), url('/assets/topographic.png')`,
   backgroundRepeat: 'repeat',
@@ -53,7 +52,7 @@ export default function UniversityPage() {
       <div className="min-h-screen flex flex-col bg-[#f6eeee] font-sans">
         <Header />
         <main className="flex-1 flex items-center justify-center text-[#2f3f80]/60 text-[13px]">
-          Yüklənir...
+          {'Yüklənir...'}
         </main>
         <Footer />
       </div>
@@ -65,14 +64,14 @@ export default function UniversityPage() {
       <div className="min-h-screen flex flex-col bg-[#f6eeee] font-sans">
         <Header />
         <main className="flex-1 flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-          <h1 className="text-2xl font-bold text-[#080d4a]">Universitet tapılmadı</h1>
-          <p className="text-sm text-[#080d4a]/70">Bu universitet artıq mövcud deyil.</p>
+          <h1 className="text-2xl font-bold text-[#080d4a]">{'Universitet tapılmadı'}</h1>
+          <p className="text-sm text-[#080d4a]/70">{'Bu universitet artıq mövcud deyil.'}</p>
           {error && <p className="text-sm text-red-600">{error.message}</p>}
           <Link
             to={`/country/${slug}`}
             className="mt-2 inline-flex px-5 py-2 rounded-full bg-[#080d4a] text-white text-sm"
           >
-            Ölkə səhifəsinə qayıt
+            {'Ölkə səhifəsinə qayıt'}
           </Link>
         </main>
         <Footer />
@@ -89,7 +88,7 @@ return (
         <div className="max-w-[900px] mx-auto w-full min-w-0 px-4 sm:px-6 pt-6 sm:pt-8 pb-12 sm:pb-16 overflow-hidden">
           <nav className="flex items-center gap-2 text-[11px] sm:text-[12px] text-[#2f3f80]/70 mb-4 sm:mb-5">
             <Link to="/" className="hover:underline">
-              Home
+              {'Ana səhifə'}
             </Link>
             <span>/</span>
             <Link to={`/country/${slug}`} className="hover:underline">
@@ -109,7 +108,7 @@ return (
                 </h1>
                 {university.isPartner && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-[#26aec4] px-2.5 py-[3px] text-[10px] font-accent font-semibold text-[#080d4a]">
-                    Partner
+                    {'Partnyor'}
                   </span>
                 )}
               </div>
@@ -147,7 +146,7 @@ return (
           {university.content && (
             <section className="mb-8 sm:mb-10">
               <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-3">
-                About {name}
+                {("{name}" + " haqqında")}
               </h2>
               <p className="text-center text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.8] sm:leading-7 whitespace-pre-line break-words [overflow-wrap:anywhere]">
                 {university.content}
@@ -158,7 +157,7 @@ return (
           {university.area && (
             <section className="mb-8 sm:mb-10 text-center">
               <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-3">
-                Area
+                {'Ərazi'}
               </h2>
               <p className="text-[#2f3f80] text-[10px] sm:text-[12px] leading-[1.7] sm:leading-6">
                 {university.area}
@@ -169,7 +168,7 @@ return (
           {university.faculties.length > 0 && (
             <section>
               <h2 className="text-center text-[#2f3f80] font-heading font-bold text-[19px] sm:text-[24px] tracking-wide mb-4">
-                Faculties
+                {'Fakültələr'}
               </h2>
               <ul className="flex flex-wrap justify-center gap-2" role="list">
                 {university.faculties.map((faculty) => (
